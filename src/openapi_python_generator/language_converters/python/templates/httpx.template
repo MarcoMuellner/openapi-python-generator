@@ -1,0 +1,32 @@
+{%  if asyncClient %}async {% endif %}def {{ operation_id }}({{ params | join(',') }}) -> {{ return_type }}:
+    base_path = ApiSettings.base_path
+    path = f'{{ path }}'
+    headers = {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': f'Bearer { ApiSettings.access_token }',
+    }
+    query_params = {
+        '{{ queryParams | join(', ') }}'
+    }
+
+    {% if asyncClient %}
+with httpx.AsyncClient(base_url=base_path) as client:
+    response = await client.request(
+    {% else %}
+with httpx.Client(base_url=base_path) as client:
+    response = client.request(
+    {% endif %}
+        method='{{ method }}',
+        url=path,
+        headers=headers,
+        params=query_params,
+        {% if hasData %}
+        json = json.dumps(data.dict())
+        {% endif %}
+    )
+
+    if response.status_code != {{ goodStatusCode }}:
+        raise Exception(f'{{ operationId }} failed with status code: {response.status_code}')
+
+    {{ returnType }}(**response.json())

@@ -1,0 +1,18 @@
+from pydantic import BaseModel
+
+{% for import_model in import_models %}
+from {{ import_model }} import {{ import_model }}
+{% endfor %}
+
+class {{ schema_name }}(BaseModel):
+    """
+    {{ schema.title }} model
+    {% if schema.description != None %}
+    {{ schema.description }}
+    {% endif %}
+
+    """
+    {% for property in properties %}
+
+    {{ property.name }} : {{ property.type }} {% if not property.required %} = {{ property.default }} {% endif %}
+    {% endfor %}
