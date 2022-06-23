@@ -1,0 +1,3 @@
+class APIConfig():
+    base_path: str = '{{ servers[0].url }}'
+    access_token: str = None

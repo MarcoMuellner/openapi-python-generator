@@ -36,17 +36,17 @@ def type_converter(schema: Schema, required: bool = False) -> str:
         return pre_type + "bool" + post_type
     elif schema.type == "array":
         retVal = pre_type + "List["
-        for item in schema.items:
-            if isinstance(item, Reference):
-                retVal += item.ref.split("/")[-1]
-            elif isinstance(item, Schema):
-                retVal += type_converter(item, True)
-
+        if isinstance(schema.items, Reference):
+            retVal += schema.items.ref.split("/")[-1]
+        else:
+            retVal += type_converter(schema.items, True)
         return retVal + "]" + post_type
     elif schema.type == "object":
         return pre_type + "Dict[str, Any]" + post_type
+    elif schema.type is None:
+        return pre_type + "Any" + post_type
     else:
-        raise Exception(f"Unknown type: {schema.type}")
+        raise TypeError(f"Unknown type: {schema.type}")
 
 
 def _generate_property_from_schema(name: str, schema: Schema, parentSchema: Optional[Schema] = None) -> Property:

@@ -1,8 +1,6 @@
+from typing import *
 from pydantic import BaseModel
-
-{% for import_model in import_models %}
-from {{ import_model }} import {{ import_model }}
-{% endfor %}
+from . import *
 
 class {{ schema_name }}(BaseModel):
     """
@@ -16,3 +14,4 @@ class {{ schema_name }}(BaseModel):
 
     {{ property.name }} : {{ property.type }} {% if not property.required %} = {{ property.default }} {% endif %}
     {% endfor %}
+
