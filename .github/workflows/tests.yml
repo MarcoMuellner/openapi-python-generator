@@ -20,3 +20,15 @@ jobs:
       - run: pip install poetry==1.1.13
       - run: poetry install
       - run: poetry run pytest
+      - run: poetry run pytest --cov=./ --cov-report=xml
+      - uses: codecov/codecov-action@v2
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          directory: ./coverage/reports/
+          env_vars: OS,PYTHON
+          fail_ci_if_error: true
+          files: ./coverage.xml
+          flags: unittests
+          name: codecov-umbrella
+          path_to_write_report: .codecov_report.txt
+          verbose: true
