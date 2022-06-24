@@ -60,7 +60,7 @@ def _generate_property_from_schema(name: str, schema: Schema, parentSchema: Opti
     :param parentSchema: Component this belongs to
     :return: Property
     """
-    required = parentSchema.required is not None and name in parentSchema.required
+    required = parentSchema is not None and parentSchema.required is not None and name in parentSchema.required
     return Property(
         name=name,
         type=type_converter(schema, required),
