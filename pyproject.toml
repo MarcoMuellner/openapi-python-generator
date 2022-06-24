@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "openapi-python-generator"
-version = "0.2.0"
+version = "0.2.1"
 description = "Openapi Python Generator"
 authors = ["Marco Müllner <muellnermarco@gmail.com>"]
 license = "MIT"
@@ -53,7 +53,7 @@ myst-parser = {version = ">=0.16.1"}
 pytest-cov = "^3.0.0"
 
 [tool.poetry.scripts]
-openapi-python-generator = "openapi_python_generator.__main__:main"
+openapi-python-generator = "openapi_python_generator.__main__:app"
 
 [tool.coverage.paths]
 source = ["src", "*/site-packages"]
