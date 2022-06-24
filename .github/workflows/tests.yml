@@ -1,0 +1,25 @@
+name: Tests
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+  workflow_dispatch:
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    env:
+      ## Environment variable
+      AUTH_TOKEN: ${{secrets.AUTH_TOKEN}}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v3
+        with:
+          python-version: 3.8
+          architecture: x64
+      - run: pip install poetry==1.0.5
+      - run: poetry install
+      - run: poetry run pytest
