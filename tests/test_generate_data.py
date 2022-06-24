@@ -12,7 +12,7 @@ def test_get_open_api(model_data):
     assert get_open_api(test_data_path) == model_data
 
     with pytest.raises(ConnectError):
-        assert get_open_api("http://test.com")
+        assert get_open_api("http://localhost:8080/api/openapi.json")
 
     with pytest.raises(ValidationError):
         assert get_open_api(test_data_folder / 'failing_api.json')

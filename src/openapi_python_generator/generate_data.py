@@ -45,7 +45,7 @@ def get_open_api(path: Union[str,Path]) -> OpenAPI:
         raise ConnectError(f"Could not connect to {path}.")
     except (ValidationError,JSONDecodeError):
         typer.echo(f"File {path} is not a valid OpenAPI 3.0 specification, or there may be a problem with your JSON.")
-        raise ValidationError(f"File {path} is not a valid OpenAPI 3.0 specification, or there may be a problem with your JSON.")
+        raise
 
 
 def write_data(data: ConversionResult, output: str):
