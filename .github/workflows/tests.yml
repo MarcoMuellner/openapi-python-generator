@@ -11,9 +11,6 @@ on:
 jobs:
   tests:
     runs-on: ubuntu-latest
-    env:
-      ## Environment variable
-      AUTH_TOKEN: ${{secrets.AUTH_TOKEN}}
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v3
