@@ -4,10 +4,10 @@ from pathlib import Path
 from jinja2 import Environment, FileSystemLoader
 from openapi_schema_pydantic import OpenAPI, Components, Schema, Reference
 
-from src.openapi_python_generator.language_converters.python.api_config_generator import generate_api_config
-from src.openapi_python_generator.language_converters.python.model_generator import generate_models
-from src.openapi_python_generator.language_converters.python.service_generator import generate_services
-from src.openapi_python_generator.models import ConversionResult, Model
+from openapi_python_generator.language_converters.python.api_config_generator import generate_api_config
+from openapi_python_generator.language_converters.python.model_generator import generate_models
+from openapi_python_generator.language_converters.python.service_generator import generate_services
+from openapi_python_generator.models import ConversionResult, Model
 
 def generator(data: OpenAPI) -> ConversionResult:
     """

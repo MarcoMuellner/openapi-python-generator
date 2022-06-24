@@ -3,8 +3,8 @@ from typing import List, Optional, Tuple
 import typer
 from openapi_schema_pydantic import Components, Reference, Schema
 
-from src.openapi_python_generator.language_converters.python.jinja_config import JINJA_ENV, MODELS_TEMPLATE
-from src.openapi_python_generator.models import Model, Property
+from openapi_python_generator.language_converters.python.jinja_config import JINJA_ENV, MODELS_TEMPLATE
+from openapi_python_generator.models import Model, Property
 
 
 def type_converter(schema: Schema, required: bool = False) -> str:
@@ -22,7 +22,7 @@ def type_converter(schema: Schema, required: bool = False) -> str:
         post_type = "]"
 
     if schema.allOf is not None:
-        return pre_type + type_converter(schema.allOf[0], required) + post_type
+        return pre_type + "Tuple[" + ','.join(type_converter(i, True) for i in schema.allOf) + "]" + post_type
     elif schema.oneOf is not None or schema.anyOf is not None:
         used = schema.oneOf if schema.oneOf is not None else schema.anyOf
         return pre_type + "Union[" + ','.join(type_converter(i, True) for i in used) + "]" + post_type
@@ -38,12 +38,16 @@ def type_converter(schema: Schema, required: bool = False) -> str:
         retVal = pre_type + "List["
         if isinstance(schema.items, Reference):
             retVal += schema.items.ref.split("/")[-1]
-        else:
+        elif isinstance(schema.items, Schema):
             retVal += type_converter(schema.items, True)
+        elif schema.items is None:
+            retVal += "Any"
+        else:
+            raise Exception(f"Unknown item type: {type(schema.items)}")
         return retVal + "]" + post_type
     elif schema.type == "object":
         return pre_type + "Dict[str, Any]" + post_type
-    elif schema.type is None:
+    elif schema.type is None or schema.type == "null":
         return pre_type + "Any" + post_type
     else:
         raise TypeError(f"Unknown type: {schema.type}")

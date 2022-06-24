@@ -2,8 +2,8 @@ from typing import Optional
 
 import typer
 
-from common import HTTPLibrary
-from generate_data import generate_data
+from .common import HTTPLibrary
+from .generate_data import generate_data
 
 app = typer.Typer()
 

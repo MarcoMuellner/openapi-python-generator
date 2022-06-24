@@ -21,8 +21,7 @@ class ServiceOperation(BaseModel):
     async_client: Optional[bool] = False
     tag: Optional[str] = None
     path_name: str
-    imports: List[str]
-
+    body_param: Optional[str] = None
 
 class Property(BaseModel):
     name: str
@@ -42,7 +41,6 @@ class Model(BaseModel):
 class Service(BaseModel):
     file_name: str
     operations: List[ServiceOperation]
-    imports: List[str]
     content: str
     async_client: Optional[bool] = False
 

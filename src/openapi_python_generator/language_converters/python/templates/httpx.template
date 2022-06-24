@@ -23,8 +23,8 @@ with httpx.Client(base_url=base_path) as client:
         url=path,
         headers=headers,
         params=query_params,
-        {% if hasData %}
-        json = json.dumps(data.dict())
+        {% if body_param %}
+        json = json.dumps({{ body_param }}.dict())
         {% endif %}
     )
 
