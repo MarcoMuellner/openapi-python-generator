@@ -1,0 +1,20 @@
+# .github/workflows/release.yml
+name: Release
+on:
+  release:
+    types: [published]
+    
+  workflow_dispatch:
+  
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions/setup-python@v3
+      with:
+        python-version: '3.9'
+        architecture: x64
+    - run: pip install poetry==1.0.5
+    - run: poetry build
+    - run: poetry publish --username=__token__ --password=${{ secrets.PYPI_TOKEN }}
