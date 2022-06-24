@@ -17,6 +17,6 @@ jobs:
         with:
           python-version: 3.9
           architecture: x64
-      - run: pip install poetry==1.0.5
+      - run: pip install poetry==1.1.13
       - run: poetry install
       - run: poetry run pytest
