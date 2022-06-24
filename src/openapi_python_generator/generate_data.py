@@ -2,7 +2,7 @@ from pathlib import Path
 from typing import Optional, Union
 
 import httpx
-from httpx import ConnectError
+from httpx import ConnectError, ConnectTimeout
 from orjson import orjson
 import typer
 from pydantic import ValidationError
@@ -40,9 +40,9 @@ def get_open_api(path: Union[str,Path]) -> OpenAPI:
     except FileNotFoundError:
         typer.echo(f"File {path} not found. Please make sure to pass the path to the OpenAPI 3.0 specification.")
         raise
-    except ConnectError:
+    except (ConnectError,ConnectTimeout):
         typer.echo(f"Could not connect to {path}.")
-        raise
+        raise ConnectError(f"Could not connect to {path}.")
     except ValidationError:
         typer.echo(f"File {path} is not a valid OpenAPI 3.0 specification, or there may be a problem with your JSON.")
         raise
