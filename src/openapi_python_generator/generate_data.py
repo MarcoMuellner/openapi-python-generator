@@ -3,7 +3,7 @@ from typing import Optional, Union
 
 import httpx
 from httpx import ConnectError, ConnectTimeout
-from orjson import orjson
+from orjson import orjson, JSONDecodeError
 import typer
 from pydantic import ValidationError
 import autopep8
@@ -43,9 +43,9 @@ def get_open_api(path: Union[str,Path]) -> OpenAPI:
     except (ConnectError,ConnectTimeout):
         typer.echo(f"Could not connect to {path}.")
         raise ConnectError(f"Could not connect to {path}.")
-    except ValidationError:
+    except (ValidationError,JSONDecodeError):
         typer.echo(f"File {path} is not a valid OpenAPI 3.0 specification, or there may be a problem with your JSON.")
-        raise
+        raise ValidationError(f"File {path} is not a valid OpenAPI 3.0 specification, or there may be a problem with your JSON.")
 
 
 def write_data(data: ConversionResult, output: str):
