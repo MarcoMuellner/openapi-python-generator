@@ -39,13 +39,13 @@ def get_open_api(path: Union[str,Path]) -> OpenAPI:
             return OpenAPI(**orjson.loads(f.read()))
     except FileNotFoundError:
         typer.echo(f"File {path} not found. Please make sure to pass the path to the OpenAPI 3.0 specification.")
-        typer.Exit(1)
+        raise
     except ConnectError:
         typer.echo(f"Could not connect to {path}.")
-        typer.Exit(1)
+        raise
     except ValidationError:
         typer.echo(f"File {path} is not a valid OpenAPI 3.0 specification, or there may be a problem with your JSON.")
-        typer.Exit(1)
+        raise
 
 
 def write_data(data: ConversionResult, output: str):

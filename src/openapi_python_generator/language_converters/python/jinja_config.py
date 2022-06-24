@@ -2,6 +2,7 @@ from pathlib import Path
 
 from jinja2 import Environment, FileSystemLoader
 
+ENUM_TEMPLATE = "enum.template"
 MODELS_TEMPLATE = "models.template"
 SERVICE_TEMPLATE = "service.template"
 HTTPX_TEMPLATE = "httpx.template"

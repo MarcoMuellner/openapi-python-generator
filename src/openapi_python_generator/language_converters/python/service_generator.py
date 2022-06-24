@@ -22,10 +22,8 @@ def generate_params(operation: Operation) -> List[str]:
     def _generate_params_from_content(content: Union[Reference, Schema]):
         if isinstance(content, Reference):
             return f"data : {content.ref.split('/')[-1]}"
-        elif isinstance(content, Schema):
-            return f"data : {type_converter(content, True)}"
         else:
-            raise Exception("Unknown content type")
+            return f"data : {type_converter(content, True)}"
 
     if operation.parameters is None and operation.requestBody is None:
         return []
@@ -36,11 +34,9 @@ def generate_params(operation: Operation) -> List[str]:
             if isinstance(param.param_schema, Schema):
                 params.append(f"{param.name} : {type_converter(param.param_schema, param.required)}" + (
                     "" if param.required else " = None"))
-            elif isinstance(param.param_schema, Reference):
+            else:
                 params.append(
                     f"{param.name} : {param.param_schema.ref.split('/')[-1]}" + ("" if param.required else " = None"))
-            else:
-                raise Exception("Unknown param schema type")
 
     if operation.requestBody is not None:
         if isinstance(operation.requestBody.content, MediaType):

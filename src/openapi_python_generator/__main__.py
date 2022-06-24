@@ -2,8 +2,8 @@ from typing import Optional
 
 import typer
 
-from .common import HTTPLibrary
-from .generate_data import generate_data
+from openapi_python_generator.common import HTTPLibrary
+from openapi_python_generator.generate_data import generate_data
 
 app = typer.Typer()
 
@@ -16,5 +16,7 @@ def main(file_name :str, output : str, library : Optional[HTTPLibrary]  = HTTPLi
     generate_data(file_name, output, library)
 
 
-if __name__ == "__main__":
+
+if __name__ == "__main__": #pragma: no cover
     app()
+

@@ -63,12 +63,21 @@
             "type": "string",
             "description": "User token",
             "example": "test"
+          },
+          "complex_type": {
+            "ref":"#/components/schemas/TokenUser"
           }
         },
         "required": [
           "user_id",
           "token"
         ]
+      },
+      "EnumerationString": {
+        "enum" : ["test","test_2","test_3"]
+      },
+      "EnumerationInt": {
+        "enum" : [1,2,3]
       }
     }
   },

@@ -7,20 +7,19 @@ from openapi_python_generator.models import Property, Model
 
 
 @pytest.mark.parametrize("test_openapi_types,expected_python_types", [
-    ("string", "str"),
-    ("integer", "int"),
-    ("number", "float"),
-    ("boolean", "bool"),
-    ("array", "List[Any]"),
-    ("object", "Dict[str, Any]"),
-    ("null", "Any"),
+    (Schema(type='string'), "str"),
+    (Schema(type='integer'), "int"),
+    (Schema(type='number'), "float"),
+    (Schema(type='boolean'), "bool"),
+    (Schema(type='array'), "List[Any]"),
+    (Schema(type='array', items=Schema(type='string')), "List[str]"),
+    (Schema(type='array', items=Reference(ref='#/components/schemas/test_name')), "List[test_name]"),
+    (Schema(type='object'), "Dict[str, Any]"),
+    (Schema(type='null'), "Any"),
 ])
 def test_type_converter_simple(test_openapi_types, expected_python_types):
-    # Generate Schema object from test_openapi_types
-    schema = Schema(type=test_openapi_types)
-
-    assert type_converter(schema, True) == expected_python_types
-    assert type_converter(schema, False) == 'Optional[' + expected_python_types + ']'
+    assert type_converter(test_openapi_types, True) == expected_python_types
+    assert type_converter(test_openapi_types, False) == 'Optional[' + expected_python_types + ']'
 
 
 @pytest.mark.parametrize("test_openapi_types,expected_python_types", [
@@ -85,4 +84,3 @@ def test_model_generation(model_data: OpenAPI):
         assert i.content is not None
 
         compile(i.content, '<string>', 'exec')
-        

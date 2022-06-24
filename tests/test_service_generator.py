@@ -41,7 +41,17 @@ def test_generate_body_param(test_openapi_operation, expected_result):
         "application/json": MediaType(
             media_type_schema=Reference(ref="#/components/schemas/TestModel")
         )
+    })), ["test : TestModel", "test2 : str", "data : TestModel"]),
+    (Operation(parameters=[
+        Parameter(name="test", param_in="query", param_schema=Reference(ref="#/components/schemas/TestModel"),
+                  required=True),
+        Parameter(name="test2", param_in="path", param_schema=Schema(type="string"), required=True),
+    ], requestBody=RequestBody(content={
+        "application/json": MediaType(
+            media_type_schema=Reference(ref="#/components/schemas/TestModel")
+        )
     })), ["test : TestModel", "test2 : str", "data : TestModel"])
+
 ])
 def test_generate_params(test_openapi_operation, expected_result):
     assert generate_params(test_openapi_operation) == expected_result

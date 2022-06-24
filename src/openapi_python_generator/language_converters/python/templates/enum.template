@@ -1,0 +1,11 @@
+from enum import Enum
+
+class {{ name }}(Enum, str):
+    {% for enumItem in enum %}
+
+    {% if enumItem is string %}
+    {{ enumItem.lower() }} = '{{ enumItem }}'
+    {% else %}
+    value_{{ enumItem }} = {{ enumItem }}
+    {% endif %}
+    {% endfor %}

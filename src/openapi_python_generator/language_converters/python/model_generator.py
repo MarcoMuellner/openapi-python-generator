@@ -3,9 +3,8 @@ from typing import List, Optional, Tuple
 import typer
 from openapi_schema_pydantic import Components, Reference, Schema
 
-from openapi_python_generator.language_converters.python.jinja_config import JINJA_ENV, MODELS_TEMPLATE
+from openapi_python_generator.language_converters.python.jinja_config import JINJA_ENV, MODELS_TEMPLATE, ENUM_TEMPLATE
 from openapi_python_generator.models import Model, Property
-
 
 def type_converter(schema: Schema, required: bool = False) -> str:
     """
@@ -40,10 +39,9 @@ def type_converter(schema: Schema, required: bool = False) -> str:
             retVal += schema.items.ref.split("/")[-1]
         elif isinstance(schema.items, Schema):
             retVal += type_converter(schema.items, True)
-        elif schema.items is None:
-            retVal += "Any"
         else:
-            raise Exception(f"Unknown item type: {type(schema.items)}")
+            retVal += "Any"
+
         return retVal + "]" + post_type
     elif schema.type == "object":
         return pre_type + "Dict[str, Any]" + post_type
@@ -103,7 +101,20 @@ def generate_models(components: Components) -> List[Model]:
 
     for name, schema in components.schemas.items():
         if schema.enum is not None:
-            continue  # TODO generate enum class using different template
+            m = Model(
+                file_name=name,
+                content=JINJA_ENV.get_template(ENUM_TEMPLATE).render(name=name,**schema.dict()),
+                openapi_object=schema,
+                references=[],
+                properties=[],
+            )
+            try:
+                compile(m.content, "<string>", "exec")
+                models.append(m)
+            except SyntaxError as e: #pragma: no cover
+                typer.echo(f"Error in model {name}: {e}")
+
+            continue  #pragma: no cover
 
         import_models = []
         properties = []
@@ -111,10 +122,8 @@ def generate_models(components: Components) -> List[Model]:
             if isinstance(property, Reference):
                 conv_property, import_model = _generate_property_from_reference(prop_name, property, schema)
                 import_models.append(import_model)
-            elif isinstance(property, Schema):
-                conv_property = _generate_property_from_schema(prop_name, property, schema)
             else:
-                raise Exception(f"Unknown property type: {type(property)}")
+                conv_property = _generate_property_from_schema(prop_name, property, schema)
             properties.append(conv_property)
 
         generated_content = JINJA_ENV.get_template(MODELS_TEMPLATE).render(
@@ -126,9 +135,8 @@ def generate_models(components: Components) -> List[Model]:
 
         try:
             compile(generated_content, "<string>", "exec")
-        except SyntaxError as e:
-            typer.echo(f"Error in model {name}: {e}")
-            typer.Exit()
+        except SyntaxError as e: #pragma: no cover
+            typer.echo(f"Error in model {name}: {e}") #pragma: no cover
 
         models.append(Model(
             file_name=name,

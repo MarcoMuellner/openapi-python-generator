@@ -7,7 +7,8 @@ import json
 
 from openapi_schema_pydantic import OpenAPI
 
-test_data_path = Path(__file__).parent / "test_data" / "test_api.json"
+test_data_folder = Path(__file__).parent / "test_data"
+test_data_path = test_data_folder / "test_api.json"
 test_result_path = Path(__file__).parent / "test_result"
 
 

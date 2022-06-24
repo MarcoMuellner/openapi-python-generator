@@ -23,11 +23,16 @@
 
 ## Features
 
-- TODO
+- Easy code generation for OpenAPI 3.0.0+ APIs
+- Async and Sync code generation support (with the help of [httpx](https://pypi.org/project/httpx/))])
+- Typed services and models for your convinience
+- Support for HttpBearer authentication
+- Python only
+- Usage as CLI tool or as a library
 
 ## Requirements
 
-- TODO
+- Python 3.7+
 
 ## Installation
 
@@ -40,6 +45,12 @@ $ pip install openapi-python-generator
 ## Usage
 
 Please see the [Command-line Reference] for details.
+
+## Roadmap
+
+- Support for all commonly used http libraries in the python ecosystem (requests, urllib, ...)
+- Support for multiple languages
+- Support for multiple authentication schemes
 
 ## Contributing
 
