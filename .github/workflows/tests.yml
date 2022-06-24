@@ -20,7 +20,8 @@ jobs:
       - run: pip install poetry==1.1.13
       - run: poetry install
       - run: poetry run pytest
-      - run: poetry run pytest --cov=./ --cov-report=xml
+      - run: poetry run pytest --cov=src/ --cov-report=xml
+        if: succeded() || failed()
       - uses: codecov/codecov-action@v2
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
