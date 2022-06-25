@@ -69,6 +69,9 @@ please [file an issue] along with a detailed description.
 
 ## Credits
 
+Special thanks to the peeps from [openapi-schema-pydantic](https://github.com/kuimono/openapi-schema-pydantic),
+which already did a lot of the legwork by providing a pydantic schema for the OpenAPI 3.0.0+ specification.
+
 This project was generated from [@cjolowicz]'s [Hypermodern Python Cookiecutter] template.
 
 [@cjolowicz]: https://github.com/cjolowicz
