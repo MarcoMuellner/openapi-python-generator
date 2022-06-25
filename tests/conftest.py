@@ -1,6 +1,6 @@
 import shutil
 from pathlib import Path
-from typing import Dict
+from typing import Dict, Generator
 
 import pytest
 import json
@@ -13,7 +13,7 @@ test_result_path = Path(__file__).parent / "test_result"
 
 
 @pytest.fixture(name="json_data", scope="module")
-def json_data_fixture() -> Dict:
+def json_data_fixture() -> Generator[Dict, None, None]:
     with open(test_data_path) as f:
         yield json.load(f)
 
@@ -29,5 +29,5 @@ def model_data_with_cleanup_fixture(model_data) -> OpenAPI:
 
     # delete path test_result folder
     if test_result_path.exists():
-        #delete folder and all subfolders
+        # delete folder and all subfolders
         shutil.rmtree(test_result_path)

@@ -23,6 +23,7 @@ class ServiceOperation(BaseModel):
     path_name: str
     body_param: Optional[str] = None
 
+
 class Property(BaseModel):
     name: str
     type: str

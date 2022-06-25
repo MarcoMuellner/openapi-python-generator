@@ -1,11 +1,22 @@
-import itertools
 from typing import Dict, List, Tuple, Union
 
 import typer
-from openapi_schema_pydantic import PathItem, Operation, Response, MediaType, Reference, Schema
+from openapi_schema_pydantic import (
+    PathItem,
+    Operation,
+    Response,
+    MediaType,
+    Reference,
+    Schema,
+)
 
-from openapi_python_generator.language_converters.python.jinja_config import JINJA_ENV, HTTPX_TEMPLATE
-from openapi_python_generator.language_converters.python.model_generator import type_converter
+from openapi_python_generator.language_converters.python.jinja_config import (
+    JINJA_ENV,
+    HTTPX_TEMPLATE,
+)
+from openapi_python_generator.language_converters.python.model_generator import (
+    type_converter,
+)
 from openapi_python_generator.models import Service, ServiceOperation, OpReturnType
 
 HTTP_OPERATIONS = ["get", "post", "put", "delete", "options", "head", "patch", "trace"]
@@ -32,21 +43,30 @@ def generate_params(operation: Operation) -> List[str]:
     if operation.parameters is not None:
         for param in operation.parameters:
             if isinstance(param.param_schema, Schema):
-                params.append(f"{param.name} : {type_converter(param.param_schema, param.required)}" + (
-                    "" if param.required else " = None"))
+                params.append(
+                    f"{param.name} : {type_converter(param.param_schema, param.required)}"
+                    + ("" if param.required else " = None")
+                )
             else:
                 params.append(
-                    f"{param.name} : {param.param_schema.ref.split('/')[-1]}" + ("" if param.required else " = None"))
+                    f"{param.name} : {param.param_schema.ref.split('/')[-1]}"
+                    + ("" if param.required else " = None")
+                )
 
     if operation.requestBody is not None:
-        if isinstance(operation.requestBody.content, MediaType):
-            params.append(_generate_params_from_content(operation.requestBody.content.media_type_schema))
-        elif isinstance(operation.requestBody.content,
-                        dict) and 'application/json' in operation.requestBody.content.keys():
+        if (
+            isinstance(operation.requestBody.content, dict)
+            and "application/json" in operation.requestBody.content.keys()
+        ):
             params.append(
-                _generate_params_from_content(operation.requestBody.content['application/json'].media_type_schema))
+                _generate_params_from_content(
+                    operation.requestBody.content["application/json"].media_type_schema
+                )
+            )
         else:
-            raise Exception("Unknown media type schema type")
+            raise Exception(
+                f"Unknown media type schema type: {type(operation.requestBody.content)}"
+            )
 
     return params
 
@@ -69,47 +89,34 @@ def generate_query_params(operation: Operation) -> List[str]:
 
 def generate_return_type(operation: Operation) -> OpReturnType:
     if operation.responses is None:
-        return OpReturnType(
-            type="None",
-            status_code="200",
-            complex_type="False"
-        )
-    good_responses: List[Tuple[int, Response]] = [(int(status_code), response) for status_code, response in
-                                                  operation.responses.items() if status_code.startswith('2')]
+        return OpReturnType(type="None", status_code="200", complex_type="False")
+    good_responses: List[Tuple[int, Response]] = [
+        (int(status_code), response)
+        for status_code, response in operation.responses.items()
+        if status_code.startswith("2")
+    ]
     if len(good_responses) == 0:
-        return OpReturnType(
-            type="None",
-            status_code="200",
-            complex_type="False"
-        )
+        return OpReturnType(type="None", status_code="200", complex_type="False")
 
-    media_type_schema = good_responses[0][1].content.get('application/json')
+    media_type_schema = good_responses[0][1].content.get("application/json")
 
     if isinstance(media_type_schema, MediaType):
-        try:
-            if isinstance(media_type_schema.media_type_schema, Reference):
-                return OpReturnType(
-                    type=media_type_schema.media_type_schema.ref.split("/")[-1],
-                    status_code=good_responses[0][0],
-                    complex_type=True
-                )
-            elif isinstance(media_type_schema.media_type_schema, Schema):
-                return OpReturnType(
-                    type=type_converter(media_type_schema.media_type_schema, True),
-                    status_code=good_responses[0][0],
-                    complex_type=False
-                )
-            else:
-                raise Exception("Unknown media type schema type")
-        except TypeError as e:
-            print(e)
+        if isinstance(media_type_schema.media_type_schema, Reference):
             return OpReturnType(
-                type="Dict",
+                type=media_type_schema.media_type_schema.ref.split("/")[-1],
                 status_code=good_responses[0][0],
-                complex_type=False
+                complex_type=True,
             )
+        elif isinstance(media_type_schema.media_type_schema, Schema):
+            return OpReturnType(
+                type=type_converter(media_type_schema.media_type_schema, True),
+                status_code=good_responses[0][0],
+                complex_type=False,
+            )
+        else:
+            raise Exception("Unknown media type schema type")  # pragma: no cover
     else:
-        raise Exception("Unknown media type schema type")
+        raise Exception("Unknown media type schema type")  # pragma: no cover
 
 
 def generate_services(paths: Dict[str, PathItem]) -> List[Service]:
@@ -142,7 +149,7 @@ def generate_services(paths: Dict[str, PathItem]) -> List[Service]:
                 content="",
                 async_client=False,
                 body_param=body_param,
-                path_name=path_name
+                path_name=path_name,
             )
 
             async_so = ServiceOperation(
@@ -155,11 +162,15 @@ def generate_services(paths: Dict[str, PathItem]) -> List[Service]:
                 content="",
                 async_client=True,
                 body_param=body_param,
-                path_name=path_name
+                path_name=path_name,
             )
 
-            sync_so.content = JINJA_ENV.get_template(HTTPX_TEMPLATE).render(**sync_so.dict())
-            async_so.content = JINJA_ENV.get_template(HTTPX_TEMPLATE).render(**async_so.dict())
+            sync_so.content = JINJA_ENV.get_template(HTTPX_TEMPLATE).render(
+                **sync_so.dict()
+            )
+            async_so.content = JINJA_ENV.get_template(HTTPX_TEMPLATE).render(
+                **async_so.dict()
+            )
 
             if op.tags is not None and len(op.tags) > 0:
                 sync_so.tag = op.tags[0]
@@ -170,33 +181,55 @@ def generate_services(paths: Dict[str, PathItem]) -> List[Service]:
 
             try:
                 compile(sync_so.content, "<string>", "exec")
-            except SyntaxError as e:
-                typer.echo(f"Error in service {sync_so.operation_id}: {e}")
-                typer.Exit()
+            except SyntaxError as e:  # pragma: no cover
+                typer.echo(
+                    f"Error in service {sync_so.operation_id}: {e}"
+                )  # pragma: no cover
 
             try:
                 compile(async_so.content, "<string>", "exec")
-            except SyntaxError as e:
-                typer.echo(f"Error in service {async_so.operation_id}: {e}")
-                typer.Exit()
+            except SyntaxError as e:  # pragma: no cover
+                typer.echo(
+                    f"Error in service {async_so.operation_id}: {e}"
+                )  # pragma: no cover
 
     sync_tags = set([so.tag for so in service_ops])
     async_tags = set([so.tag for so in service_ops])
 
     for tag in sync_tags:
-        services.append(Service(
-            file_name=f"{tag}_service",
-            operations=[so for so in service_ops if so.tag == tag and not so.async_client],
-            content="\n".join([so.content for so in service_ops if so.tag == tag and not so.async_client]),
-            async_client=False
-        ))
+        services.append(
+            Service(
+                file_name=f"{tag}_service",
+                operations=[
+                    so for so in service_ops if so.tag == tag and not so.async_client
+                ],
+                content="\n".join(
+                    [
+                        so.content
+                        for so in service_ops
+                        if so.tag == tag and not so.async_client
+                    ]
+                ),
+                async_client=False,
+            )
+        )
 
     for tag in async_tags:
-        services.append(Service(
-            file_name=f"async_{tag}_service",
-            operations=[so for so in service_ops if so.tag == tag and so.async_client],
-            content="\n".join([so.content for so in service_ops if so.tag == tag and so.async_client]),
-            async_client=True
-        ))
+        services.append(
+            Service(
+                file_name=f"async_{tag}_service",
+                operations=[
+                    so for so in service_ops if so.tag == tag and so.async_client
+                ],
+                content="\n".join(
+                    [
+                        so.content
+                        for so in service_ops
+                        if so.tag == tag and so.async_client
+                    ]
+                ),
+                async_client=True,
+            )
+        )
 
     return services

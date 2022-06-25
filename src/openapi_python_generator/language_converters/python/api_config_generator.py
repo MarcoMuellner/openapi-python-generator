@@ -1,6 +1,9 @@
 from openapi_schema_pydantic import OpenAPI
 
-from openapi_python_generator.language_converters.python.jinja_config import JINJA_ENV, API_CONFIG_TEMPLATE
+from openapi_python_generator.language_converters.python.jinja_config import (
+    JINJA_ENV,
+    API_CONFIG_TEMPLATE,
+)
 from openapi_python_generator.models import APIConfig
 
 

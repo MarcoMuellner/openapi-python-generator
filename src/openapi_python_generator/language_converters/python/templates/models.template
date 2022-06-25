@@ -14,4 +14,3 @@ class {{ schema_name }}(BaseModel):
 
     {{ property.name }} : {{ property.type }} {% if not property.required %} = {{ property.default }} {% endif %}
     {% endfor %}
-

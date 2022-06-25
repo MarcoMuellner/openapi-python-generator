@@ -21,7 +21,7 @@ except ImportError:
     raise SystemExit(dedent(message)) from None
 
 package = "openapi_python_generator"
-python_versions = ["3.10", "3.9", "3.8", "3.7"]
+python_versions = ["3.8"]
 nox.needs_version = ">= 2021.6.6"
 nox.options.sessions = (
     "pre-commit",
@@ -94,8 +94,8 @@ def activate_virtualenv_in_precommit_hooks(session: Session) -> None:
         text = hook.read_text()
 
         if not any(
-                Path("A") == Path("a") and bindir.lower() in text.lower() or bindir in text
-                for bindir in bindirs
+            Path("A") == Path("a") and bindir.lower() in text.lower() or bindir in text
+            for bindir in bindirs
         ):
             continue
 

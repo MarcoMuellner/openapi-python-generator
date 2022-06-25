@@ -1,13 +1,16 @@
-from typing import List, Optional, Union
-from pathlib import Path
+from openapi_schema_pydantic import OpenAPI
 
-from jinja2 import Environment, FileSystemLoader
-from openapi_schema_pydantic import OpenAPI, Components, Schema, Reference
+from openapi_python_generator.language_converters.python.api_config_generator import (
+    generate_api_config,
+)
+from openapi_python_generator.language_converters.python.model_generator import (
+    generate_models,
+)
+from openapi_python_generator.language_converters.python.service_generator import (
+    generate_services,
+)
+from openapi_python_generator.models import ConversionResult
 
-from openapi_python_generator.language_converters.python.api_config_generator import generate_api_config
-from openapi_python_generator.language_converters.python.model_generator import generate_models
-from openapi_python_generator.language_converters.python.service_generator import generate_services
-from openapi_python_generator.models import ConversionResult, Model
 
 def generator(data: OpenAPI) -> ConversionResult:
     """

@@ -1,2 +1,4 @@
 [run]
 omit = src/openapi_python_generator/language_converters/python/templates/*
+[report]
+show_missing = true

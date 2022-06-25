@@ -1,0 +1,8 @@
+[flake8]
+select = B,B9,BLK,C,E,F,I,W,S
+max-complexity = 15
+application-import-names = openapi_python_generator
+import-order-style = google
+ignore = E203,E501,W503
+max-line-length = 120
+per-file-ignores = tests/*:S101
