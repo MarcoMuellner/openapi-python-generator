@@ -1,6 +1,6 @@
 from typing import Dict, List, Tuple, Union
 
-import typer
+import click
 from openapi_schema_pydantic import (
     PathItem,
     Operation,
@@ -182,14 +182,14 @@ def generate_services(paths: Dict[str, PathItem]) -> List[Service]:
             try:
                 compile(sync_so.content, "<string>", "exec")
             except SyntaxError as e:  # pragma: no cover
-                typer.echo(
+                click.echo(
                     f"Error in service {sync_so.operation_id}: {e}"
                 )  # pragma: no cover
 
             try:
                 compile(async_so.content, "<string>", "exec")
             except SyntaxError as e:  # pragma: no cover
-                typer.echo(
+                click.echo(
                     f"Error in service {async_so.operation_id}: {e}"
                 )  # pragma: no cover
 

@@ -1,10 +1,10 @@
 from pathlib import Path
 from typing import Optional, Union
 
+import click
 import httpx
 from httpx import ConnectError, ConnectTimeout
 import orjson
-import typer
 from pydantic import ValidationError
 import autopep8
 
@@ -25,31 +25,31 @@ def write_code(path: Path, content):
         f.write(autopep8.fix_code(content))
 
 
-def get_open_api(path: Union[str, Path]) -> OpenAPI:
+def get_open_api(source: Union[str, Path]) -> OpenAPI:
     """
     Tries to fetch the openapi.json file from the web or load from a local file. Returns the according OpenAPI object.
-    :param path:
+    :param source:
     :return:
     """
     try:
-        if not isinstance(path, Path) and (
-            path.startswith("http://") or path.startswith("https://")
+        if not isinstance(source, Path) and (
+            source.startswith("http://") or source.startswith("https://")
         ):
-            return OpenAPI(**orjson.loads(httpx.get(path).text))
+            return OpenAPI(**orjson.loads(httpx.get(source).text))
 
-        with open(path, "r") as f:
+        with open(source, "r") as f:
             return OpenAPI(**orjson.loads(f.read()))
     except FileNotFoundError:
-        typer.echo(
-            f"File {path} not found. Please make sure to pass the path to the OpenAPI 3.0 specification."
+        click.echo(
+            f"File {source} not found. Please make sure to pass the path to the OpenAPI 3.0 specification."
         )
         raise
     except (ConnectError, ConnectTimeout):
-        typer.echo(f"Could not connect to {path}.")
-        raise ConnectError(f"Could not connect to {path}.") from None
+        click.echo(f"Could not connect to {source}.")
+        raise ConnectError(f"Could not connect to {source}.") from None
     except (ValidationError, orjson.JSONDecodeError):
-        typer.echo(
-            f"File {path} is not a valid OpenAPI 3.0 specification, or there may be a problem with your JSON."
+        click.echo(
+            f"File {source} is not a valid OpenAPI 3.0 specification, or there may be a problem with your JSON."
         )
         raise
 
@@ -114,14 +114,14 @@ def write_data(data: ConversionResult, output: Union[str, Path]):
 
 
 def generate_data(
-    file_name: Union[str, Path],
+    source: Union[str, Path],
     output: Union[str, Path],
     library: Optional[HTTPLibrary] = HTTPLibrary.httpx,
 ) -> None:
     """
     Generate Python code from an OpenAPI 3.0 specification.
     """
-    data = get_open_api(file_name)
-    typer.echo(f"Generating data from {file_name}")
+    data = get_open_api(source)
+    click.echo(f"Generating data from {source}")
     result = generator(data)
     write_data(result, output)
