@@ -1,4 +1,4 @@
-"""The hypermodern Python project."""
+"""Python client from an OPENAPI 3.0 specification in seconds."""
 try:
     from importlib.metadata import version, PackageNotFoundError  # type: ignore
 except ImportError:  # pragma: no cover
