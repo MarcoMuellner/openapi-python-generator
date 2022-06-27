@@ -9,7 +9,7 @@ from pydantic import ValidationError
 import autopep8
 
 from openapi_schema_pydantic import OpenAPI
-from .common import HTTPLibrary
+from .common import HTTPLibrary, library_config_dict
 from .language_converters.python.generator import generator
 from .language_converters.python.jinja_config import JINJA_ENV, SERVICE_TEMPLATE
 from .models import ConversionResult
@@ -123,5 +123,5 @@ def generate_data(
     """
     data = get_open_api(source)
     click.echo(f"Generating data from {source}")
-    result = generator(data)
+    result = generator(data, library_config_dict[library])
     write_data(result, output)

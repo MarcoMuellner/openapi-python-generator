@@ -1,6 +1,7 @@
 import pytest
 from httpx import ConnectError
 
+from openapi_python_generator.common import library_config_dict, HTTPLibrary
 from openapi_python_generator.generate_data import (
     get_open_api,
     write_data,
@@ -40,7 +41,7 @@ def test_generate_data(model_data_with_cleanup):
 
 
 def test_write_data(model_data_with_cleanup):
-    result = generator(model_data_with_cleanup)
+    result = generator(model_data_with_cleanup, library_config_dict[HTTPLibrary.httpx])
     write_data(result, test_result_path)
 
     assert test_result_path.exists()

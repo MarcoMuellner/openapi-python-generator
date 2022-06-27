@@ -9,6 +9,7 @@ from openapi_schema_pydantic import (
     Response,
 )
 
+from openapi_python_generator.common import library_config_dict, HTTPLibrary
 from openapi_python_generator.language_converters.python.service_generator import (
     generate_body_param,
     generate_params,
@@ -368,7 +369,7 @@ def test_generate_return_type(test_openapi_operation, expected_result):
 
 
 def test_generate_services(model_data):
-    result = generate_services(model_data.paths)
+    result = generate_services(model_data.paths, library_config_dict[HTTPLibrary.httpx])
 
     for i in result:
         compile(i.content, "<string>", "exec")

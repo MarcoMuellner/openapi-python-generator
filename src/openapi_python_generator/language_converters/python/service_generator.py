@@ -22,6 +22,7 @@ from openapi_python_generator.models import (
     ServiceOperation,
     OpReturnType,
     TypeConversion,
+    LibraryConfig,
 )
 
 HTTP_OPERATIONS = ["get", "post", "put", "delete", "options", "head", "patch", "trace"]
@@ -143,7 +144,9 @@ def generate_return_type(operation: Operation) -> OpReturnType:
         raise Exception("Unknown media type schema type")  # pragma: no cover
 
 
-def generate_services(paths: Dict[str, PathItem]) -> List[Service]:
+def generate_services(
+    paths: Dict[str, PathItem], library_config: LibraryConfig
+) -> List[Service]:
     """
     Generates services from a paths object.
     :param paths: paths object to be converted
@@ -177,6 +180,14 @@ def generate_services(paths: Dict[str, PathItem]) -> List[Service]:
                 method=http_operation,
             )
 
+            sync_so.content = JINJA_ENV.get_template(HTTPX_TEMPLATE).render(
+                **sync_so.dict()
+            )
+            if op.tags is not None and len(op.tags) > 0:
+                sync_so.tag = op.tags[0]
+
+            service_ops.append(sync_so)
+
             async_so = ServiceOperation(
                 params=params,
                 operation_id="async_" + operation_id,
@@ -191,9 +202,6 @@ def generate_services(paths: Dict[str, PathItem]) -> List[Service]:
                 method=http_operation,
             )
 
-            sync_so.content = JINJA_ENV.get_template(HTTPX_TEMPLATE).render(
-                **sync_so.dict()
-            )
             async_so.content = JINJA_ENV.get_template(HTTPX_TEMPLATE).render(
                 **async_so.dict()
             )
@@ -202,7 +210,6 @@ def generate_services(paths: Dict[str, PathItem]) -> List[Service]:
                 sync_so.tag = op.tags[0]
                 async_so.tag = op.tags[0]
 
-            service_ops.append(sync_so)
             service_ops.append(async_so)
 
             try:

@@ -4,6 +4,13 @@ from openapi_schema_pydantic import Schema, PathItem, Operation
 from pydantic import BaseModel
 
 
+class LibraryConfig(BaseModel):
+    name: str
+    library_name: str
+    include_async: bool
+    include_sync: bool
+
+
 class TypeConversion(BaseModel):
     original_type: str
     converted_type: str

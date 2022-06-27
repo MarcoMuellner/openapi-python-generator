@@ -1,0 +1,34 @@
+def {{ operation_id }}({{ params | join(',') }}) -> {% if return_type.type is none or return_type.type.converted_type is none %}None{% else %}{{ return_type.type.converted_type}}{% endif %}:
+    base_path = APIConfig.base_path
+    path = f'{{ path_name }}'
+    headers = {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': f'Bearer { APIConfig.access_token }',
+    }
+    query_params = {
+    {% if query_params|length > 0 %}
+        {{ query_params | join(',\n') | safe }}
+    {% endif %}
+    }
+
+    response = requests.request(
+        '{{ method }}',
+        f'{base_path}{path}',
+        headers=headers,
+        params=query_params,
+        {% if body_params|length > 0 %}
+        json=json.dumps({{ body_param }}.dict())
+        {% endif %}
+    )
+    if response.status_code != {{ return_type.status_code }}:
+        raise Exception(f'{{ operationId }} failed with status code: {response.status_code}')
+{% if return_type.complex_type %}
+{% if return_type.list_type is none %}
+    return {{ return_type.type.converted_type }}(**response.json())
+{% else %}
+    return [{{ return_type.list_type }}(**item) for item in response.json()]
+{% endif %}
+{% else %}
+    return response.json()
+{% endif %}

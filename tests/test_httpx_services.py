@@ -5,6 +5,7 @@ import orjson
 import respx
 from httpx import Response
 
+from openapi_python_generator.common import library_config_dict, HTTPLibrary
 from .conftest import test_data_path, test_result_path
 from openapi_python_generator.generate_data import generate_data
 from openapi_python_generator.language_converters.python.generator import generator
@@ -13,7 +14,7 @@ from openapi_python_generator.language_converters.python.generator import genera
 @respx.mock
 def test_generate_code(model_data_with_cleanup):
     generate_data(test_data_path, test_result_path)
-    result = generator(model_data_with_cleanup)
+    result = generator(model_data_with_cleanup, library_config_dict[HTTPLibrary.httpx])
 
     # Testing root access
     _locals = locals()

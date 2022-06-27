@@ -9,16 +9,16 @@ from openapi_python_generator.language_converters.python.model_generator import 
 from openapi_python_generator.language_converters.python.service_generator import (
     generate_services,
 )
-from openapi_python_generator.models import ConversionResult
+from openapi_python_generator.models import ConversionResult, LibraryConfig
 
 
-def generator(data: OpenAPI) -> ConversionResult:
+def generator(data: OpenAPI, library_config: LibraryConfig) -> ConversionResult:
     """
     Generate Python code from an OpenAPI 3.0 specification.
     """
 
     models = generate_models(data.components)
-    services = generate_services(data.paths)
+    services = generate_services(data.paths, library_config)
     api_config = generate_api_config(data)
 
     return ConversionResult(
