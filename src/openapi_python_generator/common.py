@@ -1,4 +1,5 @@
 from enum import Enum
+from typing import Dict, Optional
 
 from openapi_python_generator.models import LibraryConfig
 
@@ -13,7 +14,7 @@ class HTTPLibrary(str, Enum):
     aiohttp = "aiohttp"
 
 
-library_config_dict = {
+library_config_dict: Dict[Optional[HTTPLibrary], LibraryConfig] = {
     HTTPLibrary.httpx: LibraryConfig(
         name="httpx",
         library_name="httpx",
