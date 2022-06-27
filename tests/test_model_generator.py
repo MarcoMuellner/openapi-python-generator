@@ -7,31 +7,59 @@ from openapi_python_generator.language_converters.python.model_generator import 
     _generate_property_from_reference,
     generate_models,
 )
-from openapi_python_generator.models import Property, Model
+from openapi_python_generator.models import Property, Model, TypeConversion
 
 
 @pytest.mark.parametrize(
     "test_openapi_types,expected_python_types",
     [
-        (Schema(type="string"), "str"),
-        (Schema(type="integer"), "int"),
-        (Schema(type="number"), "float"),
-        (Schema(type="boolean"), "bool"),
-        (Schema(type="array"), "List[Any]"),
-        (Schema(type="array", items=Schema(type="string")), "List[str]"),
+        (
+            Schema(type="string"),
+            TypeConversion(original_type="string", converted_type="str"),
+        ),
+        (
+            Schema(type="integer"),
+            TypeConversion(original_type="integer", converted_type="int"),
+        ),
+        (
+            Schema(type="number"),
+            TypeConversion(original_type="number", converted_type="float"),
+        ),
+        (
+            Schema(type="boolean"),
+            TypeConversion(original_type="boolean", converted_type="bool"),
+        ),
+        (
+            Schema(type="object"),
+            TypeConversion(original_type="object", converted_type="Dict[str, Any]"),
+        ),
+        (
+            Schema(type="array"),
+            TypeConversion(original_type="array<unknown>", converted_type="List[Any]"),
+        ),
+        (
+            Schema(type="array", items=Schema(type="string")),
+            TypeConversion(original_type="array<string>", converted_type="List[str]"),
+        ),
         (
             Schema(type="array", items=Reference(ref="#/components/schemas/test_name")),
-            "List[test_name]",
+            TypeConversion(
+                original_type="array<test_name>",
+                converted_type="List[test_name]",
+                import_types=["test_name"],
+            ),
         ),
-        (Schema(type="object"), "Dict[str, Any]"),
-        (Schema(type="null"), "Any"),
+        (
+            Schema(type="null"),
+            TypeConversion(original_type="null", converted_type="Any"),
+        ),
     ],
 )
 def test_type_converter_simple(test_openapi_types, expected_python_types):
     assert type_converter(test_openapi_types, True) == expected_python_types
     assert (
-        type_converter(test_openapi_types, False)
-        == "Optional[" + expected_python_types + "]"
+        type_converter(test_openapi_types, False).converted_type
+        == "Optional[" + expected_python_types.converted_type + "]"
     )
 
 
@@ -51,25 +79,34 @@ def test_type_converter_of_type(test_openapi_types, expected_python_types):
     # Generate Schema object from test_openapi_types
     schema = Schema(allOf=[Schema(type=i) for i in test_openapi_types])
 
-    assert type_converter(schema, True) == "Tuple[" + expected_python_types + "]"
     assert (
-        type_converter(schema, False)
+        type_converter(schema, True).converted_type
+        == "Tuple[" + expected_python_types + "]"
+    )
+    assert (
+        type_converter(schema, False).converted_type
         == "Optional[Tuple[" + expected_python_types + "]]"
     )
 
     schema = Schema(oneOf=[Schema(type=i) for i in test_openapi_types])
 
-    assert type_converter(schema, True) == "Union[" + expected_python_types + "]"
     assert (
-        type_converter(schema, False)
+        type_converter(schema, True).converted_type
+        == "Union[" + expected_python_types + "]"
+    )
+    assert (
+        type_converter(schema, False).converted_type
         == "Optional[Union[" + expected_python_types + "]]"
     )
 
     schema = Schema(anyOf=[Schema(type=i) for i in test_openapi_types])
 
-    assert type_converter(schema, True) == "Union[" + expected_python_types + "]"
     assert (
-        type_converter(schema, False)
+        type_converter(schema, True).converted_type
+        == "Union[" + expected_python_types + "]"
+    )
+    assert (
+        type_converter(schema, False).converted_type
         == "Optional[Union[" + expected_python_types + "]]"
     )
 
@@ -90,14 +127,24 @@ def test_type_converter_exceptions():
             Schema(type="string"),
             Schema(type="object"),
             Property(
-                name="test_name", type="Optional[str]", required=False, default="None"
+                name="test_name",
+                type=TypeConversion(
+                    original_type="string", converted_type="Optional[str]"
+                ),
+                required=False,
+                default="None",
             ),
         ),
         (
             "test_name",
             Schema(type="string"),
             Schema(type="object", required=["test_name"]),
-            Property(name="test_name", type="str", required=True),
+            Property(
+                name="test_name",
+                type=TypeConversion(original_type="string", converted_type="str"),
+                required=True,
+                imported_type=["test_name"],
+            ),
         ),
     ],
 )
@@ -111,7 +158,7 @@ def test_type_converter_property(
 
 
 @pytest.mark.parametrize(
-    "test_name, test_reference, parent_schema, expected_property, expected_model",
+    "test_name, test_reference, parent_schema, expected_property",
     [
         (
             "test_name",
@@ -119,27 +166,41 @@ def test_type_converter_property(
             Schema(type="object"),
             Property(
                 name="test_name",
-                type="Optional[test_name]",
+                type=TypeConversion(
+                    original_type="#/components/schemas/test_name",
+                    converted_type="Optional[test_name]",
+                    import_types=["test_name"],
+                ),
                 required=False,
                 default="None",
+                import_type=["test_name"],
             ),
-            "test_name",
         ),
         (
             "test_name",
             Reference(ref="#/components/schemas/test_name"),
             Schema(type="object", required=["test_name"]),
-            Property(name="test_name", type="test_name", required=True, default=None),
-            "test_name",
+            Property(
+                name="test_name",
+                type=TypeConversion(
+                    original_type="#/components/schemas/test_name",
+                    converted_type="test_name",
+                    import_types=["test_name"],
+                ),
+                required=True,
+                default=None,
+                import_type=["test_name"],
+            ),
         ),
     ],
 )
 def test_type_converter_property_reference(
-    test_name, test_reference, parent_schema, expected_property, expected_model
+    test_name, test_reference, parent_schema, expected_property
 ):
-    assert _generate_property_from_reference(
-        test_name, test_reference, parent_schema
-    ) == (expected_property, expected_model)
+    assert (
+        _generate_property_from_reference(test_name, test_reference, parent_schema)
+        == expected_property
+    )
 
 
 def test_model_generation(model_data: OpenAPI):

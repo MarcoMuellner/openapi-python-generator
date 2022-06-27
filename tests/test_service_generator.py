@@ -17,7 +17,7 @@ from openapi_python_generator.language_converters.python.service_generator impor
     generate_return_type,
     generate_services,
 )
-from openapi_python_generator.models import OpReturnType
+from openapi_python_generator.models import OpReturnType, TypeConversion
 
 
 @pytest.mark.parametrize(
@@ -216,12 +216,12 @@ def test_generate_params(test_openapi_operation, expected_result):
 @pytest.mark.parametrize(
     "test_openapi_operation, operation_type, expected_result",
     [
-        (Operation(operationId="test"), "get", "get_test"),
-        (Operation(operationId="test-test"), "get", "get_test_test"),
-        (Operation(operationId="test"), "post", "post_test"),
-        (Operation(operationId="test"), "GET", "get_test"),
-        (Operation(operationId="test-test"), "GET", "get_test_test"),
-        (Operation(operationId="test"), "POST", "post_test"),
+        (Operation(operationId="test"), "get", "test"),
+        (Operation(operationId="test-test"), "get", "test_test"),
+        (Operation(operationId="test"), "post", "test"),
+        (Operation(operationId="test"), "GET", "test"),
+        (Operation(operationId="test-test"), "GET", "test_test"),
+        (Operation(operationId="test"), "POST", "test"),
     ],
 )
 def test_generate_operation_id(test_openapi_operation, operation_type, expected_result):
@@ -309,11 +309,11 @@ def test_generate_query_params(test_openapi_operation, expected_result):
     [
         (
             Operation(responses=None),
-            OpReturnType(type="None", status_code="200", complex_type="False"),
+            OpReturnType(type=None, status_code="200", complex_type="False"),
         ),
         (
             Operation(responses=[]),
-            OpReturnType(type="None", status_code="200", complex_type="False"),
+            OpReturnType(type=None, status_code="200", complex_type="False"),
         ),
         (
             Operation(
@@ -330,7 +330,15 @@ def test_generate_query_params(test_openapi_operation, expected_result):
                     )
                 }
             ),
-            OpReturnType(type="TestModel", status_code="200", complex_type=True),
+            OpReturnType(
+                type=TypeConversion(
+                    original_type="#/components/schemas/TestModel",
+                    converted_type="TestModel",
+                    import_types=["TestModel"],
+                ),
+                status_code="200",
+                complex_type=True,
+            ),
         ),
         (
             Operation(
@@ -345,7 +353,13 @@ def test_generate_query_params(test_openapi_operation, expected_result):
                     )
                 }
             ),
-            OpReturnType(type="str", status_code="200", complex_type=False),
+            OpReturnType(
+                type=TypeConversion(
+                    original_type="string", converted_type="str", import_types=None
+                ),
+                status_code="200",
+                complex_type=False,
+            ),
         ),
     ],
 )

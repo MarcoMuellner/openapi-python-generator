@@ -1,4 +1,4 @@
-{%  if async_client %}async {% endif %}def {{ operation_id }}({{ params | join(',') }}) -> {{ return_type.type }}:
+{%  if async_client %}async {% endif %}def {{ operation_id }}({{ params | join(',') }}) -> {% if return_type.type is none or return_type.type.converted_type is none %}None{% else %}{{ return_type.type.converted_type}}{% endif %}:
     base_path = APIConfig.base_path
     path = f'{{ path_name }}'
     headers = {
@@ -30,8 +30,12 @@ with httpx.Client(base_url=base_path) as client:
 
     if response.status_code != {{ return_type.status_code }}:
         raise Exception(f'{{ operationId }} failed with status code: {response.status_code}')
-    {% if return_type.complex_type %}
-return {{ return_type.type }}(**response.json())
-    {% else %}
-return response.json()
-    {% endif %}
+{% if return_type.complex_type %}
+{% if return_type.list_type is none %}
+    return {{ return_type.type.converted_type }}(**response.json())
+{% else %}
+    return [{{ return_type.list_type }}(**item) for item in response.json()]
+{% endif %}
+{% else %}
+    return response.json()
+{% endif %}

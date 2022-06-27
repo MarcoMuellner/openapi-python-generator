@@ -1,6 +1,12 @@
 from typing import *
 from pydantic import BaseModel
-from . import *
+{%  for property in properties %}
+{% if property.type.import_types is not none %}
+{% for import_type in property.type.import_types %}
+from .{{ import_type }} import {{ import_type}}
+{% endfor %}
+{% endif %}
+{% endfor %}
 
 class {{ schema_name }}(BaseModel):
     """
@@ -12,5 +18,5 @@ class {{ schema_name }}(BaseModel):
     """
     {% for property in properties %}
 
-    {{ property.name }} : {{ property.type }} {% if not property.required %} = {{ property.default }} {% endif %}
+    {{ property.name }} : {{ property.type.converted_type }} {% if not property.required %} = {{ property.default }} {% endif %}
     {% endfor %}

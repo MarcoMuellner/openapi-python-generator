@@ -84,7 +84,7 @@ def write_data(data: ConversionResult, output: Union[str, Path]):
     # Create models.__init__.py file containing imports to all models.
     write_code(
         models_path / "__init__.py",
-        "\n".join([f"from {file} import *" for file in files]),
+        "\n".join([f"from .{file} import *" for file in files]),
     )
 
     files = []
@@ -100,7 +100,7 @@ def write_data(data: ConversionResult, output: Union[str, Path]):
     # Create services.__init__.py file containing imports to all services.
     write_code(
         services_path / "__init__.py",
-        "\n".join([f"from {file} import *" for file in files]),
+        "\n".join([f"from .{file} import *" for file in files]),
     )
 
     # Write the api_config.py file.
@@ -109,7 +109,7 @@ def write_data(data: ConversionResult, output: Union[str, Path]):
     # Write the __init__.py file.
     write_code(
         Path(output) / "__init__.py",
-        "from models import *\nfrom services import *\nfrom api_config import *",
+        "from .models import *\nfrom .services import *\nfrom .api_config import *",
     )
 
 

@@ -5,4 +5,4 @@ application-import-names = openapi_python_generator
 import-order-style = google
 ignore = E203,E501,W503
 max-line-length = 120
-per-file-ignores = tests/*:S101
+exclude=tests/*

@@ -4,10 +4,17 @@ from openapi_schema_pydantic import Schema, PathItem, Operation
 from pydantic import BaseModel
 
 
+class TypeConversion(BaseModel):
+    original_type: str
+    converted_type: str
+    import_types: Optional[List[str]] = None
+
+
 class OpReturnType(BaseModel):
-    type: str
+    type: Optional[TypeConversion] = None
     status_code: int
     complex_type: bool = False
+    list_type: Optional[str] = None
 
 
 class ServiceOperation(BaseModel):
@@ -22,20 +29,21 @@ class ServiceOperation(BaseModel):
     tag: Optional[str] = None
     path_name: str
     body_param: Optional[str] = None
+    method: str
 
 
 class Property(BaseModel):
     name: str
-    type: str
+    type: TypeConversion
     required: bool
     default: Optional[str]
+    import_type: Optional[List[str]] = None
 
 
 class Model(BaseModel):
     file_name: str
     content: str
     openapi_object: Schema
-    references: List[str] = []
     properties: List[Property] = []
 
 
@@ -48,6 +56,7 @@ class Service(BaseModel):
 
 class APIConfig(BaseModel):
     file_name: str
+    base_url: str
     content: str
 
 

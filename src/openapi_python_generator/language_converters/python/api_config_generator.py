@@ -14,4 +14,5 @@ def generate_api_config(data: OpenAPI) -> APIConfig:
     return APIConfig(
         file_name="api_config",
         content=JINJA_ENV.get_template(API_CONFIG_TEMPLATE).render(**data.dict()),
+        base_url=data.servers[0].url,
     )
