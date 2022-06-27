@@ -15,12 +15,24 @@ class HTTPLibrary(str, Enum):
 
 library_config_dict = {
     HTTPLibrary.httpx: LibraryConfig(
-        name="httpx", library_name="httpx", include_async=True, include_sync=True
+        name="httpx",
+        library_name="httpx",
+        template_name="httpx.template",
+        include_async=True,
+        include_sync=True,
     ),
     HTTPLibrary.requests: LibraryConfig(
-        name="requests", library_name="requests", include_async=False, include_sync=True
+        name="requests",
+        library_name="requests",
+        template_name="requests.template",
+        include_async=False,
+        include_sync=True,
     ),
     HTTPLibrary.aiohttp: LibraryConfig(
-        name="aiohttp", library_name="aiohttp", include_async=True, include_sync=False
+        name="aiohttp",
+        library_name="aiohttp",
+        template_name="aiohttp.template",
+        include_async=True,
+        include_sync=False,
     ),
 }

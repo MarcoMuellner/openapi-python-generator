@@ -373,3 +373,10 @@ def test_generate_services(model_data):
 
     for i in result:
         compile(i.content, "<string>", "exec")
+
+    result = generate_services(
+        model_data.paths, library_config_dict[HTTPLibrary.requests]
+    )
+
+    for i in result:
+        compile(i.content, "<string>", "exec")

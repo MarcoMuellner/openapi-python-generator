@@ -7,6 +7,7 @@ from pydantic import BaseModel
 class LibraryConfig(BaseModel):
     name: str
     library_name: str
+    template_name: str
     include_async: bool
     include_sync: bool
 
@@ -59,6 +60,7 @@ class Service(BaseModel):
     operations: List[ServiceOperation]
     content: str
     async_client: Optional[bool] = False
+    library_import: str
 
 
 class APIConfig(BaseModel):

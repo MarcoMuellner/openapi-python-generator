@@ -2,6 +2,7 @@ import json
 from datetime import datetime
 
 import orjson
+import pytest
 import respx
 from httpx import Response
 
@@ -11,10 +12,17 @@ from openapi_python_generator.generate_data import generate_data
 from openapi_python_generator.language_converters.python.generator import generator
 
 
+@pytest.mark.parametrize(
+    "library",
+    [
+        HTTPLibrary.httpx,
+        HTTPLibrary.requests,
+    ],
+)
 @respx.mock
-def test_generate_code(model_data_with_cleanup):
-    generate_data(test_data_path, test_result_path)
-    result = generator(model_data_with_cleanup, library_config_dict[HTTPLibrary.httpx])
+def test_generate_code(model_data_with_cleanup, library):
+    generate_data(test_data_path, test_result_path, library)
+    result = generator(model_data_with_cleanup, library_config_dict[library])
 
     # Testing root access
     _locals = locals()

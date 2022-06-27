@@ -1,5 +1,5 @@
 from typing import *
-import httpx
+import {{ library_import }}
 import json
 
 from ..models import *

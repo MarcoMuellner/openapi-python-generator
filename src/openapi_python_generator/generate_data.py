@@ -91,6 +91,8 @@ def write_data(data: ConversionResult, output: Union[str, Path]):
 
     # Write the services.
     for service in data.services:
+        if len(service.operations) == 0:
+            continue
         files.append(service.file_name)
         write_code(
             services_path / f"{service.file_name}.py",

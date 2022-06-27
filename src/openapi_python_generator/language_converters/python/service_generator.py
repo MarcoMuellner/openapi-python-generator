@@ -10,10 +10,7 @@ from openapi_schema_pydantic import (
     Schema,
 )
 
-from openapi_python_generator.language_converters.python.jinja_config import (
-    JINJA_ENV,
-    HTTPX_TEMPLATE,
-)
+from openapi_python_generator.language_converters.python.jinja_config import JINJA_ENV
 from openapi_python_generator.language_converters.python.model_generator import (
     type_converter,
 )
@@ -152,6 +149,44 @@ def generate_services(
     :param paths: paths object to be converted
     :return: List of services
     """
+
+    def generate_service_operation(
+        op: Operation, path_name: str, async_type: bool
+    ) -> ServiceOperation:
+        params = generate_params(op)
+        operation_id = generate_operation_id(op, http_operation)
+        query_params = generate_query_params(op)
+        return_type = generate_return_type(op)
+        body_param = generate_body_param(op)
+
+        so = ServiceOperation(
+            params=params,
+            operation_id="async_" + operation_id if async_type else operation_id,
+            query_params=query_params,
+            return_type=return_type,
+            operation=op,
+            pathItem=path,
+            content="",
+            async_client=async_type,
+            body_param=body_param,
+            path_name=path_name,
+            method=http_operation,
+        )
+
+        so.content = JINJA_ENV.get_template(library_config.template_name).render(
+            **so.dict()
+        )
+
+        if op.tags is not None and len(op.tags) > 0:
+            so.tag = op.tags[0]
+
+        try:
+            compile(so.content, "<string>", "exec")
+        except SyntaxError as e:  # pragma: no cover
+            click.echo(f"Error in service {so.operation_id}: {e}")  # pragma: no cover
+
+        return so
+
     services = []
     service_ops = []
     for path_name, path in paths.items():
@@ -160,76 +195,17 @@ def generate_services(
             if op is None:
                 continue
 
-            params = generate_params(op)
-            operation_id = generate_operation_id(op, http_operation)
-            query_params = generate_query_params(op)
-            return_type = generate_return_type(op)
-            body_param = generate_body_param(op)
+            if library_config.include_sync:
+                sync_so = generate_service_operation(op, path_name, False)
+                service_ops.append(sync_so)
 
-            sync_so = ServiceOperation(
-                params=params,
-                operation_id=operation_id,
-                query_params=query_params,
-                return_type=return_type,
-                operation=op,
-                pathItem=path,
-                content="",
-                async_client=False,
-                body_param=body_param,
-                path_name=path_name,
-                method=http_operation,
-            )
+            if library_config.include_async:
+                async_so = generate_service_operation(op, path_name, True)
+                service_ops.append(async_so)
 
-            sync_so.content = JINJA_ENV.get_template(HTTPX_TEMPLATE).render(
-                **sync_so.dict()
-            )
-            if op.tags is not None and len(op.tags) > 0:
-                sync_so.tag = op.tags[0]
+    tags = set([so.tag for so in service_ops])
 
-            service_ops.append(sync_so)
-
-            async_so = ServiceOperation(
-                params=params,
-                operation_id="async_" + operation_id,
-                query_params=query_params,
-                return_type=return_type,
-                operation=op,
-                pathItem=path,
-                content="",
-                async_client=True,
-                body_param=body_param,
-                path_name=path_name,
-                method=http_operation,
-            )
-
-            async_so.content = JINJA_ENV.get_template(HTTPX_TEMPLATE).render(
-                **async_so.dict()
-            )
-
-            if op.tags is not None and len(op.tags) > 0:
-                sync_so.tag = op.tags[0]
-                async_so.tag = op.tags[0]
-
-            service_ops.append(async_so)
-
-            try:
-                compile(sync_so.content, "<string>", "exec")
-            except SyntaxError as e:  # pragma: no cover
-                click.echo(
-                    f"Error in service {sync_so.operation_id}: {e}"
-                )  # pragma: no cover
-
-            try:
-                compile(async_so.content, "<string>", "exec")
-            except SyntaxError as e:  # pragma: no cover
-                click.echo(
-                    f"Error in service {async_so.operation_id}: {e}"
-                )  # pragma: no cover
-
-    sync_tags = set([so.tag for so in service_ops])
-    async_tags = set([so.tag for so in service_ops])
-
-    for tag in sync_tags:
+    for tag in tags:
         services.append(
             Service(
                 file_name=f"{tag}_service",
@@ -244,10 +220,11 @@ def generate_services(
                     ]
                 ),
                 async_client=False,
+                library_import=library_config.library_name,
             )
         )
 
-    for tag in async_tags:
+    for tag in tags:
         services.append(
             Service(
                 file_name=f"async_{tag}_service",
@@ -262,6 +239,7 @@ def generate_services(
                     ]
                 ),
                 async_client=True,
+                library_import=library_config.library_name,
             )
         )
 
