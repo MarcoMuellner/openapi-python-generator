@@ -5,7 +5,7 @@
 [![Python Version](https://img.shields.io/pypi/pyversions/openapi-python-generator)][python version]
 [![License](https://img.shields.io/pypi/l/openapi-python-generator)][license]
 
-[![Read the documentation at https://openapi-python-generator.readthedocs.io/](https://img.shields.io/readthedocs/openapi-python-generator/latest.svg?label=Read%20the%20Docs)][read the docs]
+[![](https://img.shields.io/static/v1?label=documentation&message=enabled&color=<COLOR>)][documentation]
 [![Tests](https://github.com/MarcoMuellner/openapi-python-generator/workflows/Tests/badge.svg)][tests]
 [![Codecov](https://codecov.io/gh/MarcoMuellner/openapi-python-generator/branch/main/graph/badge.svg)][codecov]
 
@@ -15,13 +15,18 @@
 [pypi_]: https://pypi.org/project/openapi-python-generator/
 [status]: https://pypi.org/project/openapi-python-generator/
 [python version]: https://pypi.org/project/openapi-python-generator
-[read the docs]: https://openapi-python-generator.readthedocs.io/
+[documentation]: https://marcomuellner.github.io/openapi-python-generator/
 [tests]: https://github.com/MarcoMuellner/openapi-python-generator/actions?workflow=Tests
 [codecov]: https://app.codecov.io/gh/MarcoMuellner/openapi-python-generator
 [pre-commit]: https://github.com/pre-commit/pre-commit
 [black]: https://github.com/psf/black
 
 ![](logo.png)
+
+---
+__Documentation:__ [here][documentation]
+
+---
 
 ## Features
 
@@ -91,4 +96,4 @@ This project was generated from [@cjolowicz]'s [Hypermodern Python Cookiecutter]
 
 [license]: https://github.com/MarcoMuellner/openapi-python-generator/blob/main/LICENSE
 [contributor guide]: https://github.com/MarcoMuellner/openapi-python-generator/blob/main/CONTRIBUTING.md
-[Quick start page]: https://openapi-python-generator.readthedocs.io/en/latest/usage.html
+[Quick start page]: https://marcomuellner.github.io/openapi-python-generator/quick_start/
