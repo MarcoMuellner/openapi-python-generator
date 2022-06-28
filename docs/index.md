@@ -22,9 +22,7 @@ The key features of the generator are:
 - __Type safety and type hinting.__ __OpenAPI python generator__ makes heavy use of pydantic models to provide type-safe data structures.
 - __Support for multiple rest frameworks.__ __OpenAPI python generator__ currently supports the following:
     - [httpx](https://pypi.org/project/httpx/)
-    - [aiohttp](https://pypi.org/project/aiohttp/)
     - [requests](https://pypi.org/project/requests/)
-    - [urllib](https://pypi.org/project/urllib3/)
 - __Async and sync code generation support__, depending on the framework. It will automatically create both for frameworks that support both.
 - __Easily extendable using Jinja2 templates__. The code is designed to be easily extendable and should support even more languages and frameworks in the future.
 - __Fully tested__. Every generated code is automatically tested against the OpenAPI spec and we have 100% coverage.
