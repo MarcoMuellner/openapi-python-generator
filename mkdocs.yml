@@ -29,7 +29,6 @@ markdown_extensions:
   - attr_list
   - md_in_html
   - pymdownx.superfences
-  - mkdocs-click
 nav:
   - OpenAPI Python Generator: index.md
   - openapi-definition.md
