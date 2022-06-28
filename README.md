@@ -21,14 +21,21 @@
 [pre-commit]: https://github.com/pre-commit/pre-commit
 [black]: https://github.com/psf/black
 
+![](logo.png)
+
 ## Features
 
-- Easy code generation for OpenAPI 3.0.0+ APIs
-- Async and Sync code generation support (with the help of [httpx](https://pypi.org/project/httpx/))])
-- Typed services and models for your convinience
-- Support for HttpBearer authentication
-- Python only
-- Usage as CLI tool or as a library
+- __Ease of use__. Provide input, output and the library, and the generator will do the rest.
+- __Type safety and type hinting.__ __OpenAPI python generator__ makes heavy use of pydantic models to provide type-safe data structures.
+- __Support for multiple rest frameworks.__ __OpenAPI python generator__ currently supports the following:
+    - [httpx](https://pypi.org/project/httpx/)
+    - [aiohttp](https://pypi.org/project/aiohttp/)
+    - [requests](https://pypi.org/project/requests/)
+    - [urllib](https://pypi.org/project/urllib3/)
+- __Async and sync code generation support__, depending on the framework. It will automatically create both for frameworks that support both.
+- __Easily extendable using Jinja2 templates__. The code is designed to be easily extendable and should support even more languages and frameworks in the future.
+- __Fully tested__. Every generated code is automatically tested against the OpenAPI spec and we have 100% coverage.
+- __Usage as CLI or as library__.
 
 ## Requirements
 
@@ -44,11 +51,11 @@ $ pip install openapi-python-generator
 
 ## Usage
 
-Please see the [Command-line Reference] for details.
+Please see the [Quick start page] for details.
 
 ## Roadmap
 
-- Support for all commonly used http libraries in the python ecosystem (requests, urllib, ...)
+- Support for all commonly used http libraries in the python ecosystem (~~requests~~, urllib, ...)
 - Support for multiple languages
 - Support for multiple authentication schemes
 
@@ -84,4 +91,4 @@ This project was generated from [@cjolowicz]'s [Hypermodern Python Cookiecutter]
 
 [license]: https://github.com/MarcoMuellner/openapi-python-generator/blob/main/LICENSE
 [contributor guide]: https://github.com/MarcoMuellner/openapi-python-generator/blob/main/CONTRIBUTING.md
-[command-line reference]: https://openapi-python-generator.readthedocs.io/en/latest/usage.html
+[Quick start page]: https://openapi-python-generator.readthedocs.io/en/latest/usage.html

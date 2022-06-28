@@ -1,0 +1,58 @@
+# yaml-language-server: $schema=https://squidfunk.github.io/mkdocs-material/schema.json
+site_name: Openapi python generator
+site_url: https://example.com/
+repo_url: https://github.com/MarcoMuellner/openapi-python-generator
+theme:
+  name: material
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: amber
+      toggle:
+        icon: material/lightbulb
+        name: Switch to light mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: amber
+      toggle:
+        icon: material/lightbulb-outline
+        name: Switch to dark mode
+  features:
+    - search.suggest
+    - search.highlight
+    - content.tabs.link
+  icon:
+    repo: fontawesome/brands/github-alt
+markdown_extensions:
+  - attr_list
+  - md_in_html
+  - pymdownx.superfences
+  - mkdocs-click
+nav:
+  - OpenAPI Python Generator: index.md
+  - openapi-definition.md
+  - quick_start.md
+  - Tutorial - User Guide:
+      - tutorial/index.md
+      - tutorial/module_usage.md
+  - References :
+      - references/index.md
+  - Acknowledgements:
+      - acknowledgements/index.md
+extra_css:
+  - css/termynal.css
+  - css/custom.css
+extra_javascript:
+  - js/termynal.js
+  - js/custom.js
+extra:
+  social:
+    - icon: fontawesome/brands/github-alt
+      link: https://github.com/MarcoMuellner
+    - icon: fontawesome/brands/twitter
+      link: https://twitter.com/MuellnerM7490
+  analytics:
+    provider: google
+    tracking_id: G-320995686
