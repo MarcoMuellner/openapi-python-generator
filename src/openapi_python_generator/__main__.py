@@ -3,7 +3,7 @@ from typing import Optional
 import click
 
 from openapi_python_generator import __version__
-from openapi_python_generator.common import HTTPLibrary, AutoFormat
+from openapi_python_generator.common import HTTPLibrary
 from openapi_python_generator.generate_data import generate_data
 
 
@@ -17,14 +17,8 @@ from openapi_python_generator.generate_data import generate_data
     help="HTTP library to use in the generation of the client.",
 )
 @click.option(
-    "--autoformat",
-    default=AutoFormat.black,
-    type=AutoFormat,
-    help="Option to choose which auto formatter is applied.",
-)
-@click.option(
     "--env-token-name",
-    default=None,
+    default="access_token",
     help="Name of the environment variable that contains the token. If you set this, the code expects this environment "
     "variable to be set and will raise an error if it is not.",
 )
@@ -33,7 +27,6 @@ def main(
     source: str,
     output: str,
     library: Optional[HTTPLibrary] = HTTPLibrary.httpx,
-    autoformat: Optional[AutoFormat] = AutoFormat.black,
     env_token_name: Optional[str] = None,
 ) -> None:
     """
@@ -42,7 +35,7 @@ def main(
     Provide a SOURCE (file or URL) containing the OpenAPI 3 specification and
     an OUTPUT path, where the resulting client is created.
     """
-    generate_data(source, output, library, autoformat, env_token_name)
+    generate_data(source, output, library, env_token_name)
 
 
 if __name__ == "__main__":  # pragma: no cover
