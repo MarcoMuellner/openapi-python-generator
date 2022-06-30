@@ -25,19 +25,6 @@ def test_get_auth_token_without_env(model_data_with_cleanup):
     )
 
 
-def test_get_auth_token_with_env(model_data_with_cleanup):
-    generate_data(test_data_path, test_result_path, env_token_name="MY_TOKEN")
-
-    _locals = locals()
-
-    # Need to reload test_result, because older tests may have already been loaded and that would cause an error
-    exec(
-        "import test_result\nimport importlib\nimportlib.reload(test_result)\nimport os\nos.environ['MY_TOKEN'] = 'my_token'\nassert test_result.APIConfig.get_access_token() == 'my_token'",
-        globals(),
-        _locals,
-    )
-
-
 @pytest.mark.parametrize(
     "library",
     [
