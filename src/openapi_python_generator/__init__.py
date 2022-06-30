@@ -4,8 +4,7 @@ try:
     from importlib.metadata import version
 except ImportError:  # pragma: no cover
     from importlib_metadata import PackageNotFoundError  # type: ignore
-    from importlib_metadata import version
-
+    from importlib_metadata import version  # type: ignore
 
 try:
     __version__ = version(__name__)
