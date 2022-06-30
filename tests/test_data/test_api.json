@@ -478,6 +478,9 @@
             "items": {
               "$ref": "#/components/schemas/User"
             }
+          },
+          "captain": {
+            "$ref": "#/components/schemas/User"
           }
         }
       },
@@ -512,6 +515,15 @@
             "type": "boolean"
           }
         }
+      },
+      "EnumComponent": {
+        "title": "EnumComponent",
+        "enum": [
+          "EnumValue1",
+          "EnumValue2",
+          "EnumValue3"
+        ],
+        "description": "An enumeration."
       },
       "ValidationError": {
         "title": "ValidationError",

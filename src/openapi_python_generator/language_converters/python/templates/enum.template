@@ -1,11 +1,9 @@
 from enum import Enum
 
-class {{ name }}(Enum, str):
+class {{ name }}(str, Enum):
     {% for enumItem in enum %}
 
     {% if enumItem is string %}
-    {{ enumItem.lower() }} = '{{ enumItem }}'
-    {% else %}
-    value_{{ enumItem }} = {{ enumItem }}
-    {% endif %}
+    {{ enumItem.lower() }} = '{{ enumItem }}'{% else %}
+    value_{{ enumItem }} = {{ enumItem }}{% endif %}
     {% endfor %}

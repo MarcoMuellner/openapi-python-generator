@@ -22,6 +22,9 @@ def test_get_open_api(model_data):
     with pytest.raises(ValidationError):
         assert get_open_api(test_data_folder / "failing_api.json")
 
+    with pytest.raises(FileNotFoundError):
+        assert get_open_api(test_data_folder / "file_does_not_exist.json")
+
 
 def test_generate_data(model_data_with_cleanup):
     generate_data(test_data_path, test_result_path)

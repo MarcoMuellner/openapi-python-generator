@@ -160,14 +160,14 @@ def generate_models(components: Components) -> List[Model]:
     """
     models = []
 
-    for name, schema in components.schemas.items():
-        if schema.enum is not None:
+    for name, schema_or_reference in components.schemas.items():
+        if schema_or_reference.enum is not None:
             m = Model(
                 file_name=name,
                 content=JINJA_ENV.get_template(ENUM_TEMPLATE).render(
-                    name=name, **schema.dict()
+                    name=name, **schema_or_reference.dict()
                 ),
-                openapi_object=schema,
+                openapi_object=schema_or_reference,
                 references=[],
                 properties=[],
             )
@@ -180,19 +180,19 @@ def generate_models(components: Components) -> List[Model]:
             continue  # pragma: no cover
 
         properties = []
-        for prop_name, property in schema.properties.items():
+        for prop_name, property in schema_or_reference.properties.items():
             if isinstance(property, Reference):
                 conv_property = _generate_property_from_reference(
-                    prop_name, property, schema
+                    prop_name, property, schema_or_reference
                 )
             else:
                 conv_property = _generate_property_from_schema(
-                    prop_name, property, schema
+                    prop_name, property, schema_or_reference
                 )
             properties.append(conv_property)
 
         generated_content = JINJA_ENV.get_template(MODELS_TEMPLATE).render(
-            schema_name=name, schema=schema, properties=properties
+            schema_name=name, schema=schema_or_reference, properties=properties
         )
 
         try:
@@ -204,7 +204,7 @@ def generate_models(components: Components) -> List[Model]:
             Model(
                 file_name=name,
                 content=generated_content,
-                openapi_object=schema,
+                openapi_object=schema_or_reference,
                 properties=properties,
             )
         )

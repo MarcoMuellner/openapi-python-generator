@@ -61,6 +61,8 @@ Please see the [Quick start page] for details.
 - Support for all commonly used http libraries in the python ecosystem (~~requests~~, urllib, ...)
 - Support for multiple languages
 - Support for multiple authentication schemes
+- Support custom themes
+- Support environment variables and .env files
 
 ## Contributing
 
