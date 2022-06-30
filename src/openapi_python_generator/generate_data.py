@@ -142,11 +142,12 @@ def generate_data(
     output: Union[str, Path],
     library: Optional[HTTPLibrary] = HTTPLibrary.httpx,
     autoformat: Optional[AutoFormat] = AutoFormat.black,
+    env_token_name: Optional[str] = None,
 ) -> None:
     """
     Generate Python code from an OpenAPI 3.0 specification.
     """
     data = get_open_api(source)
     click.echo(f"Generating data from {source}")
-    result = generator(data, library_config_dict[library])
+    result = generator(data, library_config_dict[library], env_token_name)
     write_data(result, output, autoformat)

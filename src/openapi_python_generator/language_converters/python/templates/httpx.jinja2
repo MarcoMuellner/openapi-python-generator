@@ -4,7 +4,7 @@
     headers = {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
-        'Authorization': f'Bearer { APIConfig.access_token }',
+        'Authorization': f'Bearer { APIConfig.get_access_token() }',
     }
     query_params = {
     {% if query_params|length > 0 %}

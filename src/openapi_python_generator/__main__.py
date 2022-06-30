@@ -22,12 +22,19 @@ from openapi_python_generator.generate_data import generate_data
     type=AutoFormat,
     help="Option to choose which auto formatter is applied.",
 )
+@click.option(
+    "--env-token-name",
+    default=None,
+    help="Name of the environment variable that contains the token. If you set this, the code expects this environment "
+    "variable to be set and will raise an error if it is not.",
+)
 @click.version_option(version=__version__)
 def main(
     source: str,
     output: str,
     library: Optional[HTTPLibrary] = HTTPLibrary.httpx,
     autoformat: Optional[AutoFormat] = AutoFormat.black,
+    env_token_name: Optional[str] = None,
 ) -> None:
     """
     Generate Python code from an OpenAPI 3.0 specification.
@@ -35,7 +42,7 @@ def main(
     Provide a SOURCE (file or URL) containing the OpenAPI 3 specification and
     an OUTPUT path, where the resulting client is created.
     """
-    generate_data(source, output, library, autoformat)
+    generate_data(source, output, library, autoformat, env_token_name)
 
 
 if __name__ == "__main__":  # pragma: no cover

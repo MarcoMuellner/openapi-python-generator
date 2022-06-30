@@ -1,3 +1,28 @@
+{% if env_token_name is not none %}import os{% endif %}
+
+from typing import Optional
+
 class APIConfig():
     base_path: str = '{{ servers[0].url }}'
-    access_token: str = None
+{% if env_token_name is none %}
+    _access_token : Optional[str] = None
+{% endif %}
+
+    @staticmethod
+    def get_access_token() -> Optional[str]:
+{% if env_token_name is not none %}
+        try:
+            return os.environ['{{ env_token_name }}']
+        except KeyError:
+            return None
+{% else %}
+        return APIConfig._access_token
+{% endif %}
+
+    @staticmethod
+    def set_access_token(value : str):
+{% if env_token_name is not none %}
+        raise Exception("This client was generated with an environment variable for the access token. Please set the environment variable '{{ env_token_name }}' to the access token.")
+{% else %}
+        _access_token = value
+{% endif %}

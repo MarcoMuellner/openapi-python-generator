@@ -62,7 +62,6 @@ Please see the [Quick start page] for details.
 - Support for multiple languages
 - Support for multiple authentication schemes
 - Support custom themes
-- Support environment variables and .env files
 
 ## Contributing
 
