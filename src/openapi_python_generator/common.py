@@ -14,6 +14,16 @@ class HTTPLibrary(str, Enum):
     aiohttp = "aiohttp"
 
 
+class AutoFormat(str, Enum):
+    """
+    Enum for the available autoformat options
+    """
+
+    autopep8 = "autopep8"
+    black = "black"
+    none = "none"
+
+
 library_config_dict: Dict[Optional[HTTPLibrary], LibraryConfig] = {
     HTTPLibrary.httpx: LibraryConfig(
         name="httpx",

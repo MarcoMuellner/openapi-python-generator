@@ -16,5 +16,6 @@ Arguments:
 Options:
 ```console
 --library                  The library to use. Defaults to `httpx`.
+--autoformat               Specifies which auto formattool to apply to the generated code. Defaults to `black`.
 -h, --help                 Show this help message and exit.
 ```
