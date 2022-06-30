@@ -1,16 +1,16 @@
 import pytest
 from httpx import ConnectError
-
-from openapi_python_generator.common import library_config_dict, HTTPLibrary
-from openapi_python_generator.generate_data import (
-    get_open_api,
-    write_data,
-    generate_data,
-)
-from openapi_python_generator.language_converters.python.generator import generator
 from pydantic import ValidationError
 
-from tests.conftest import test_data_path, test_result_path, test_data_folder
+from openapi_python_generator.common import HTTPLibrary
+from openapi_python_generator.common import library_config_dict
+from openapi_python_generator.generate_data import generate_data
+from openapi_python_generator.generate_data import get_open_api
+from openapi_python_generator.generate_data import write_data
+from openapi_python_generator.language_converters.python.generator import generator
+from tests.conftest import test_data_folder
+from tests.conftest import test_data_path
+from tests.conftest import test_result_path
 
 
 def test_get_open_api(model_data):

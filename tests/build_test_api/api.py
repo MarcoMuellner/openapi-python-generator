@@ -1,10 +1,12 @@
 from datetime import datetime
-from typing import Optional, List
+from typing import List
+from typing import Optional
 
 import uvicorn as uvicorn
 from fastapi import FastAPI
 from fastapi.openapi.utils import get_openapi
 from pydantic import BaseModel
+
 
 app = FastAPI()
 

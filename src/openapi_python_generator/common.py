@@ -1,5 +1,6 @@
 from enum import Enum
-from typing import Dict, Optional
+from typing import Dict
+from typing import Optional
 
 from openapi_python_generator.models import LibraryConfig
 

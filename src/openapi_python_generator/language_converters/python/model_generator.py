@@ -1,14 +1,21 @@
-from typing import List, Optional
+from typing import List
+from typing import Optional
 
 import click
-from openapi_schema_pydantic import Components, Reference, Schema
+from openapi_schema_pydantic import Components
+from openapi_schema_pydantic import Reference
+from openapi_schema_pydantic import Schema
 
 from openapi_python_generator.language_converters.python.jinja_config import (
-    JINJA_ENV,
-    MODELS_TEMPLATE,
     ENUM_TEMPLATE,
 )
-from openapi_python_generator.models import Model, Property, TypeConversion
+from openapi_python_generator.language_converters.python.jinja_config import JINJA_ENV
+from openapi_python_generator.language_converters.python.jinja_config import (
+    MODELS_TEMPLATE,
+)
+from openapi_python_generator.models import Model
+from openapi_python_generator.models import Property
+from openapi_python_generator.models import TypeConversion
 
 
 def type_converter(schema: Schema, required: bool = False) -> TypeConversion:

@@ -1,26 +1,26 @@
-from typing import Dict, List, Tuple, Union
+from typing import Dict
+from typing import List
+from typing import Tuple
+from typing import Union
 
 import click
-from openapi_schema_pydantic import (
-    PathItem,
-    Operation,
-    Response,
-    MediaType,
-    Reference,
-    Schema,
-)
+from openapi_schema_pydantic import MediaType
+from openapi_schema_pydantic import Operation
+from openapi_schema_pydantic import PathItem
+from openapi_schema_pydantic import Reference
+from openapi_schema_pydantic import Response
+from openapi_schema_pydantic import Schema
 
 from openapi_python_generator.language_converters.python.jinja_config import JINJA_ENV
 from openapi_python_generator.language_converters.python.model_generator import (
     type_converter,
 )
-from openapi_python_generator.models import (
-    Service,
-    ServiceOperation,
-    OpReturnType,
-    TypeConversion,
-    LibraryConfig,
-)
+from openapi_python_generator.models import LibraryConfig
+from openapi_python_generator.models import OpReturnType
+from openapi_python_generator.models import Service
+from openapi_python_generator.models import ServiceOperation
+from openapi_python_generator.models import TypeConversion
+
 
 HTTP_OPERATIONS = ["get", "post", "put", "delete", "options", "head", "patch", "trace"]
 

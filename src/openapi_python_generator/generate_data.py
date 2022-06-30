@@ -1,17 +1,21 @@
 from pathlib import Path
-from typing import Optional, Union
+from typing import Optional
+from typing import Union
 
 import black
 import click
 import httpx
-from httpx import ConnectError, ConnectTimeout
 import orjson
+from httpx import ConnectError
+from httpx import ConnectTimeout
+from openapi_schema_pydantic import OpenAPI
 from pydantic import ValidationError
 
-from openapi_schema_pydantic import OpenAPI
-from .common import HTTPLibrary, library_config_dict
+from .common import HTTPLibrary
+from .common import library_config_dict
 from .language_converters.python.generator import generator
-from .language_converters.python.jinja_config import JINJA_ENV, SERVICE_TEMPLATE
+from .language_converters.python.jinja_config import JINJA_ENV
+from .language_converters.python.jinja_config import SERVICE_TEMPLATE
 from .models import ConversionResult
 
 

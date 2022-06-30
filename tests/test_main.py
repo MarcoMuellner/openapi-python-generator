@@ -4,7 +4,8 @@ from click.testing import CliRunner
 
 from openapi_python_generator.__main__ import main
 from openapi_python_generator.common import HTTPLibrary
-from tests.conftest import test_data_path, test_result_path
+from tests.conftest import test_data_path
+from tests.conftest import test_result_path
 
 
 @pytest.fixture

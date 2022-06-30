@@ -1,6 +1,8 @@
 from pathlib import Path
 
-from jinja2 import Environment, FileSystemLoader
+from jinja2 import Environment
+from jinja2 import FileSystemLoader
+
 
 ENUM_TEMPLATE = "enum.jinja2"
 MODELS_TEMPLATE = "models.jinja2"

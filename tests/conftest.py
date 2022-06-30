@@ -1,11 +1,12 @@
+import json
 import shutil
 from pathlib import Path
-from typing import Dict, Generator
+from typing import Dict
+from typing import Generator
 
 import pytest
-import json
-
 from openapi_schema_pydantic import OpenAPI
+
 
 test_data_folder = Path(__file__).parent / "test_data"
 test_data_path = test_data_folder / "test_api.json"

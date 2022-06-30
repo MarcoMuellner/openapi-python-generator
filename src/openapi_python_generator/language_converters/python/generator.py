@@ -11,7 +11,8 @@ from openapi_python_generator.language_converters.python.model_generator import 
 from openapi_python_generator.language_converters.python.service_generator import (
     generate_services,
 )
-from openapi_python_generator.models import ConversionResult, LibraryConfig
+from openapi_python_generator.models import ConversionResult
+from openapi_python_generator.models import LibraryConfig
 
 
 def generator(

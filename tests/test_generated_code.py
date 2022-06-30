@@ -1,16 +1,19 @@
 import json
-from datetime import datetime
 import os
+from datetime import datetime
 
 import orjson
 import pytest
 import respx
 from httpx import Response
 
-from openapi_python_generator.common import library_config_dict, HTTPLibrary
-from .conftest import test_data_path, test_result_path
+from openapi_python_generator.common import HTTPLibrary
+from openapi_python_generator.common import library_config_dict
 from openapi_python_generator.generate_data import generate_data
 from openapi_python_generator.language_converters.python.generator import generator
+
+from .conftest import test_data_path
+from .conftest import test_result_path
 
 
 def test_get_auth_token_without_env(model_data_with_cleanup):

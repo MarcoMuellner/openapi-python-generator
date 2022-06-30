@@ -1,24 +1,34 @@
 import pytest
-from openapi_schema_pydantic import (
-    Operation,
-    Parameter,
-    RequestBody,
-    MediaType,
-    Reference,
-    Schema,
-    Response,
-)
+from openapi_schema_pydantic import MediaType
+from openapi_schema_pydantic import Operation
+from openapi_schema_pydantic import Parameter
+from openapi_schema_pydantic import Reference
+from openapi_schema_pydantic import RequestBody
+from openapi_schema_pydantic import Response
+from openapi_schema_pydantic import Schema
 
-from openapi_python_generator.common import library_config_dict, HTTPLibrary
+from openapi_python_generator.common import HTTPLibrary
+from openapi_python_generator.common import library_config_dict
 from openapi_python_generator.language_converters.python.service_generator import (
     generate_body_param,
-    generate_params,
+)
+from openapi_python_generator.language_converters.python.service_generator import (
     generate_operation_id,
+)
+from openapi_python_generator.language_converters.python.service_generator import (
+    generate_params,
+)
+from openapi_python_generator.language_converters.python.service_generator import (
     generate_query_params,
+)
+from openapi_python_generator.language_converters.python.service_generator import (
     generate_return_type,
+)
+from openapi_python_generator.language_converters.python.service_generator import (
     generate_services,
 )
-from openapi_python_generator.models import OpReturnType, TypeConversion
+from openapi_python_generator.models import OpReturnType
+from openapi_python_generator.models import TypeConversion
 
 
 @pytest.mark.parametrize(

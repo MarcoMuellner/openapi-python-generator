@@ -1,13 +1,23 @@
 import pytest
-from openapi_schema_pydantic import Schema, Reference, OpenAPI
+from openapi_schema_pydantic import OpenAPI
+from openapi_schema_pydantic import Reference
+from openapi_schema_pydantic import Schema
 
 from openapi_python_generator.language_converters.python.model_generator import (
-    type_converter,
-    _generate_property_from_schema,
     _generate_property_from_reference,
+)
+from openapi_python_generator.language_converters.python.model_generator import (
+    _generate_property_from_schema,
+)
+from openapi_python_generator.language_converters.python.model_generator import (
     generate_models,
 )
-from openapi_python_generator.models import Property, Model, TypeConversion
+from openapi_python_generator.language_converters.python.model_generator import (
+    type_converter,
+)
+from openapi_python_generator.models import Model
+from openapi_python_generator.models import Property
+from openapi_python_generator.models import TypeConversion
 
 
 @pytest.mark.parametrize(
