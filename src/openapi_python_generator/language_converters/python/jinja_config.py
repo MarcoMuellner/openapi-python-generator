@@ -2,11 +2,11 @@ from pathlib import Path
 
 from jinja2 import Environment, FileSystemLoader
 
-ENUM_TEMPLATE = "enum.template"
-MODELS_TEMPLATE = "models.template"
-SERVICE_TEMPLATE = "service.template"
-HTTPX_TEMPLATE = "httpx.template"
-API_CONFIG_TEMPLATE = "apiconfig.template"
+ENUM_TEMPLATE = "enum.jinja2"
+MODELS_TEMPLATE = "models.jinja2"
+SERVICE_TEMPLATE = "service.jinja2"
+HTTPX_TEMPLATE = "httpx.jinja2"
+API_CONFIG_TEMPLATE = "apiconfig.jinja2"
 TEMPLATE_PATH = Path(__file__).parent / "templates"
 
 JINJA_ENV = Environment(

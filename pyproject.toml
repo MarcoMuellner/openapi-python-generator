@@ -11,6 +11,7 @@ documentation = "https://openapi-python-generator.readthedocs.io"
 classifiers = [
     "Development Status :: 2 - Pre-Alpha",
 ]
+keywords = ["OpenAPI", "Generator", "Python", "async"]
 
 [tool.poetry.urls]
 Changelog = "https://github.com/MarcoMuellner/openapi-python-generator/releases"
