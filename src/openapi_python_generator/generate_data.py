@@ -5,6 +5,7 @@ from typing import Union
 import black
 import click
 import httpx
+import isort
 import orjson
 from httpx import ConnectError
 from httpx import ConnectTimeout
@@ -30,6 +31,7 @@ def write_code(path: Path, content) -> None:
         formatted_contend = black.format_file_contents(
             content, fast=False, mode=black.FileMode(line_length=120)
         )
+        formatted_contend = isort.code(formatted_contend, line_length=120)
         f.write(formatted_contend)
 
 
