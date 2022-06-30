@@ -28,6 +28,7 @@ This will generate a folder called testclient, with the following structure (usi
     - Team.py
     - User.py
     - ValidationError.py
+    - EnumComponent.py
 - services
     - __init__.py
     - async_general_service.py

@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "openapi-python-generator"
-version = "0.2.3"
+version = "0.2.5"
 description = "Openapi Python Generator"
 authors = ["Marco Müllner <muellnermarco@gmail.com>"]
 license = "MIT"
