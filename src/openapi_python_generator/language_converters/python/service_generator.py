@@ -31,7 +31,34 @@ def generate_body_param(operation: Operation) -> Union[str, None]:
     if operation.requestBody is None:
         return None
     else:
-        return "data"
+        if isinstance(operation.requestBody, Reference):
+            return "data.dict()"
+
+        if operation.requestBody.content is None:
+            return None  # pragma: no cover
+
+        if operation.requestBody.content.get("application/json") is None:
+            return None  # pragma: no cover
+
+        media_type = operation.requestBody.content.get("application/json")
+
+        if media_type is None:
+            return None  # pragma: no cover
+
+        if isinstance(media_type.media_type_schema, Reference):
+            return "data.dict()"
+        elif isinstance(media_type.media_type_schema, Schema):
+            schema = media_type.media_type_schema
+            if schema.type == "array":
+                return "[i.dict() for i in data]"
+            else:
+                raise Exception(
+                    f"Unsupported schema type for request body: {schema.type}"
+                )  # pragma: no cover
+        else:
+            raise Exception(
+                f"Unsupported schema type for request body: {type(media_type.media_type_schema)}"
+            )  # pragma: no cover
 
 
 def generate_params(operation: Operation) -> str:
@@ -49,7 +76,7 @@ def generate_params(operation: Operation) -> str:
     if operation.parameters is not None:
         for param in operation.parameters:
             if not isinstance(param, Parameter):
-                continue
+                continue  # pragma: no cover
             converted_result = ""
             required = False
 
@@ -90,7 +117,9 @@ def generate_params(operation: Operation) -> str:
                     f"{_generate_params_from_content(content.media_type_schema)}, "
                 )
             else:
-                raise Exception(f"Unsupported media type schema for {str(operation)}")
+                raise Exception(
+                    f"Unsupported media type schema for {str(operation)}"
+                )  # pragma: no cover
         else:
             raise Exception(
                 f"Unsupported request body type: {type(operation.requestBody)}"
@@ -103,7 +132,7 @@ def generate_operation_id(operation: Operation, http_op: str) -> str:
     if operation.operationId is not None:
         return f"{operation.operationId.replace('-', '_')}"
     else:
-        raise Exception(f"OperationId is not defined for {http_op}")
+        raise Exception(f"OperationId is not defined for {http_op}")  # pragma: no cover
 
 
 def generate_query_params(operation: Operation) -> List[str]:
@@ -135,7 +164,9 @@ def generate_return_type(operation: Operation) -> OpReturnType:
     if isinstance(chosen_response, Response) and chosen_response.content is not None:
         media_type_schema = chosen_response.content.get("application/json")
     elif isinstance(chosen_response, Reference):
-        media_type_schema = MediaType(media_type_schema=chosen_response)
+        media_type_schema = MediaType(
+            media_type_schema=chosen_response
+        )  # pragma: no cover
     else:
         return OpReturnType(
             type=None, status_code=good_responses[0][0], complex_type=False

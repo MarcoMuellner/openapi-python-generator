@@ -6,7 +6,7 @@ def {{ operation_id }}({{ params }}) -> {% if return_type.type is none or return
         'Accept': 'application/json',
         'Authorization': f'Bearer { APIConfig.get_access_token() }',
     }
-    query_params = {
+    query_params : Dict[str,Any]  = {
     {% if query_params|length > 0 %}
         {{ query_params | join(',\n') | safe }}
     {% endif %}
@@ -18,7 +18,7 @@ def {{ operation_id }}({{ params }}) -> {% if return_type.type is none or return
         headers=headers,
         params=query_params,
         {% if body_params|length > 0 %}
-        json=json.dumps({{ body_param }}.dict())
+        json=json.dumps({{ body_param }})
         {% endif %}
     )
     if response.status_code != {{ return_type.status_code }}:

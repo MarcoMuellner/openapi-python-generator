@@ -46,7 +46,26 @@ from openapi_python_generator.models import TypeConversion
                     }
                 )
             ),
-            "data",
+            "data.dict()",
+        ),
+        (
+            Operation(requestBody=Reference(ref="#/components/schemas/TestModel")),
+            "data.dict()",
+        ),
+        (
+            Operation(
+                requestBody=RequestBody(
+                    content={
+                        "application/json": MediaType(
+                            media_type_schema=Schema(
+                                type="array",
+                                items=Reference(ref="#/components/schemas/TestModel"),
+                            )
+                        )
+                    }
+                )
+            ),
+            "[i.dict() for i in data]",
         ),
         (Operation(requestBody=None), None),
     ],

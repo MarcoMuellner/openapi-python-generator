@@ -6,14 +6,14 @@
         'Accept': 'application/json',
         'Authorization': f'Bearer { APIConfig.get_access_token() }',
     }
-    query_params = {
+    query_params : Dict[str,Any] = {
     {% if query_params|length > 0 %}
         {{ query_params | join(',\n') | safe }}
     {% endif %}
     }
 
     {% if async_client %}
-with httpx.AsyncClient(base_url=base_path) as client:
+async with httpx.AsyncClient(base_url=base_path) as client:
         response = await client.request(
     {% else %}
 with httpx.Client(base_url=base_path) as client:
@@ -24,7 +24,7 @@ with httpx.Client(base_url=base_path) as client:
         headers=headers,
         params=query_params,
         {% if body_param %}
-        json = json.dumps({{ body_param }}.dict())
+        json = json.dumps({{ body_param }})
         {% endif %}
     )
 

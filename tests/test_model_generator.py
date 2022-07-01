@@ -73,6 +73,18 @@ def test_type_converter_simple(test_openapi_types, expected_python_types):
     )
 
 
+def test_type_converter_all_of_reference():
+    schema = Schema(
+        allOf=[Reference(ref="#/components/schemas/test_name"), Schema(type="string")]
+    )
+    assert type_converter(schema, True).converted_type == "Tuple[test_name,str]"
+
+    schema = Schema(
+        oneOf=[Reference(ref="#/components/schemas/test_name"), Schema(type="string")]
+    )
+    assert type_converter(schema, True).converted_type == "Union[test_name,str]"
+
+
 @pytest.mark.parametrize(
     "test_openapi_types,expected_python_types",
     [
@@ -222,3 +234,10 @@ def test_model_generation(model_data: OpenAPI):
         assert i.content is not None
 
         compile(i.content, "<string>", "exec")
+
+    model_data_copy = model_data.copy()
+    model_data_copy.components.schemas = None  # type: ignore
+
+    result = generate_models(model_data_copy.components)  # type: ignore
+
+    assert len(result) == 0
