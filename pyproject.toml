@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "openapi-python-generator"
-version = "0.2.5"
+version = "0.3.0"
 description = "Openapi Python Generator"
 authors = ["Marco Müllner <muellnermarco@gmail.com>"]
 license = "MIT"
@@ -9,7 +9,7 @@ homepage = "https://github.com/MarcoMuellner/openapi-python-generator"
 repository = "https://github.com/MarcoMuellner/openapi-python-generator"
 documentation = "https://openapi-python-generator.readthedocs.io"
 classifiers = [
-    "Development Status :: 2 - Pre-Alpha",
+    "Development Status :: 3 - Alpha",
 ]
 keywords = ["OpenAPI", "Generator", "Python", "async"]
 
