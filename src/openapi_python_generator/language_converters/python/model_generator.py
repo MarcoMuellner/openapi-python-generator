@@ -33,7 +33,7 @@ def type_converter(schema: Schema, required: bool = False) -> TypeConversion:
         pre_type = "Optional["
         post_type = "]"
 
-    original_type = schema.type
+    original_type = schema.type if schema.type is not None else "object"
     import_types: Optional[List[str]] = None
 
     if schema.allOf is not None:
