@@ -58,7 +58,7 @@ def test_generate_body_param(test_openapi_operation, expected_result):
 @pytest.mark.parametrize(
     "test_openapi_operation, expected_result",
     [
-        (Operation(parameters=None, requestBody=None), []),
+        (Operation(parameters=None, requestBody=None), ""),
         (
             Operation(
                 parameters=[
@@ -71,7 +71,7 @@ def test_generate_body_param(test_openapi_operation, expected_result):
                 ],
                 requestBody=None,
             ),
-            ["test : TestModel"],
+            "test : TestModel, ",
         ),
         (
             Operation(
@@ -84,7 +84,7 @@ def test_generate_body_param(test_openapi_operation, expected_result):
                     )
                 ],
             ),
-            ["test2 : Optional[str] = None"],
+            "test2 : Optional[str] = None, ",
         ),
         (
             Operation(
@@ -103,7 +103,7 @@ def test_generate_body_param(test_openapi_operation, expected_result):
                     ),
                 ],
             ),
-            ["test : TestModel", "test2 : Optional[str] = None"],
+            "test : TestModel, test2 : Optional[str] = None, ",
         ),
         (
             Operation(
@@ -131,7 +131,7 @@ def test_generate_body_param(test_openapi_operation, expected_result):
                     }
                 ),
             ),
-            ["test : TestModel", "test2 : str", "data : TestModel"],
+            "test : TestModel, test2 : str, data : TestModel, ",
         ),
         (
             Operation(
@@ -159,7 +159,7 @@ def test_generate_body_param(test_openapi_operation, expected_result):
                     }
                 ),
             ),
-            ["test : TestModel", "test2 : str", "data : TestModel"],
+            "test : TestModel, test2 : str, data : TestModel, ",
         ),
         (
             Operation(
@@ -185,7 +185,7 @@ def test_generate_body_param(test_openapi_operation, expected_result):
                     }
                 ),
             ),
-            ["test : TestModel", "test2 : str", "data : str"],
+            "test : TestModel, test2 : str, data : str, ",
         ),
         (
             Operation(

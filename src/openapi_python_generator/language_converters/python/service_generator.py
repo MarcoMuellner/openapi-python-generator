@@ -34,7 +34,7 @@ def generate_body_param(operation: Operation) -> Union[str, None]:
         return "data"
 
 
-def generate_params(operation: Operation) -> List[str]:
+def generate_params(operation: Operation) -> str:
     def _generate_params_from_content(content: Union[Reference, Schema]):
         if isinstance(content, Reference):
             return f"data : {content.ref.split('/')[-1]}"
@@ -42,21 +42,25 @@ def generate_params(operation: Operation) -> List[str]:
             return f"data : {type_converter(content, True).converted_type}"
 
     if operation.parameters is None and operation.requestBody is None:
-        return []
+        return ""
 
-    params = []
+    params = ""
+    default_params = ""
     if operation.parameters is not None:
         for param in operation.parameters:
             if not isinstance(param, Parameter):
                 continue
+            converted_result = ""
+            required = False
 
             if isinstance(param.param_schema, Schema):
-                params.append(
+                converted_result = (
                     f"{param.name} : {type_converter(param.param_schema, param.required).converted_type}"
                     + ("" if param.required else " = None")
                 )
+                required = param.required
             elif isinstance(param.param_schema, Reference):
-                params.append(
+                converted_result = (
                     f"{param.name} : {param.param_schema.ref.split('/')[-1] }"
                     + (
                         ""
@@ -64,6 +68,12 @@ def generate_params(operation: Operation) -> List[str]:
                         else " = None"
                     )
                 )
+                required = isinstance(param, Reference) or param.required
+
+            if required:
+                params += f"{converted_result}, "
+            else:
+                default_params += f"{converted_result}, "
 
     if operation.requestBody is not None:
         if (
@@ -76,7 +86,9 @@ def generate_params(operation: Operation) -> List[str]:
                 isinstance(content.media_type_schema, Schema)
                 or isinstance(content.media_type_schema, Reference)
             ):
-                params.append(_generate_params_from_content(content.media_type_schema))
+                params += (
+                    f"{_generate_params_from_content(content.media_type_schema)}, "
+                )
             else:
                 raise Exception(f"Unsupported media type schema for {str(operation)}")
         else:
@@ -84,7 +96,7 @@ def generate_params(operation: Operation) -> List[str]:
                 f"Unsupported request body type: {type(operation.requestBody)}"
             )
 
-    return params
+    return params + default_params
 
 
 def generate_operation_id(operation: Operation, http_op: str) -> str:

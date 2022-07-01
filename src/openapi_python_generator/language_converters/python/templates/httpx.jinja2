@@ -1,4 +1,4 @@
-{%  if async_client %}async {% endif %}def {{ operation_id }}({{ params | join(',') }}) -> {% if return_type.type is none or return_type.type.converted_type is none %}None{% else %}{{ return_type.type.converted_type}}{% endif %}:
+{%  if async_client %}async {% endif %}def {{ operation_id }}({{ params }}) -> {% if return_type.type is none or return_type.type.converted_type is none %}None{% else %}{{ return_type.type.converted_type}}{% endif %}:
     base_path = APIConfig.base_path
     path = f'{{ path_name }}'
     headers = {

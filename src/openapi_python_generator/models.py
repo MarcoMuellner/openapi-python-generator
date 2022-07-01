@@ -29,7 +29,7 @@ class OpReturnType(BaseModel):
 
 
 class ServiceOperation(BaseModel):
-    params: List[str]
+    params: str
     operation_id: str
     query_params: List[str]
     return_type: OpReturnType
