@@ -20,12 +20,12 @@ def json_data_fixture() -> Generator[Dict, None, None]:
 
 
 @pytest.fixture(name="model_data", scope="module")
-def model_data_fixture(json_data) -> OpenAPI:
+def model_data_fixture(json_data) -> OpenAPI:  # type: ignore
     yield OpenAPI(**json_data)
 
 
 @pytest.fixture(name="model_data_with_cleanup", scope="module")
-def model_data_with_cleanup_fixture(model_data) -> OpenAPI:
+def model_data_with_cleanup_fixture(model_data) -> OpenAPI:  # type: ignore
     yield model_data
 
     # delete path test_result folder

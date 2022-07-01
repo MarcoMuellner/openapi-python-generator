@@ -6,8 +6,10 @@ from typing import Union
 import click
 from openapi_schema_pydantic import MediaType
 from openapi_schema_pydantic import Operation
+from openapi_schema_pydantic import Parameter
 from openapi_schema_pydantic import PathItem
 from openapi_schema_pydantic import Reference
+from openapi_schema_pydantic import RequestBody
 from openapi_schema_pydantic import Response
 from openapi_schema_pydantic import Schema
 
@@ -45,37 +47,51 @@ def generate_params(operation: Operation) -> List[str]:
     params = []
     if operation.parameters is not None:
         for param in operation.parameters:
+            if not isinstance(param, Parameter):
+                continue
+
             if isinstance(param.param_schema, Schema):
                 params.append(
                     f"{param.name} : {type_converter(param.param_schema, param.required).converted_type}"
                     + ("" if param.required else " = None")
                 )
-            else:
+            elif isinstance(param.param_schema, Reference):
                 params.append(
-                    f"{param.name} : {param.param_schema.ref.split('/')[-1]}"
-                    + ("" if param.required else " = None")
+                    f"{param.name} : {param.param_schema.ref.split('/')[-1] }"
+                    + (
+                        ""
+                        if isinstance(param, Reference) or param.required
+                        else " = None"
+                    )
                 )
 
     if operation.requestBody is not None:
         if (
-            isinstance(operation.requestBody.content, dict)
-            and "application/json" in operation.requestBody.content.keys()
+            isinstance(operation.requestBody, RequestBody)
+            and isinstance(operation.requestBody.content, dict)
+            and operation.requestBody.content.get("application/json") is not None
         ):
-            params.append(
-                _generate_params_from_content(
-                    operation.requestBody.content["application/json"].media_type_schema
-                )
-            )
+            content = operation.requestBody.content.get("application/json")
+            if content is not None and (
+                isinstance(content.media_type_schema, Schema)
+                or isinstance(content.media_type_schema, Reference)
+            ):
+                params.append(_generate_params_from_content(content.media_type_schema))
+            else:
+                raise Exception(f"Unsupported media type schema for {str(operation)}")
         else:
             raise Exception(
-                f"Unknown media type schema type: {type(operation.requestBody.content)}"
+                f"Unsupported request body type: {type(operation.requestBody)}"
             )
 
     return params
 
 
 def generate_operation_id(operation: Operation, http_op: str) -> str:
-    return f"{operation.operationId.replace('-', '_')}"
+    if operation.operationId is not None:
+        return f"{operation.operationId.replace('-', '_')}"
+    else:
+        raise Exception(f"OperationId is not defined for {http_op}")
 
 
 def generate_query_params(operation: Operation) -> List[str]:
@@ -84,7 +100,7 @@ def generate_query_params(operation: Operation) -> List[str]:
 
     params = []
     for param in operation.parameters:
-        if param.param_in == "query":
+        if isinstance(param, Parameter) and param.param_in == "query":
             params.append(f"'{param.name}' : {param.name}")
 
     return params
@@ -92,20 +108,25 @@ def generate_query_params(operation: Operation) -> List[str]:
 
 def generate_return_type(operation: Operation) -> OpReturnType:
     if operation.responses is None:
-        return OpReturnType(type=None, status_code="200", complex_type="False")
-    good_responses: List[Tuple[int, Response]] = [
+        return OpReturnType(type=None, status_code=200, complex_type=False)
+
+    good_responses: List[Tuple[int, Union[Response, Reference]]] = [
         (int(status_code), response)
         for status_code, response in operation.responses.items()
         if status_code.startswith("2")
     ]
     if len(good_responses) == 0:
-        return OpReturnType(type=None, status_code="200", complex_type="False")
+        return OpReturnType(type=None, status_code=200, complex_type=False)
 
-    if len(good_responses) > 0 and good_responses[0][1].content is not None:
-        media_type_schema = good_responses[0][1].content.get("application/json")
+    chosen_response = good_responses[0][1]
+
+    if isinstance(chosen_response, Response) and chosen_response.content is not None:
+        media_type_schema = chosen_response.content.get("application/json")
+    elif isinstance(chosen_response, Reference):
+        media_type_schema = MediaType(media_type_schema=chosen_response)
     else:
         return OpReturnType(
-            type=None, status_code=good_responses[0][0], complex_type="False"
+            type=None, status_code=good_responses[0][0], complex_type=False
         )
 
     if isinstance(media_type_schema, MediaType):

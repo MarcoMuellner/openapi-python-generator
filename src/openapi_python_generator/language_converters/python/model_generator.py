@@ -1,3 +1,4 @@
+import itertools
 from typing import List
 from typing import Optional
 
@@ -33,12 +34,26 @@ def type_converter(schema: Schema, required: bool = False) -> TypeConversion:
         post_type = "]"
 
     original_type = schema.type
-    import_types = None
+    import_types: Optional[List[str]] = None
 
     if schema.allOf is not None:
-        conversions = [type_converter(i, True) for i in schema.allOf]
+        conversions = []
+        for sub_schema in schema.allOf:
+            if isinstance(sub_schema, Schema):
+                conversions.append(type_converter(sub_schema, True))
+            else:
+                import_types = [sub_schema.ref.split("/")[-1]]
+                conversions.append(
+                    TypeConversion(
+                        original_type=sub_schema.ref,
+                        converted_type=import_types[0],
+                        import_types=import_types,
+                    )
+                )
 
-        original_type = "tuple<" + ",".join([i.type for i in schema.allOf]) + ">"
+        original_type = (
+            "tuple<" + ",".join([i.original_type for i in conversions]) + ">"
+        )
         converted_type = (
             pre_type
             + "Tuple["
@@ -47,13 +62,28 @@ def type_converter(schema: Schema, required: bool = False) -> TypeConversion:
             + post_type
         )
         import_types = [
-            i.import_types for i in conversions if i.import_types is not None
+            i.import_types[0] for i in conversions if i.import_types is not None
         ]
 
     elif schema.oneOf is not None or schema.anyOf is not None:
         used = schema.oneOf if schema.oneOf is not None else schema.anyOf
-        conversions = [type_converter(i, True) for i in used]
-        original_type = "union<" + ",".join([i.type for i in used]) + ">"
+        used = used if used is not None else []
+        conversions = []
+        for sub_schema in used:
+            if isinstance(sub_schema, Schema):
+                conversions.append(type_converter(sub_schema, True))
+            else:
+                import_types = [sub_schema.ref.split("/")[-1]]
+                conversions.append(
+                    TypeConversion(
+                        original_type=sub_schema.ref,
+                        converted_type=import_types[0],
+                        import_types=import_types,
+                    )
+                )
+        original_type = (
+            "union<" + ",".join([i.original_type for i in conversions]) + ">"
+        )
         converted_type = (
             pre_type
             + "Union["
@@ -61,9 +91,11 @@ def type_converter(schema: Schema, required: bool = False) -> TypeConversion:
             + "]"
             + post_type
         )
-        import_types = [
-            i.import_types for i in conversions if i.import_types is not None
-        ]
+        import_types = list(
+            itertools.chain(
+                *[i.import_types for i in conversions if i.import_types is not None]
+            )
+        )
     elif schema.type == "string":
         converted_type = pre_type + "str" + post_type
     elif schema.type == "integer":
@@ -165,7 +197,10 @@ def generate_models(components: Components) -> List[Model]:
     :param components: The components from an OpenAPI 3.0 specification.
     :return: A list of models.
     """
-    models = []
+    models: List[Model] = []
+
+    if components.schemas is None:
+        return models
 
     for name, schema_or_reference in components.schemas.items():
         if schema_or_reference.enum is not None:
@@ -175,7 +210,6 @@ def generate_models(components: Components) -> List[Model]:
                     name=name, **schema_or_reference.dict()
                 ),
                 openapi_object=schema_or_reference,
-                references=[],
                 properties=[],
             )
             try:
@@ -187,7 +221,12 @@ def generate_models(components: Components) -> List[Model]:
             continue  # pragma: no cover
 
         properties = []
-        for prop_name, property in schema_or_reference.properties.items():
+        property_iterator = (
+            schema_or_reference.properties.items()
+            if schema_or_reference.properties is not None
+            else {}
+        )
+        for prop_name, property in property_iterator:
             if isinstance(property, Reference):
                 conv_property = _generate_property_from_reference(
                     prop_name, property, schema_or_reference

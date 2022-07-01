@@ -22,8 +22,16 @@ def generator(
     Generate Python code from an OpenAPI 3.0 specification.
     """
 
-    models = generate_models(data.components)
-    services = generate_services(data.paths, library_config)
+    if data.components is not None:
+        models = generate_models(data.components)
+    else:
+        models = []
+
+    if data.paths is not None:
+        services = generate_services(data.paths, library_config)
+    else:
+        services = []
+
     api_config = generate_api_config(data, env_token_name)
 
     return ConversionResult(

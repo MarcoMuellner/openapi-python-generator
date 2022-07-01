@@ -23,13 +23,14 @@ theme:
     - search.suggest
     - search.highlight
     - content.tabs.link
+    - content.code.annotate
   icon:
     repo: fontawesome/brands/github-alt
 markdown_extensions:
-  - attr_list
-  - md_in_html
   - pymdownx.superfences
   - admonition
+  - attr_list
+  - md_in_html
   - pymdownx.tabbed:
       alternate_style: true
 nav:
@@ -38,7 +39,8 @@ nav:
   - quick_start.md
   - Tutorial - User Guide:
       - tutorial/index.md
-      - tutorial/module_usage.md
+      - tutorial/authentication.md
+      - tutorial/advanced.md
   - References :
       - references/index.md
   - Acknowledgements:

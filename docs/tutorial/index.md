@@ -2,7 +2,7 @@
 
 ## Pre requisits
 
-As already denoted in [the quick start section](quick_start.md), the first thing
+As already denoted in [the quick start section](../quick_start.md), the first thing
 you need to do is to actually install the generator. You can do so via pip
 or any other package manager.
 
@@ -593,7 +593,7 @@ suite of the generator. It has the following structure:
 !!! tip "OpenAPI specification"
 
     Take a look at our short introduction to the
-    [OpenAPI specification](openapi-definition.md) if you need to look up
+    [OpenAPI specification](../openapi-definition.md) if you need to look up
     what the specific nodes mean, or if you just need a refresher or some
     links for further information.
 
@@ -605,7 +605,7 @@ Lets run the generator on this file:
 </div>
 
 This will result in the folder structure as denoted in the
-[quick start](quick_start.md) section. Lets take a deep dive on what
+[quick start](../quick_start.md) section. Lets take a deep dive on what
 the generator created for us, starting with the models.
 
 ## The models module
@@ -763,3 +763,108 @@ the additional two - four modules.
 The next thing is async support: You may want (depending on your usecase)
 bot async and sync services. The generator will create both (for __httpx__),
 only sync (for __requests__) or only async (for __aiohttp__) services.
+
+=== "async_general_service.py"
+    ``` py
+    ...
+    async def async_root__get() -> RootResponse:
+        base_path = APIConfig.base_path
+        path = f"/"
+        headers = {
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "Authorization": f"Bearer { APIConfig.get_access_token() }",
+        }
+        query_params = {}
+
+        with httpx.AsyncClient(base_url=base_path) as client:
+            response = await client.request(
+                method="get",
+                url=path,
+                headers=headers,
+                params=query_params,
+            )
+
+        if response.status_code != 200:
+            raise Exception(f" failed with status code: {response.status_code}")
+        return RootResponse(**response.json())
+    ...
+    ```
+
+=== "general_service.py"
+    ``` py
+    ...
+    def root__get() -> RootResponse:
+        base_path = APIConfig.base_path
+        path = f"/"
+        headers = {
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "Authorization": f"Bearer { APIConfig.get_access_token() }",
+        }
+        query_params = {}
+
+        with httpx.Client(base_url=base_path) as client:
+            response = client.request(
+                method="get",
+                url=path,
+                headers=headers,
+                params=query_params,
+            )
+
+        if response.status_code != 200:
+            raise Exception(f" failed with status code: {response.status_code}")
+        return RootResponse(**response.json())
+    ...
+    ```
+
+While we are at the topic of looking at the individual functions, lets walk through the one above:
+
+```py
+...
+def root__get() -> RootResponse:
+...
+```
+
+All functions are fully annotated with the proper types, which provides the inspection of your IDE better insight
+on what to provide to a given function and what to expect.
+
+```py
+...
+path = f"/"
+...
+```
+
+Paths are automatically created from the specification. No need to worry about that.
+
+```py
+...
+headers = {
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "Authorization": f"Bearer { APIConfig.get_access_token() }",
+        }
+query_params = {}
+...
+```
+
+Authorization token is always passed to the Rest API, you will not need to worry about differentiating between the
+calls. Query params are also automatically created, with the input parameters and depending on your spec (for
+this root call no params are necessary)
+
+```py
+...
+if response.status_code != 200:
+    raise Exception(f" failed with status code: {response.status_code}")
+return RootResponse(**response.json())
+...
+```
+
+The generator will automatically raise an exception if a non-good status code was returned by the API, for
+whatever reason. The "good" status code is also determined by the spec - and can be defined through your API.
+For a post call for example, the spec will define a 201 status code as a good status code.
+
+Lastly the code will automatically type check and convert the response to the appropriate type (in this case
+`RootResponse`). This is really neat, because without doing much in the code, it automatically validates that
+your API truly responds the way we expect it to respond, and gives you proper typing latter on in your code -
+all thanks to the magic of [pydantic](https://pydantic-docs.helpmanual.io/).

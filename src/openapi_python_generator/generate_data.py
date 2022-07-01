@@ -7,6 +7,7 @@ import click
 import httpx
 import isort
 import orjson
+from black import NothingChanged
 from httpx import ConnectError
 from httpx import ConnectTimeout
 from openapi_schema_pydantic import OpenAPI
@@ -28,9 +29,12 @@ def write_code(path: Path, content) -> None:
     :param content: The content to write.
     """
     with open(path, "w") as f:
-        formatted_contend = black.format_file_contents(
-            content, fast=False, mode=black.FileMode(line_length=120)
-        )
+        try:
+            formatted_contend = black.format_file_contents(
+                content, fast=False, mode=black.FileMode(line_length=120)
+            )
+        except NothingChanged:
+            formatted_contend = content
         formatted_contend = isort.code(formatted_contend, line_length=120)
         f.write(formatted_contend)
 

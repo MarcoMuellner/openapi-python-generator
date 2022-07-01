@@ -214,9 +214,9 @@ def test_type_converter_property_reference(
 
 
 def test_model_generation(model_data: OpenAPI):
-    result = generate_models(model_data.components)
+    result = generate_models(model_data.components)  # type: ignore
 
-    assert len(result) == len(model_data.components.schemas.keys())
+    assert len(result) == len(model_data.components.schemas.keys())  # type: ignore
     for i in result:
         assert isinstance(i, Model)
         assert i.content is not None
