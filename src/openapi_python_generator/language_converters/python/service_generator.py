@@ -225,7 +225,7 @@ def generate_services(
 
         so = ServiceOperation(
             params=params,
-            operation_id="async_" + operation_id if async_type else operation_id,
+            operation_id=operation_id,
             query_params=query_params,
             return_type=return_type,
             operation=op,
