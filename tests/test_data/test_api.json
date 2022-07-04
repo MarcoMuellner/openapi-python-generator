@@ -513,6 +513,11 @@
           "is_active": {
             "title": "Is Active",
             "type": "boolean"
+          },
+          "created_at": {
+            "title": "Created At",
+            "type": "string",
+            "format": "date-time"
           }
         }
       },

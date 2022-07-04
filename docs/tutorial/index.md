@@ -534,6 +534,11 @@ suite of the generator. It has the following structure:
           "is_active": {
             "title": "Is Active",
             "type": "boolean"
+          },
+          "created_at": {
+            "title": "Created At",
+            "type": "string",
+            "format": "date-time"
           }
         }
       },
@@ -657,6 +662,7 @@ take a look at the `User.py` and the `Team.py` files:
         email: str
         password: str
         is_active: Optional[bool] = None
+        created_at: Optional[str] = None
     ```
 
 === "Team.py"

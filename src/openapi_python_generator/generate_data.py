@@ -115,10 +115,7 @@ def write_data(data: ConversionResult, output: Union[str, Path]) -> None:
         )
 
     # Create services.__init__.py file containing imports to all services.
-    write_code(
-        services_path / "__init__.py",
-        "\n".join([f"from .{file} import *" for file in files]),
-    )
+    write_code(services_path / "__init__.py", "")
 
     # Write the api_config.py file.
     write_code(Path(output) / "api_config.py", data.api_config.content)
@@ -135,11 +132,12 @@ def generate_data(
     output: Union[str, Path],
     library: Optional[HTTPLibrary] = HTTPLibrary.httpx,
     env_token_name: Optional[str] = None,
+    use_orjson: bool = False,
 ) -> None:
     """
     Generate Python code from an OpenAPI 3.0 specification.
     """
     data = get_open_api(source)
     click.echo(f"Generating data from {source}")
-    result = generator(data, library_config_dict[library], env_token_name)
+    result = generator(data, library_config_dict[library], env_token_name, use_orjson)
     write_data(result, output)

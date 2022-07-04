@@ -29,15 +29,17 @@ def test_get_auth_token_without_env(model_data_with_cleanup):
 
 
 @pytest.mark.parametrize(
-    "library",
+    "library, use_orjson",
     [
-        HTTPLibrary.httpx,
-        HTTPLibrary.requests,
+        (HTTPLibrary.httpx, False),
+        (HTTPLibrary.requests, False),
+        (HTTPLibrary.httpx, True),
+        (HTTPLibrary.requests, True),
     ],
 )
 @respx.mock
-def test_generate_code(model_data_with_cleanup, library):
-    generate_data(test_data_path, test_result_path, library)
+def test_generate_code(model_data_with_cleanup, library, use_orjson):
+    generate_data(test_data_path, test_result_path, library, use_orjson=use_orjson)
     result = generator(model_data_with_cleanup, library_config_dict[library])
 
     # Testing root access
@@ -58,6 +60,7 @@ def test_generate_code(model_data_with_cleanup, library):
                         email="x@y.com",
                         password="123456",
                         is_active=True,
+                        created_at=datetime.utcnow().isoformat(),
                     ),
                     dict(
                         id=2,
@@ -65,6 +68,7 @@ def test_generate_code(model_data_with_cleanup, library):
                         email="x@y.com",
                         password="123456",
                         is_active=True,
+                        created_at=datetime.utcnow().isoformat(),
                     ),
                 ]
             ),
@@ -80,6 +84,7 @@ def test_generate_code(model_data_with_cleanup, library):
                     email="x@y.com",
                     password="123456",
                     is_active=True,
+                    created_at=datetime.utcnow().isoformat(),
                 )
             ),
         )
@@ -94,6 +99,7 @@ def test_generate_code(model_data_with_cleanup, library):
                     email="x@y.com",
                     password="123456",
                     is_active=True,
+                    created_at=datetime.utcnow().isoformat(),
                 )
             ),
         )
@@ -193,7 +199,7 @@ def test_generate_code(model_data_with_cleanup, library):
         return_value=Response(status_code=204, content=json.dumps(None))
     )
 
-    exec_code_base = f"""from .test_result import *\nresp_result = root__get()\nassert isinstance(resp_result, RootResponse)"""
+    exec_code_base = f"""from .test_result.services.general_service import *\nresp_result = root__get()\nassert isinstance(resp_result, RootResponse)"""
     exec(exec_code_base, globals(), _locals)
     assert root_route.called
 
@@ -202,17 +208,17 @@ def test_generate_code(model_data_with_cleanup, library):
     exec(exec_code_base, globals(), _locals)
 
     exec(
-        "from .test_result import *\nassert isinstance(resp_result, list)",
+        "from .test_result.services.general_service import *\nassert isinstance(resp_result, list)",
         globals(),
         _locals,
     )
     exec(
-        "from .test_result import *\nassert isinstance(resp_result[0], User)",
+        "from .test_result.services.general_service import *\nassert isinstance(resp_result[0], User)",
         globals(),
         _locals,
     )
     exec(
-        "from .test_result import *\nassert isinstance(resp_result[1], User)",
+        "from .test_result.services.general_service import *\nassert isinstance(resp_result[1], User)",
         globals(),
         _locals,
     )
@@ -220,14 +226,12 @@ def test_generate_code(model_data_with_cleanup, library):
     exec(exec_code_base, globals(), _locals)
     assert get_users_route.called
 
-    exec_code_base = (
-        f"from .test_result import *\nresp_result = get_user_users__user_id__get(1)"
-    )
+    exec_code_base = f"from .test_result.services.general_service import *\nresp_result = get_user_users__user_id__get(1)"
 
     exec(exec_code_base, globals(), _locals)
 
     exec(
-        "from .test_result import *\nassert isinstance(resp_result, User)",
+        "from .test_result.services.general_service import *\nassert isinstance(resp_result, User)",
         globals(),
         _locals,
     )
@@ -237,58 +241,56 @@ def test_generate_code(model_data_with_cleanup, library):
         id=1, username="user1", email="x@y.com", password="123456", is_active=True
     )
 
-    exec_code_base = f"from .test_result import *\nresp_result = create_user_users_post(User(**{data}))"
+    exec_code_base = f"from .test_result.services.general_service import *\nresp_result = create_user_users_post(User(**{data}))"
 
     exec(exec_code_base, globals(), _locals)
 
     exec(
-        "from .test_result import *\nassert isinstance(resp_result, User)",
+        "from .test_result.services.general_service import *\nassert isinstance(resp_result, User)",
         globals(),
         _locals,
     )
     assert post_user_route.called
 
-    exec_code_base = f"from .test_result import *\nresp_result = update_user_users__user_id__patch(1, User(**{data}))"
+    exec_code_base = f"from .test_result.services.general_service import *\nresp_result = update_user_users__user_id__patch(1, User(**{data}))"
 
     exec(exec_code_base, globals(), _locals)
 
     exec(
-        "from .test_result import *\nassert isinstance(resp_result, User)",
+        "from .test_result.services.general_service import *\nassert isinstance(resp_result, User)",
         globals(),
         _locals,
     )
     assert update_user_route.called
 
-    exec_code_base = f"from .test_result import *\nresp_result = delete_user_users__user_id__delete(1)"
+    exec_code_base = f"from .test_result.services.general_service import *\nresp_result = delete_user_users__user_id__delete(1)"
 
     exec(exec_code_base, globals(), _locals)
 
     assert delete_user_route.called
 
-    exec_code_base = f"from .test_result import *\nresp_result = get_teams_teams_get()"
+    exec_code_base = f"from .test_result.services.general_service import *\nresp_result = get_teams_teams_get()"
 
     exec(exec_code_base, globals(), _locals)
 
     exec(
-        "from .test_result import *\nassert isinstance(resp_result, list)",
+        "from .test_result.services.general_service import *\nassert isinstance(resp_result, list)",
         globals(),
         _locals,
     )
     exec(
-        "from .test_result import *\nassert isinstance(resp_result[0], Team)",
+        "from .test_result.services.general_service import *\nassert isinstance(resp_result[0], Team)",
         globals(),
         _locals,
     )
     exec(
-        "from .test_result import *\nassert isinstance(resp_result[1], Team)",
+        "from .test_result.services.general_service import *\nassert isinstance(resp_result[1], Team)",
         globals(),
         _locals,
     )
     assert get_teams_route.called
 
-    exec_code_base = (
-        f"from .test_result import *\nresp_result = get_team_teams__team_id__get(1)"
-    )
+    exec_code_base = f"from .test_result.services.general_service import *\nresp_result = get_team_teams__team_id__get(1)"
 
     exec(exec_code_base, globals(), _locals)
     assert get_team_route.called
@@ -302,16 +304,16 @@ def test_generate_code(model_data_with_cleanup, library):
         updated_at="",
     )
 
-    exec_code_base = f"from .test_result import *\nfrom datetime import datetime\nresp_result = create_team_teams_post(Team(**{data}))"
+    exec_code_base = f"from .test_result.services.general_service import *\nfrom datetime import datetime\nresp_result = create_team_teams_post(Team(**{data}))"
 
     exec(exec_code_base, globals(), _locals)
     assert post_team_route.called
 
-    exec_code_base = f"from .test_result import *\nfrom datetime import datetime\nresp_result = update_team_teams__team_id__patch(1, Team(**{data}))"
+    exec_code_base = f"from .test_result.services.general_service import *\nfrom datetime import datetime\nresp_result = update_team_teams__team_id__patch(1, Team(**{data}))"
 
     exec(exec_code_base, globals(), _locals)
     assert update_team_route.called
 
-    exec_code_base = f"from .test_result import *\nresp_result = delete_team_teams__team_id__delete(1)"
+    exec_code_base = f"from .test_result.services.general_service import *\nresp_result = delete_team_teams__team_id__delete(1)"
 
     exec(exec_code_base, globals(), _locals)

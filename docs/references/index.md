@@ -16,6 +16,7 @@ Arguments:
 Options:
 ```console
 --library                  The library to use. Defaults to `httpx`.
---autoformat               Specifies which auto formattool to apply to the generated code. Defaults to `black`.
+--env-token-name           The name of the environment variable to use for the API key. Defaults to `access_token`.
+--use-orjson               Use the `orjson` library for serialization. Defaults to `false`.
 -h, --help                 Show this help message and exit.
 ```

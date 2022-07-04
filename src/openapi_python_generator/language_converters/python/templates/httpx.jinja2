@@ -24,7 +24,11 @@ with httpx.Client(base_url=base_path) as client:
         headers=headers,
         params=query_params,
         {% if body_param %}
+        {% if use_orjson %}
+        content=orjson.dumps({{ body_param }})
+        {% else %}
         json = json.dumps({{ body_param }})
+        {% endif %}
         {% endif %}
     )
 

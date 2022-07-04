@@ -7,6 +7,7 @@ from openapi_schema_pydantic import Components
 from openapi_schema_pydantic import Reference
 from openapi_schema_pydantic import Schema
 
+from openapi_python_generator.language_converters.python import common
 from openapi_python_generator.language_converters.python.jinja_config import (
     ENUM_TEMPLATE,
 )
@@ -42,11 +43,12 @@ def type_converter(schema: Schema, required: bool = False) -> TypeConversion:
             if isinstance(sub_schema, Schema):
                 conversions.append(type_converter(sub_schema, True))
             else:
-                import_types = [sub_schema.ref.split("/")[-1]]
+                import_type = sub_schema.ref.split("/")[-1]
+                import_types = [f"from .{import_type} import {import_type}"]
                 conversions.append(
                     TypeConversion(
                         original_type=sub_schema.ref,
-                        converted_type=import_types[0],
+                        converted_type=import_type,
                         import_types=import_types,
                     )
                 )
@@ -73,11 +75,12 @@ def type_converter(schema: Schema, required: bool = False) -> TypeConversion:
             if isinstance(sub_schema, Schema):
                 conversions.append(type_converter(sub_schema, True))
             else:
-                import_types = [sub_schema.ref.split("/")[-1]]
+                import_type = sub_schema.ref.split("/")[-1]
+                import_types = [f"from .{import_type} import {import_type}"]
                 conversions.append(
                     TypeConversion(
                         original_type=sub_schema.ref,
-                        converted_type=import_types[0],
+                        converted_type=import_type,
                         import_types=import_types,
                     )
                 )
@@ -96,8 +99,15 @@ def type_converter(schema: Schema, required: bool = False) -> TypeConversion:
                 *[i.import_types for i in conversions if i.import_types is not None]
             )
         )
-    elif schema.type == "string":
+    # We only want to auto convert to datetime if orjson is used throghout the code, otherwise we can not
+    # serialize it to JSON.
+    elif schema.type == "string" and (
+        schema.schema_format is None or not common.get_use_orjson()
+    ):
         converted_type = pre_type + "str" + post_type
+    elif schema.type == "string" and schema.schema_format == "date-time":
+        converted_type = pre_type + "datetime" + post_type
+        import_types = ["from datetime import datetime"]
     elif schema.type == "integer":
         converted_type = pre_type + "int" + post_type
     elif schema.type == "number":
@@ -107,7 +117,8 @@ def type_converter(schema: Schema, required: bool = False) -> TypeConversion:
     elif schema.type == "array":
         retVal = pre_type + "List["
         if isinstance(schema.items, Reference):
-            import_types = [schema.items.ref.split("/")[-1]]
+            import_type = schema.items.ref.split("/")[-1]
+            import_types = [f"from .{import_type} import {import_type}"]
             original_type = "array<" + schema.items.ref.split("/")[-1] + ">"
             retVal += schema.items.ref.split("/")[-1]
         elif isinstance(schema.items, Schema):
@@ -177,7 +188,7 @@ def _generate_property_from_reference(
     type_conv = TypeConversion(
         original_type=reference.ref,
         converted_type=import_model if required else "Optional[" + import_model + "]",
-        import_types=[import_model],
+        import_types=[f"from .{import_model} import {import_model}"],
     )
     return Property(
         name=name,

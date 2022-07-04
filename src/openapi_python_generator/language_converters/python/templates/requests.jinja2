@@ -17,8 +17,12 @@ def {{ operation_id }}({{ params }}) -> {% if return_type.type is none or return
         f'{base_path}{path}',
         headers=headers,
         params=query_params,
-        {% if body_params|length > 0 %}
-        json=json.dumps({{ body_param }})
+        {% if body_param %}
+        {% if use_orjson %}
+        content=orjson.dumps({{ body_param }})
+        {% else %}
+        json = json.dumps({{ body_param }})
+        {% endif %}
         {% endif %}
     )
     if response.status_code != {{ return_type.status_code }}:

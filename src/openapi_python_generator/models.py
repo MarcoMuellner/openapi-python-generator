@@ -41,6 +41,7 @@ class ServiceOperation(BaseModel):
     path_name: str
     body_param: Optional[str] = None
     method: str
+    use_orjson: bool = False
 
 
 class Property(BaseModel):
@@ -64,6 +65,7 @@ class Service(BaseModel):
     content: str
     async_client: Optional[bool] = False
     library_import: str
+    use_orjson: bool = False
 
 
 class APIConfig(BaseModel):

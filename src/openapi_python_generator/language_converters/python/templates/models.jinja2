@@ -3,7 +3,7 @@ from pydantic import BaseModel
 {%  for property in properties %}
 {% if property.type.import_types is not none %}
 {% for import_type in property.type.import_types %}
-from .{{ import_type }} import {{ import_type}}
+{{ import_type }}
 {% endfor %}
 {% endif %}
 {% endfor %}

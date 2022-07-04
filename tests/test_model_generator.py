@@ -3,6 +3,7 @@ from openapi_schema_pydantic import OpenAPI
 from openapi_schema_pydantic import Reference
 from openapi_schema_pydantic import Schema
 
+from openapi_python_generator.language_converters.python import common
 from openapi_python_generator.language_converters.python.model_generator import (
     _generate_property_from_reference,
 )
@@ -40,6 +41,10 @@ from openapi_python_generator.models import TypeConversion
             TypeConversion(original_type="boolean", converted_type="bool"),
         ),
         (
+            Schema(type="string", schema_format="date-time"),
+            TypeConversion(original_type="string", converted_type="str"),
+        ),
+        (
             Schema(type="object"),
             TypeConversion(original_type="object", converted_type="Dict[str, Any]"),
         ),
@@ -56,7 +61,7 @@ from openapi_python_generator.models import TypeConversion
             TypeConversion(
                 original_type="array<test_name>",
                 converted_type="List[test_name]",
-                import_types=["test_name"],
+                import_types=["from .test_name import test_name"],
             ),
         ),
         (
@@ -71,6 +76,70 @@ def test_type_converter_simple(test_openapi_types, expected_python_types):
         type_converter(test_openapi_types, False).converted_type
         == "Optional[" + expected_python_types.converted_type + "]"
     )
+
+
+@pytest.mark.parametrize(
+    "test_openapi_types,expected_python_types",
+    [
+        (
+            Schema(type="string"),
+            TypeConversion(original_type="string", converted_type="str"),
+        ),
+        (
+            Schema(type="integer"),
+            TypeConversion(original_type="integer", converted_type="int"),
+        ),
+        (
+            Schema(type="number"),
+            TypeConversion(original_type="number", converted_type="float"),
+        ),
+        (
+            Schema(type="boolean"),
+            TypeConversion(original_type="boolean", converted_type="bool"),
+        ),
+        (
+            Schema(type="string", schema_format="date-time"),
+            TypeConversion(
+                original_type="string",
+                converted_type="datetime",
+                import_types=["from datetime import datetime"],
+            ),
+        ),
+        (
+            Schema(type="object"),
+            TypeConversion(original_type="object", converted_type="Dict[str, Any]"),
+        ),
+        (
+            Schema(type="array"),
+            TypeConversion(original_type="array<unknown>", converted_type="List[Any]"),
+        ),
+        (
+            Schema(type="array", items=Schema(type="string")),
+            TypeConversion(original_type="array<string>", converted_type="List[str]"),
+        ),
+        (
+            Schema(type="array", items=Reference(ref="#/components/schemas/test_name")),
+            TypeConversion(
+                original_type="array<test_name>",
+                converted_type="List[test_name]",
+                import_types=["from .test_name import test_name"],
+            ),
+        ),
+        (
+            Schema(type="null"),
+            TypeConversion(original_type="null", converted_type="Any"),
+        ),
+    ],
+)
+def test_type_converter_simple_orjson(test_openapi_types, expected_python_types):
+    orjson_usage = common.get_use_orjson()
+    common.set_use_orjson(True)
+    assert type_converter(test_openapi_types, True) == expected_python_types
+    assert (
+        type_converter(test_openapi_types, False).converted_type
+        == "Optional[" + expected_python_types.converted_type + "]"
+    )
+    common.set_use_orjson(orjson_usage)
 
 
 def test_type_converter_all_of_reference():
@@ -191,7 +260,7 @@ def test_type_converter_property(
                 type=TypeConversion(
                     original_type="#/components/schemas/test_name",
                     converted_type="Optional[test_name]",
-                    import_types=["test_name"],
+                    import_types=["from .test_name import test_name"],
                 ),
                 required=False,
                 default="None",
@@ -207,7 +276,7 @@ def test_type_converter_property(
                 type=TypeConversion(
                     original_type="#/components/schemas/test_name",
                     converted_type="test_name",
-                    import_types=["test_name"],
+                    import_types=["from .test_name import test_name"],
                 ),
                 required=True,
                 default=None,

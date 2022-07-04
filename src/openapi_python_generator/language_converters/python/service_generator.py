@@ -1,3 +1,4 @@
+import re
 from typing import Dict
 from typing import List
 from typing import Tuple
@@ -13,6 +14,7 @@ from openapi_schema_pydantic import RequestBody
 from openapi_schema_pydantic import Response
 from openapi_schema_pydantic import Schema
 
+from openapi_python_generator.language_converters.python import common
 from openapi_python_generator.language_converters.python.jinja_config import JINJA_ENV
 from openapi_python_generator.language_converters.python.model_generator import (
     type_converter,
@@ -189,7 +191,13 @@ def generate_return_type(operation: Operation) -> OpReturnType:
             if "array" in converted_result.original_type and isinstance(
                 converted_result.import_types, list
             ):
-                list_type = converted_result.import_types[0]
+                matched = re.findall(r"List\[(.+)\]", converted_result.converted_type)
+                if len(matched) > 0:
+                    list_type = matched[0]
+                else:
+                    raise Exception(
+                        f"Unable to parse list type from {converted_result.converted_type}"
+                    )  # pragma: no cover
             else:
                 list_type = None
             return OpReturnType(
@@ -235,6 +243,7 @@ def generate_services(
             body_param=body_param,
             path_name=path_name,
             method=http_operation,
+            use_orjson=common.get_use_orjson(),
         )
 
         so.content = JINJA_ENV.get_template(library_config.template_name).render(
@@ -285,6 +294,7 @@ def generate_services(
                 ),
                 async_client=False,
                 library_import=library_config.library_name,
+                use_orjson=common.get_use_orjson(),
             )
         )
 
@@ -304,6 +314,7 @@ def generate_services(
                 ),
                 async_client=True,
                 library_import=library_config.library_name,
+                use_orjson=common.get_use_orjson(),
             )
         )
 
