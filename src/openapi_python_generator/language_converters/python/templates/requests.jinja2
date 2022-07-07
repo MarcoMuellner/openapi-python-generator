@@ -12,6 +12,8 @@ def {{ operation_id }}({{ params }}) -> {% if return_type.type is none or return
     {% endif %}
     }
 
+    query_params = {key:value for (key,value) in query_params.items() if value is not None}
+
     response = requests.request(
         '{{ method }}',
         f'{base_path}{path}',

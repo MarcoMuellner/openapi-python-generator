@@ -12,6 +12,8 @@
     {% endif %}
     }
 
+    query_params = {key:value for (key,value) in query_params.items() if value is not None}
+
     {% if async_client %}
 async with httpx.AsyncClient(base_url=base_path) as client:
         response = await client.request(
