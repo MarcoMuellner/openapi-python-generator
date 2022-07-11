@@ -56,13 +56,12 @@ def type_converter(schema: Schema, required: bool = False) -> TypeConversion:
         original_type = (
             "tuple<" + ",".join([i.original_type for i in conversions]) + ">"
         )
-        converted_type = (
-            pre_type
-            + "Tuple["
-            + ",".join([i.converted_type for i in conversions])
-            + "]"
-            + post_type
-        )
+        if len(conversions) == 1:
+            converted_type = conversions[0].converted_type
+        else:
+            converted_type = ",".join([i.converted_type for i in conversions])
+
+        converted_type = pre_type + "Tuple[" + converted_type + "]" + post_type
         import_types = [
             i.import_types[0] for i in conversions if i.import_types is not None
         ]
@@ -87,13 +86,13 @@ def type_converter(schema: Schema, required: bool = False) -> TypeConversion:
         original_type = (
             "union<" + ",".join([i.original_type for i in conversions]) + ">"
         )
-        converted_type = (
-            pre_type
-            + "Union["
-            + ",".join([i.converted_type for i in conversions])
-            + "]"
-            + post_type
-        )
+
+        if len(conversions) == 1:
+            converted_type = conversions[0].converted_type
+        else:
+            converted_type = ",".join([i.converted_type for i in conversions])
+
+        converted_type = pre_type + "Union[" + converted_type + "]" + post_type
         import_types = list(
             itertools.chain(
                 *[i.import_types for i in conversions if i.import_types is not None]
