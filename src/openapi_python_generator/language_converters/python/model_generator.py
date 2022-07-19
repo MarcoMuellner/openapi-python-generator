@@ -1,4 +1,5 @@
 import itertools
+import re
 from typing import List
 from typing import Optional
 
@@ -218,10 +219,16 @@ def generate_models(components: Components) -> List[Model]:
 
     for name, schema_or_reference in components.schemas.items():
         if schema_or_reference.enum is not None:
+            value_dict = schema_or_reference.dict()
+            regex = re.compile(r"[\s\/=\*\+]+")
+            value_dict["enum"] = [
+                re.sub(regex, "_", i) if isinstance(i, str) else f"value_{i}"
+                for i in value_dict["enum"]
+            ]
             m = Model(
                 file_name=name,
                 content=JINJA_ENV.get_template(ENUM_TEMPLATE).render(
-                    name=name, **schema_or_reference.dict()
+                    name=name, **value_dict
                 ),
                 openapi_object=schema_or_reference,
                 properties=[],
