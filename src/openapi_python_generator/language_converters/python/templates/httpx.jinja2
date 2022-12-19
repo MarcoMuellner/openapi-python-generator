@@ -21,8 +21,8 @@ async with httpx.AsyncClient(base_url=base_path) as client:
 with httpx.Client(base_url=base_path) as client:
         response = client.request(
     {% endif %}
-        method='{{ method }}',
-        url=path,
+        '{{ method }}',
+        httpx.URL(path),
         headers=headers,
         params=query_params,
         {% if body_param %}

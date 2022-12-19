@@ -50,7 +50,7 @@ myst-parser = {version = ">=0.16.1"}
 pytest-cov = "^3.0.0"
 fastapi = "^0.78.0"
 uvicorn = "^0.18.1"
-respx = "^0.19.2"
+respx = "^0.20.1"
 
 [tool.poetry.scripts]
 openapi-python-generator = "openapi_python_generator.__main__:main"
