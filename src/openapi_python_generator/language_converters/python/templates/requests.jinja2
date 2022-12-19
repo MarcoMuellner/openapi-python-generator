@@ -23,7 +23,7 @@ def {{ operation_id }}({{ params }}) -> {% if return_type.type is none or return
         {% if use_orjson %}
         content=orjson.dumps({{ body_param }})
         {% else %}
-        json = json.dumps({{ body_param }})
+        json = {{ body_param }}
         {% endif %}
         {% endif %}
     )
