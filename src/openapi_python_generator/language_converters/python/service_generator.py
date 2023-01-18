@@ -53,6 +53,8 @@ def generate_body_param(operation: Operation) -> Union[str, None]:
             schema = media_type.media_type_schema
             if schema.type == "array":
                 return "[i.dict() for i in data]"
+            elif schema.type == "object":
+                return "data"
             else:
                 raise Exception(
                     f"Unsupported schema type for request body: {schema.type}"
