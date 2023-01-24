@@ -15,10 +15,10 @@
     query_params = {key:value for (key,value) in query_params.items() if value is not None}
 
     {% if async_client %}
-async with httpx.AsyncClient(base_url=base_path) as client:
+async with httpx.AsyncClient(base_url=base_path, verify=APIConfig.verify) as client:
         response = await client.request(
     {% else %}
-with httpx.Client(base_url=base_path) as client:
+with httpx.Client(base_url=base_path, verify=APIConfig.verify) as client:
         response = client.request(
     {% endif %}
         '{{ method }}',

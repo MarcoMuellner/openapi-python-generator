@@ -1,9 +1,10 @@
 {% if env_token_name is not none %}import os{% endif %}
 
-from typing import Optional
+from typing import Optional, Union
 
 class APIConfig():
     base_path: str = '{{ servers[0].url }}'
+    verify: Union[bool, str] = True
 {% if env_token_name is none %}
     _access_token : Optional[str] = None
 {% endif %}
