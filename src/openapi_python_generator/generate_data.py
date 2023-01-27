@@ -28,15 +28,18 @@ def write_code(path: Path, content) -> None:
     :param path: The path to the file.
     :param content: The content to write.
     """
-    with open(path, "w") as f:
-        try:
-            formatted_contend = black.format_file_contents(
-                content, fast=False, mode=black.FileMode(line_length=120)
-            )
-        except NothingChanged:
-            formatted_contend = content
-        formatted_contend = isort.code(formatted_contend, line_length=120)
-        f.write(formatted_contend)
+    try:
+        with open(path, "w") as f:
+            try:
+                formatted_contend = black.format_file_contents(
+                    content, fast=False, mode=black.FileMode(line_length=120)
+                )
+            except NothingChanged:
+                formatted_contend = content
+            formatted_contend = isort.code(formatted_contend, line_length=120)
+            f.write(formatted_contend)
+    except Exception as e:
+        raise e
 
 
 def get_open_api(source: Union[str, Path]) -> OpenAPI:

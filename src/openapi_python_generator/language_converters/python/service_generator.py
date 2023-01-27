@@ -106,13 +106,29 @@ def generate_params(operation: Operation) -> str:
             else:
                 default_params += f"{converted_result}, "
 
+    operation_request_body_types = [
+        "application/json",
+        "text/plain",
+        "multipart/form-data",
+    ]
+
     if operation.requestBody is not None:
         if (
             isinstance(operation.requestBody, RequestBody)
             and isinstance(operation.requestBody.content, dict)
-            and operation.requestBody.content.get("application/json") is not None
+            and any(
+                [
+                    operation.requestBody.content.get(i) is not None
+                    for i in operation_request_body_types
+                ]
+            )
         ):
-            content = operation.requestBody.content.get("application/json")
+            get_keyword = [
+                i
+                for i in operation_request_body_types
+                if operation.requestBody.content.get(i) is not None
+            ][0]
+            content = operation.requestBody.content.get(get_keyword)
             if content is not None and (
                 isinstance(content.media_type_schema, Schema)
                 or isinstance(content.media_type_schema, Reference)
@@ -128,6 +144,9 @@ def generate_params(operation: Operation) -> str:
             raise Exception(
                 f"Unsupported request body type: {type(operation.requestBody)}"
             )
+    # Replace - with _ in params
+    params = params.replace("-", "_")
+    default_params = default_params.replace("-", "_")
 
     return params + default_params
 
@@ -146,7 +165,9 @@ def generate_query_params(operation: Operation) -> List[str]:
     params = []
     for param in operation.parameters:
         if isinstance(param, Parameter) and param.param_in == "query":
-            params.append(f"'{param.name}' : {param.name}")
+            param_name_cleaned = param.name.replace("-", "_")
+
+            params.append(f"'{param.name}' : {param_name_cleaned}")
 
     return params
 
@@ -211,6 +232,12 @@ def generate_return_type(operation: Operation) -> OpReturnType:
             )
         else:
             raise Exception("Unknown media type schema type")  # pragma: no cover
+    elif media_type_schema is None:
+        return OpReturnType(
+            type=None,
+            status_code=good_responses[0][0],
+            complex_type=False,
+        )
     else:
         raise Exception("Unknown media type schema type")  # pragma: no cover
 
