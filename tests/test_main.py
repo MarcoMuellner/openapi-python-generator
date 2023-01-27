@@ -16,10 +16,7 @@ def runner() -> CliRunner:
 
 @pytest.mark.parametrize(
     "library",
-    [
-        HTTPLibrary.httpx,
-        HTTPLibrary.requests,
-    ],
+    [HTTPLibrary.httpx, HTTPLibrary.requests, HTTPLibrary.aiohttp],
 )
 def test_main_succeeds(runner: CliRunner, model_data_with_cleanup, library) -> None:
     """It exits with a status code of zero."""

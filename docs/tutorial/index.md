@@ -647,48 +647,62 @@ take a look at the `User.py` and the `Team.py` files:
 
     ``` py
     from typing import *
-
-    from pydantic import BaseModel
-
-
+    
+    from pydantic import BaseModel, Field
+    
+    
     class User(BaseModel):
-        """
-        User model
+    """
+    User model
 
-        """
+    """
 
-        id: int
-        username: str
-        email: str
-        password: str
-        is_active: Optional[bool] = None
-        created_at: Optional[str] = None
+    id: int = Field(alias="id")
+
+    username: str = Field(alias="username")
+
+    email: str = Field(alias="email")
+
+    password: str = Field(alias="password")
+
+    is_active: Optional[bool] = Field(alias="is_active", default=None)
+
+    created_at: Optional[str] = Field(alias="created_at", default=None)
+
     ```
 
 === "Team.py"
 
     ``` py
     from typing import *
-
-    from pydantic import BaseModel
-
+    
+    from pydantic import BaseModel, Field
+    
     from .User import User
 
 
     class Team(BaseModel):
-        """
-        Team model
+    """
+    Team model
 
-        """
+    """
 
-        id: int
-        name: str
-        description: str
-        is_active: Optional[bool] = None
-        created_at: Optional[str] = None
-        updated_at: Optional[str] = None
-        users: Optional[List[User]] = None
-        captain: Optional[User] = None
+    id: int = Field(alias="id")
+
+    name: str = Field(alias="name")
+
+    description: str = Field(alias="description")
+
+    is_active: Optional[bool] = Field(alias="is_active", default=None)
+
+    created_at: Optional[str] = Field(alias="created_at", default=None)
+
+    updated_at: Optional[str] = Field(alias="updated_at", default=None)
+
+    users: Optional[List[User]] = Field(alias="users", default=None)
+
+    captain: Optional[User] = Field(alias="captain", default=None)
+
 
     ```
 

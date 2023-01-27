@@ -35,6 +35,8 @@ def test_get_auth_token_without_env(model_data_with_cleanup):
         (HTTPLibrary.requests, False),
         (HTTPLibrary.httpx, True),
         (HTTPLibrary.requests, True),
+        (HTTPLibrary.aiohttp, True),
+        (HTTPLibrary.aiohttp, False),
     ],
 )
 @respx.mock

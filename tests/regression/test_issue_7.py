@@ -15,10 +15,7 @@ def runner() -> CliRunner:
 
 @pytest.mark.parametrize(
     "library",
-    [
-        HTTPLibrary.httpx,
-        HTTPLibrary.requests,
-    ],
+    [HTTPLibrary.httpx, HTTPLibrary.requests, HTTPLibrary.aiohttp],
 )
 def test_issue_7(runner: CliRunner, model_data_with_cleanup, library) -> None:
     """

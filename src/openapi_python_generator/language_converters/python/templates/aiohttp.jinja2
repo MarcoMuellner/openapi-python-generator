@@ -1,0 +1,35 @@
+async def {{ operation_id }}({{ params }}) -> {% if return_type.type is none or return_type.type.converted_type is none %}None{% else %}{{ return_type.type.converted_type}}{% endif %}:
+    base_path = APIConfig.base_path
+    path = f'{{ path_name }}'
+    headers = {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+    'Authorization': f'Bearer { APIConfig.get_access_token() }',
+    }
+    query_params : Dict[str,Any] = {
+    {% if query_params|length > 0 %}
+        {{ query_params | join(',\n') | safe }}
+    {% endif %}
+    }
+
+    query_params = {key:value for (key,value) in query_params.items() if value is not None}
+
+    async with aiohttp.ClientSession(headers=headers) as session:
+        async with session.request(
+            '{{ method }}',
+            base_path + path,
+            params=query_params,
+        ) as inital_response:
+            if inital_response.status != {{ return_type.status_code }}:
+                raise HTTPException(inital_response.status, f'{{ operationId }} failed with status code: {inital_response.status}')
+            response = await inital_response.json()
+
+{% if return_type.complex_type %}
+{% if return_type.list_type is none %}
+            return {{ return_type.type.converted_type }}(**response.json()) if response.json() is not None else {{ return_type.type.converted_type }}()
+{% else %}
+            return [{{ return_type.list_type }}(**item) for item in response.json()]
+{% endif %}
+{% else %}
+            return response.json()
+{% endif %}
