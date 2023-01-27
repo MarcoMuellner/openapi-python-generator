@@ -35,6 +35,7 @@ __Documentation:__ [here][documentation]
 - __Support for multiple rest frameworks.__ __OpenAPI python generator__ currently supports the following:
     - [httpx](https://pypi.org/project/httpx/)
     - [requests](https://pypi.org/project/requests/)
+    - [aiohttp](https://pypi.org/project/aiohttp/)
 - __Async and sync code generation support__, depending on the framework. It will automatically create both for frameworks that support both.
 - __Easily extendable using Jinja2 templates__. The code is designed to be easily extendable and should support even more languages and frameworks in the future.
 - __Fully tested__. Every generated code is automatically tested against the OpenAPI spec and we have 100% coverage.
