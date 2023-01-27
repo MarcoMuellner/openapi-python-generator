@@ -51,9 +51,11 @@ pytest-cov = "^3.0.0"
 fastapi = "^0.78.0"
 uvicorn = "^0.18.1"
 respx = "^0.20.1"
+aiohttp = "^3.8.3"
 
 [tool.poetry.scripts]
 openapi-python-generator = "openapi_python_generator.__main__:main"
+
 
 [tool.coverage.paths]
 source = ["src", "*/site-packages"]
