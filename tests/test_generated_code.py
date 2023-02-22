@@ -1,5 +1,6 @@
 import json
 import os
+import traceback
 from datetime import datetime
 
 import orjson
@@ -205,9 +206,14 @@ def test_generate_code(model_data_with_cleanup, library, use_orjson):
     exec(exec_code_base, globals(), _locals)
     assert root_route.called
 
-    exec_code_base = f"from .test_result import *\nresp_result = get_users_users_get()"
+    exec_code_base = f"try:\n\tfrom .test_result import *\n\tresp_result = get_users_users_get()\nexcept Exception as e:\n\tprint(e)\n\traise e"
 
-    exec(exec_code_base, globals(), _locals)
+    try:
+        exec(exec_code_base, globals(), _locals)
+    except Exception as e:
+        print(e)
+        print(traceback.format_exc())
+        raise e
 
     exec(
         "from .test_result.services.general_service import *\nassert isinstance(resp_result, list)",

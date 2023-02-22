@@ -59,7 +59,7 @@ from openapi_python_generator.models import TypeConversion
         (
             Schema(type="array", items=Reference(ref="#/components/schemas/test_name")),
             TypeConversion(
-                original_type="array<test_name>",
+                original_type="array<#/components/schemas/test_name>",
                 converted_type="List[test_name]",
                 import_types=["from .test_name import test_name"],
             ),
@@ -72,10 +72,19 @@ from openapi_python_generator.models import TypeConversion
 )
 def test_type_converter_simple(test_openapi_types, expected_python_types):
     assert type_converter(test_openapi_types, True) == expected_python_types
-    assert (
-        type_converter(test_openapi_types, False).converted_type
-        == "Optional[" + expected_python_types.converted_type + "]"
-    )
+
+    if test_openapi_types.type == "array" and isinstance(test_openapi_types.items, Reference):
+        expected_type = expected_python_types.converted_type.split("[")[-1].split("]")[0]
+
+        assert (
+            type_converter(test_openapi_types, False).converted_type
+            == "Optional[List[Optional[" + expected_type + "]]]"
+        )
+    else:
+        assert (
+            type_converter(test_openapi_types, False).converted_type
+            == "Optional[" + expected_python_types.converted_type + "]"
+        )
 
 
 @pytest.mark.parametrize(
@@ -120,7 +129,7 @@ def test_type_converter_simple(test_openapi_types, expected_python_types):
         (
             Schema(type="array", items=Reference(ref="#/components/schemas/test_name")),
             TypeConversion(
-                original_type="array<test_name>",
+                original_type="array<#/components/schemas/test_name>",
                 converted_type="List[test_name]",
                 import_types=["from .test_name import test_name"],
             ),
@@ -135,11 +144,19 @@ def test_type_converter_simple_orjson(test_openapi_types, expected_python_types)
     orjson_usage = common.get_use_orjson()
     common.set_use_orjson(True)
     assert type_converter(test_openapi_types, True) == expected_python_types
-    assert (
-        type_converter(test_openapi_types, False).converted_type
-        == "Optional[" + expected_python_types.converted_type + "]"
-    )
-    common.set_use_orjson(orjson_usage)
+    if test_openapi_types.type == "array" and isinstance(test_openapi_types.items, Reference):
+        expected_type = expected_python_types.converted_type.split("[")[-1].split("]")[0]
+
+        assert (
+            type_converter(test_openapi_types, False).converted_type
+            == "Optional[List[Optional[" + expected_type + "]]]"
+        )
+    else:
+        assert (
+            type_converter(test_openapi_types, False).converted_type
+            == "Optional[" + expected_python_types.converted_type + "]"
+        )
+        common.set_use_orjson(orjson_usage)
 
 
 def test_type_converter_all_of_reference():
@@ -211,9 +228,10 @@ def test_type_converter_exceptions():
 
 
 @pytest.mark.parametrize(
-    "test_name, test_schema, test_parent_schema, expected_property",
+    "test_model_name, test_name, test_schema, test_parent_schema, expected_property",
     [
         (
+            "SomeModel",
             "test_name",
             Schema(type="string"),
             Schema(type="object"),
@@ -227,6 +245,7 @@ def test_type_converter_exceptions():
             ),
         ),
         (
+            "SomeModel",
             "test_name",
             Schema(type="string"),
             Schema(type="object", required=["test_name"]),
@@ -237,13 +256,25 @@ def test_type_converter_exceptions():
                 imported_type=["test_name"],
             ),
         ),
+        (
+            "SomeModel",
+            "SomeModel",
+            Schema(allOf=[Reference(ref="#/components/schemas/SomeModel")]),
+            Schema(type="object", required=["SomeModel"]),
+            Property(
+                name='SomeModel',
+                type=TypeConversion(original_type='tuple<#/components/schemas/SomeModel>', converted_type='"SomeModel"',import_types = []),
+                required=True,
+                imported_type=[],
+            ),
+        ),
     ],
 )
 def test_type_converter_property(
-    test_name, test_schema, test_parent_schema, expected_property
+    test_model_name, test_name, test_schema, test_parent_schema, expected_property
 ):
     assert (
-        _generate_property_from_schema(test_name, test_schema, test_parent_schema)
+        _generate_property_from_schema(test_model_name,test_name, test_schema, test_parent_schema)
         == expected_property
     )
 
@@ -289,7 +320,7 @@ def test_type_converter_property_reference(
     test_name, test_reference, parent_schema, expected_property
 ):
     assert (
-        _generate_property_from_reference(test_name, test_reference, parent_schema)
+        _generate_property_from_reference("",test_name, test_reference, parent_schema)
         == expected_property
     )
 
