@@ -21,7 +21,7 @@ from openapi_python_generator.models import Property
 from openapi_python_generator.models import TypeConversion
 
 
-def type_converter(schema: Schema,  required: bool = False, model_name: str | None = None,) -> TypeConversion:
+def type_converter(schema: Schema,  required: bool = False, model_name: Optional[str] = None,) -> TypeConversion:
     """
     Converts an OpenAPI type to a Python type.
     :param schema: Schema containing the type to be converted
