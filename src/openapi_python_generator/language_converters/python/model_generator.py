@@ -131,7 +131,7 @@ def type_converter(schema: Schema,  required: bool = False, model_name: str | No
     elif schema.type == "array":
         retVal = pre_type + "List["
         if isinstance(schema.items, Reference):
-            converted_reference = _generate_property_from_reference(model_name, "", schema.items, schema)
+            converted_reference = _generate_property_from_reference(model_name, "", schema.items, schema, required)
             import_types = converted_reference.type.import_types
             original_type = "array<" + converted_reference.type.original_type + ">"
             retVal += converted_reference.type.converted_type
@@ -183,7 +183,7 @@ def _generate_property_from_schema(
 
 
 def _generate_property_from_reference(
-        model_name: str, name: str, reference: Reference, parent_schema: Optional[Schema] = None,
+        model_name: str, name: str, reference: Reference, parent_schema: Optional[Schema] = None, force_required: bool = False
 ) -> Property:
     """
     Generates a property from a reference. It takes the name of the reference as the type, and then
@@ -191,13 +191,14 @@ def _generate_property_from_reference(
     :param name: Name of the schema
     :param reference: reference to be converted
     :param parent_schema: Component this belongs to
+    :param force_required: Force the property to be required
     :return: Property and model to be imported by the file
     """
     required = (
         parent_schema is not None
         and parent_schema.required is not None
         and name in parent_schema.required
-    )
+    ) or force_required
     import_model = reference.ref.split("/")[-1]
 
     if import_model == model_name:

@@ -374,6 +374,47 @@ def test_generate_query_params(test_openapi_operation, expected_result):
             Operation(
                 responses={
                     "200": Response(
+                        description="Successful Response",
+                        content={"application/json": MediaType(media_type_schema=Reference(ref="#/components/schemas/User"))}
+                    )
+                }
+            ),
+            OpReturnType(
+                type=TypeConversion(
+                    original_type="#/components/schemas/User",
+                    converted_type="User",
+                    import_types=["User"],
+                ),
+                status_code="200",
+                complex_type=True,
+            )
+
+        ),
+        (
+                Operation(
+                    responses={
+                        "200": Response(
+                            description="Successful Response",
+                            content={"application/json": MediaType(media_type_schema=Schema(type='array',items=Reference(ref="#/components/schemas/User")))}
+                        )
+                    }
+                ),
+                OpReturnType(
+                    type=TypeConversion(
+                        original_type="array<#/components/schemas/User>",
+                        converted_type="List[User]",
+                        import_types=['from .User import User'],
+                    ),
+                    status_code="200",
+                    complex_type=True,
+                    list_type="User"
+                )
+
+        ),
+        (
+            Operation(
+                responses={
+                    "200": Response(
                         description="",
                         content={
                             "application/json": MediaType(
