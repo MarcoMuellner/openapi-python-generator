@@ -30,14 +30,15 @@ def {{ operation_id }}({{ params }}) -> {% if return_type.type is none or return
     )
     if response.status_code != {{ return_type.status_code }}:
         raise HTTPException(response.status_code, f'{{ operationId }} failed with status code: {response.status_code}')
-{% if return_type.type is not none and return_type.type.converted_type is not none %}
-{% if return_type.complex_type %}
-{% if return_type.list_type is none %}
+
+{% if return_type.type is none or return_type.type.converted_type is none %}
+    return None
+{% elif return_type.complex_type %}
+    {%- if return_type.list_type is none %}
     return {{ return_type.type.converted_type }}(**response.json()) if response.json() is not None else {{ return_type.type.converted_type }}()
-{% else %}
+    {%- else %}
     return [{{ return_type.list_type }}(**item) for item in response.json()]
-{% endif %}
+    {%- endif %}
 {% else %}
     return response.json()
-{% endif %}
 {% endif %}
