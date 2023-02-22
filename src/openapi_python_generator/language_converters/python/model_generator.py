@@ -21,7 +21,7 @@ from openapi_python_generator.models import Property
 from openapi_python_generator.models import TypeConversion
 
 
-def type_converter(schema: Schema, model_name: str | None = None, required: bool = False) -> TypeConversion:
+def type_converter(schema: Schema,  required: bool = False, model_name: str | None = None,) -> TypeConversion:
     """
     Converts an OpenAPI type to a Python type.
     :param schema: Schema containing the type to be converted
@@ -131,10 +131,10 @@ def type_converter(schema: Schema, model_name: str | None = None, required: bool
     elif schema.type == "array":
         retVal = pre_type + "List["
         if isinstance(schema.items, Reference):
-            import_type = schema.items.ref.split("/")[-1]
-            import_types = [f"from .{import_type} import {import_type}"]
-            original_type = "array<" + schema.items.ref.split("/")[-1] + ">"
-            retVal += schema.items.ref.split("/")[-1]
+            converted_reference = _generate_property_from_reference(model_name, "", schema.items, schema)
+            import_types = converted_reference.type.import_types
+            original_type = "array<" + converted_reference.type.original_type + ">"
+            retVal += converted_reference.type.converted_type
         elif isinstance(schema.items, Schema):
             original_type = "array<" + str(schema.items.type) + ">"
             retVal += type_converter(schema.items, True).converted_type
@@ -176,14 +176,14 @@ def _generate_property_from_schema(
     )
     return Property(
         name=name,
-        type=type_converter(schema, model_name, required),
+        type=type_converter(schema, required, model_name),
         required=required,
         default=None if required else "None",
     )
 
 
 def _generate_property_from_reference(
-    name: str, reference: Reference, parent_schema: Optional[Schema] = None
+        model_name: str, name: str, reference: Reference, parent_schema: Optional[Schema] = None,
 ) -> Property:
     """
     Generates a property from a reference. It takes the name of the reference as the type, and then
@@ -200,11 +200,18 @@ def _generate_property_from_reference(
     )
     import_model = reference.ref.split("/")[-1]
 
-    type_conv = TypeConversion(
-        original_type=reference.ref,
-        converted_type=import_model if required else "Optional[" + import_model + "]",
-        import_types=[f"from .{import_model} import {import_model}"],
-    )
+    if import_model == model_name:
+        type_conv = TypeConversion(
+            original_type=reference.ref,
+            converted_type=import_model if required else 'Optional["' + import_model + '"]',
+            import_types=None
+        )
+    else:
+        type_conv = TypeConversion(
+            original_type=reference.ref,
+            converted_type=import_model if required else "Optional[" + import_model + "]",
+            import_types=[f"from .{import_model} import {import_model}"],
+        )
     return Property(
         name=name,
         type=type_conv,
@@ -261,7 +268,7 @@ def generate_models(components: Components) -> List[Model]:
         for prop_name, property in property_iterator:
             if isinstance(property, Reference):
                 conv_property = _generate_property_from_reference(
-                    prop_name, property, schema_or_reference
+                    name, prop_name, property, schema_or_reference
                 )
             else:
                 conv_property = _generate_property_from_schema(
