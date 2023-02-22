@@ -21,10 +21,11 @@ from openapi_python_generator.models import Property
 from openapi_python_generator.models import TypeConversion
 
 
-def type_converter(schema: Schema, required: bool = False) -> TypeConversion:
+def type_converter(schema: Schema, model_name: str | None = None, required: bool = False) -> TypeConversion:
     """
     Converts an OpenAPI type to a Python type.
     :param schema: Schema containing the type to be converted
+    :param model_name: Name of the original model on which the type is defined
     :param required: Flag indicating if the type is required by the class
     :return: The converted type
     """
@@ -45,14 +46,23 @@ def type_converter(schema: Schema, required: bool = False) -> TypeConversion:
                 conversions.append(type_converter(sub_schema, True))
             else:
                 import_type = sub_schema.ref.split("/")[-1]
-                import_types = [f"from .{import_type} import {import_type}"]
-                conversions.append(
-                    TypeConversion(
-                        original_type=sub_schema.ref,
-                        converted_type=import_type,
-                        import_types=import_types,
+                if import_type == model_name:
+                    conversions.append(
+                        TypeConversion(
+                            original_type=sub_schema.ref,
+                            converted_type='"' + model_name + '"',
+                            import_types=None,
+                        )
                     )
-                )
+                else:
+                    import_types = [f"from .{import_type} import {import_type}"]
+                    conversions.append(
+                        TypeConversion(
+                            original_type=sub_schema.ref,
+                            converted_type=import_type,
+                            import_types=import_types,
+                        )
+                    )
 
         original_type = (
             "tuple<" + ",".join([i.original_type for i in conversions]) + ">"
@@ -148,11 +158,12 @@ def type_converter(schema: Schema, required: bool = False) -> TypeConversion:
 
 
 def _generate_property_from_schema(
-    name: str, schema: Schema, parent_schema: Optional[Schema] = None
+    model_name : str, name: str, schema: Schema, parent_schema: Optional[Schema] = None
 ) -> Property:
     """
     Generates a property from a schema. It takes the type of the schema and converts it to a python type, and then
     creates the according property.
+    :param model_name: Name of the model this property belongs to
     :param name: Name of the schema
     :param schema: schema to be converted
     :param parent_schema: Component this belongs to
@@ -165,7 +176,7 @@ def _generate_property_from_schema(
     )
     return Property(
         name=name,
-        type=type_converter(schema, required),
+        type=type_converter(schema, model_name, required),
         required=required,
         default=None if required else "None",
     )
@@ -254,7 +265,7 @@ def generate_models(components: Components) -> List[Model]:
                 )
             else:
                 conv_property = _generate_property_from_schema(
-                    prop_name, property, schema_or_reference
+                    name, prop_name, property, schema_or_reference
                 )
             properties.append(conv_property)
 

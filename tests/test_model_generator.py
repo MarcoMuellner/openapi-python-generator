@@ -211,9 +211,10 @@ def test_type_converter_exceptions():
 
 
 @pytest.mark.parametrize(
-    "test_name, test_schema, test_parent_schema, expected_property",
+    "test_model_name, test_name, test_schema, test_parent_schema, expected_property",
     [
         (
+            "SomeModel",
             "test_name",
             Schema(type="string"),
             Schema(type="object"),
@@ -227,6 +228,7 @@ def test_type_converter_exceptions():
             ),
         ),
         (
+            "SomeModel",
             "test_name",
             Schema(type="string"),
             Schema(type="object", required=["test_name"]),
@@ -237,13 +239,25 @@ def test_type_converter_exceptions():
                 imported_type=["test_name"],
             ),
         ),
+        (
+            "SomeModel",
+            "SomeModel",
+            Schema(allOf=[Reference(ref="#/components/schemas/SomeModel")]),
+            Schema(type="object", required=["SomeModel"]),
+            Property(
+                name='SomeModel',
+                type=TypeConversion(original_type='tuple<#/components/schemas/SomeModel>', converted_type='"SomeModel"',import_types = []),
+                required=True,
+                imported_type=[],
+            ),
+        ),
     ],
 )
 def test_type_converter_property(
-    test_name, test_schema, test_parent_schema, expected_property
+    test_model_name, test_name, test_schema, test_parent_schema, expected_property
 ):
     assert (
-        _generate_property_from_schema(test_name, test_schema, test_parent_schema)
+        _generate_property_from_schema(test_model_name,test_name, test_schema, test_parent_schema)
         == expected_property
     )
 
