@@ -25,7 +25,7 @@ class APIConfig():
 {% if env_token_name is not none %}
         raise Exception("This client was generated with an environment variable for the access token. Please set the environment variable '{{ env_token_name }}' to the access token.")
 {% else %}
-        _access_token = value
+        APIConfig._access_token = value
 {% endif %}
 
 class HTTPException(Exception):
