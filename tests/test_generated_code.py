@@ -29,7 +29,7 @@ def test_get_auth_token_without_env(model_data_with_cleanup):
     )
 
 
-def test_set_auth_token(model_data_with_cleanup):
+def test_set_auth_token():
     generate_data(test_data_path, test_result_path)
 
     _locals = locals()
