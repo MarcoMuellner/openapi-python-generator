@@ -29,6 +29,22 @@ def test_get_auth_token_without_env(model_data_with_cleanup):
     )
 
 
+def test_set_auth_token():
+    generate_data(test_data_path, test_result_path)
+
+    _locals = locals()
+    program = """from .test_result import APIConfig
+assert APIConfig.get_access_token() is None
+APIConfig.set_access_token('foo_bar')
+assert APIConfig.get_access_token() == 'foo_bar'
+    """
+    exec(
+        program,
+        globals(),
+        _locals,
+    )
+
+
 @pytest.mark.parametrize(
     "library, use_orjson",
     [
