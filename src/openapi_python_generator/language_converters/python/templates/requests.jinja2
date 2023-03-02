@@ -1,4 +1,4 @@
-def {{ operation_id }}({{ params }} api_config_override : APIConfig | None = None) -> {% if return_type.type is none or return_type.type.converted_type is none %}None{% else %}{{ return_type.type.converted_type}}{% endif %}:
+def {{ operation_id }}({{ params }} api_config_override : Optional[APIConfig] = None) -> {% if return_type.type is none or return_type.type.converted_type is none %}None{% else %}{{ return_type.type.converted_type}}{% endif %}:
     api_config = api_config_override if api_config_override else APIConfig()
 
     base_path = api_config.base_path
