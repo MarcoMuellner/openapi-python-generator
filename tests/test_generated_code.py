@@ -23,7 +23,7 @@ def test_get_auth_token_without_env(model_data_with_cleanup):
     _locals = locals()
 
     exec(
-        "from .test_result import *\nassert APIConfig.get_access_token() is None",
+        "from .test_result import *\nassert APIConfig().get_access_token() is None",
         globals(),
         _locals,
     )
@@ -34,9 +34,10 @@ def test_set_auth_token():
 
     _locals = locals()
     program = """from .test_result import APIConfig
-assert APIConfig.get_access_token() is None
-APIConfig.set_access_token('foo_bar')
-assert APIConfig.get_access_token() == 'foo_bar'
+api_config = APIConfig()
+assert api_config.get_access_token() is None
+api_config.set_access_token('foo_bar')
+assert api_config.get_access_token() == 'foo_bar'
     """
     exec(
         program,
@@ -46,29 +47,40 @@ assert APIConfig.get_access_token() == 'foo_bar'
 
 
 @pytest.mark.parametrize(
-    "library, use_orjson",
+    "library, use_orjson, custom_ip",
     [
-        (HTTPLibrary.httpx, False),
-        (HTTPLibrary.requests, False),
-        (HTTPLibrary.httpx, True),
-        (HTTPLibrary.requests, True),
-        (HTTPLibrary.aiohttp, True),
-        (HTTPLibrary.aiohttp, False),
+        (HTTPLibrary.httpx, False, None),
+        (HTTPLibrary.requests, False, None),
+        (HTTPLibrary.httpx, True, None),
+        (HTTPLibrary.requests, True, None),
+        (HTTPLibrary.aiohttp, True, None),
+        (HTTPLibrary.aiohttp, False, None),
+        (HTTPLibrary.httpx, False, "http://localhost:5000"),
+        (HTTPLibrary.requests, False, "http://localhost:5000"),
+        (HTTPLibrary.httpx, True, "http://localhost:5000"),
+        (HTTPLibrary.requests, True, "http://localhost:5000"),
+        (HTTPLibrary.aiohttp, True, "http://localhost:5000"),
+        (HTTPLibrary.aiohttp, False, "http://localhost:5000"),
     ],
 )
 @respx.mock
-def test_generate_code(model_data_with_cleanup, library, use_orjson):
+def test_generate_code(model_data_with_cleanup, library, use_orjson, custom_ip):
     generate_data(test_data_path, test_result_path, library, use_orjson=use_orjson)
     result = generator(model_data_with_cleanup, library_config_dict[library])
 
+    if custom_ip is not None:
+        api_config_custom = result.api_config
+        api_config_custom.base_url = custom_ip
+    else:
+        api_config_custom = result.api_config
+
     # Testing root access
-    _locals = locals()
-    root_route = respx.get(f"{result.api_config.base_url}/").mock(
+    root_route = respx.get(f"{api_config_custom.base_url}/").mock(
         return_value=Response(
             status_code=200, content=json.dumps({"message": "Hello World"})
         )
     )
-    get_users_route = respx.get(f"{result.api_config.base_url}/users").mock(
+    get_users_route = respx.get(f"{api_config_custom.base_url}/users").mock(
         return_value=Response(
             status_code=200,
             content=json.dumps(
@@ -93,7 +105,7 @@ def test_generate_code(model_data_with_cleanup, library, use_orjson):
             ),
         )
     )
-    get_user_route = respx.get(f"{result.api_config.base_url}/users/{1}").mock(
+    get_user_route = respx.get(f"{api_config_custom.base_url}/users/{1}").mock(
         return_value=Response(
             status_code=200,
             content=json.dumps(
@@ -108,7 +120,7 @@ def test_generate_code(model_data_with_cleanup, library, use_orjson):
             ),
         )
     )
-    post_user_route = respx.post(f"{result.api_config.base_url}/users").mock(
+    post_user_route = respx.post(f"{api_config_custom.base_url}/users").mock(
         return_value=Response(
             status_code=201,
             content=json.dumps(
@@ -123,7 +135,7 @@ def test_generate_code(model_data_with_cleanup, library, use_orjson):
             ),
         )
     )
-    update_user_route = respx.patch(f"{result.api_config.base_url}/users/{1}").mock(
+    update_user_route = respx.patch(f"{api_config_custom.base_url}/users/{1}").mock(
         return_value=Response(
             status_code=200,
             content=json.dumps(
@@ -137,11 +149,11 @@ def test_generate_code(model_data_with_cleanup, library, use_orjson):
             ),
         )
     )
-    delete_user_route = respx.delete(f"{result.api_config.base_url}/users/{1}").mock(
+    delete_user_route = respx.delete(f"{api_config_custom.base_url}/users/{1}").mock(
         return_value=Response(status_code=204, content=json.dumps(None))
     )
 
-    get_teams_route = respx.get(f"{result.api_config.base_url}/teams").mock(
+    get_teams_route = respx.get(f"{api_config_custom.base_url}/teams").mock(
         return_value=Response(
             status_code=200,
             content=orjson.dumps(
@@ -167,7 +179,7 @@ def test_generate_code(model_data_with_cleanup, library, use_orjson):
         )
     )
 
-    get_team_route = respx.get(f"{result.api_config.base_url}/teams/{1}").mock(
+    get_team_route = respx.get(f"{api_config_custom.base_url}/teams/{1}").mock(
         return_value=Response(
             status_code=200,
             content=orjson.dumps(
@@ -182,7 +194,7 @@ def test_generate_code(model_data_with_cleanup, library, use_orjson):
             ),
         )
     )
-    post_team_route = respx.post(f"{result.api_config.base_url}/teams").mock(
+    post_team_route = respx.post(f"{api_config_custom.base_url}/teams").mock(
         return_value=Response(
             status_code=201,
             content=orjson.dumps(
@@ -198,7 +210,7 @@ def test_generate_code(model_data_with_cleanup, library, use_orjson):
         )
     )
 
-    update_team_route = respx.patch(f"{result.api_config.base_url}/teams/{1}").mock(
+    update_team_route = respx.patch(f"{api_config_custom.base_url}/teams/{1}").mock(
         return_value=Response(
             status_code=200,
             content=orjson.dumps(
@@ -214,15 +226,26 @@ def test_generate_code(model_data_with_cleanup, library, use_orjson):
         )
     )
 
-    delete_team_route = respx.delete(f"{result.api_config.base_url}/teams/{1}").mock(
+    delete_team_route = respx.delete(f"{api_config_custom.base_url}/teams/{1}").mock(
         return_value=Response(status_code=204, content=json.dumps(None))
     )
 
-    exec_code_base = f"""from .test_result.services.general_service import *\nresp_result = root__get()\nassert isinstance(resp_result, RootResponse)"""
+    passed_api_config = None
+
+
+
+    if custom_ip:
+        from .test_result.api_config import APIConfig
+        passed_api_config = APIConfig()
+        passed_api_config.base_path = custom_ip
+
+    _locals = locals()
+
+    exec_code_base = f"""from .test_result.services.general_service import *\nresp_result = root__get(passed_api_config)\nassert isinstance(resp_result, RootResponse)"""
     exec(exec_code_base, globals(), _locals)
     assert root_route.called
 
-    exec_code_base = f"try:\n\tfrom .test_result import *\n\tresp_result = get_users_users_get()\nexcept Exception as e:\n\tprint(e)\n\traise e"
+    exec_code_base = f"try:\n\tfrom .test_result import *\n\tresp_result = get_users_users_get(passed_api_config)\nexcept Exception as e:\n\tprint(e)\n\traise e"
 
     try:
         exec(exec_code_base, globals(), _locals)
@@ -250,7 +273,7 @@ def test_generate_code(model_data_with_cleanup, library, use_orjson):
     exec(exec_code_base, globals(), _locals)
     assert get_users_route.called
 
-    exec_code_base = f"from .test_result.services.general_service import *\nresp_result = get_user_users__user_id__get(1,'test')"
+    exec_code_base = f"from .test_result.services.general_service import *\nresp_result = get_user_users__user_id__get(1,'test',passed_api_config)"
 
     exec(exec_code_base, globals(), _locals)
 
@@ -266,7 +289,7 @@ def test_generate_code(model_data_with_cleanup, library, use_orjson):
         id=1, username="user1", email="x@y.com", password="123456", is_active=True
     )
 
-    exec_code_base = f"from .test_result.services.general_service import *\nresp_result = create_user_users_post(User(**{data}))"
+    exec_code_base = f"from .test_result.services.general_service import *\nresp_result = create_user_users_post(User(**{data}),passed_api_config)"
 
     exec(exec_code_base, globals(), _locals)
 
@@ -277,7 +300,7 @@ def test_generate_code(model_data_with_cleanup, library, use_orjson):
     )
     assert post_user_route.called
 
-    exec_code_base = f"from .test_result.services.general_service import *\nresp_result = update_user_users__user_id__patch(1, User(**{data}))"
+    exec_code_base = f"from .test_result.services.general_service import *\nresp_result = update_user_users__user_id__patch(1, User(**{data}), passed_api_config)"
 
     exec(exec_code_base, globals(), _locals)
 
@@ -288,13 +311,13 @@ def test_generate_code(model_data_with_cleanup, library, use_orjson):
     )
     assert update_user_route.called
 
-    exec_code_base = f"from .test_result.services.general_service import *\nresp_result = delete_user_users__user_id__delete(1)"
+    exec_code_base = f"from .test_result.services.general_service import *\nresp_result = delete_user_users__user_id__delete(1, passed_api_config)"
 
     exec(exec_code_base, globals(), _locals)
 
     assert delete_user_route.called
 
-    exec_code_base = f"from .test_result.services.general_service import *\nresp_result = get_teams_teams_get()"
+    exec_code_base = f"from .test_result.services.general_service import *\nresp_result = get_teams_teams_get(passed_api_config)"
 
     exec(exec_code_base, globals(), _locals)
 
@@ -315,7 +338,7 @@ def test_generate_code(model_data_with_cleanup, library, use_orjson):
     )
     assert get_teams_route.called
 
-    exec_code_base = f"from .test_result.services.general_service import *\nresp_result = get_team_teams__team_id__get(1)"
+    exec_code_base = f"from .test_result.services.general_service import *\nresp_result = get_team_teams__team_id__get(1, passed_api_config)"
 
     exec(exec_code_base, globals(), _locals)
     assert get_team_route.called
@@ -329,16 +352,16 @@ def test_generate_code(model_data_with_cleanup, library, use_orjson):
         updated_at="",
     )
 
-    exec_code_base = f"from .test_result.services.general_service import *\nfrom datetime import datetime\nresp_result = create_team_teams_post(Team(**{data}))"
+    exec_code_base = f"from .test_result.services.general_service import *\nfrom datetime import datetime\nresp_result = create_team_teams_post(Team(**{data}), passed_api_config)"
 
     exec(exec_code_base, globals(), _locals)
     assert post_team_route.called
 
-    exec_code_base = f"from .test_result.services.general_service import *\nfrom datetime import datetime\nresp_result = update_team_teams__team_id__patch(1, Team(**{data}))"
+    exec_code_base = f"from .test_result.services.general_service import *\nfrom datetime import datetime\nresp_result = update_team_teams__team_id__patch(1, Team(**{data}), passed_api_config)"
 
     exec(exec_code_base, globals(), _locals)
     assert update_team_route.called
 
-    exec_code_base = f"from .test_result.services.general_service import *\nresp_result = delete_team_teams__team_id__delete(1)"
+    exec_code_base = f"from .test_result.services.general_service import *\nresp_result = delete_team_teams__team_id__delete(1, passed_api_config)"
 
     exec(exec_code_base, globals(), _locals)
