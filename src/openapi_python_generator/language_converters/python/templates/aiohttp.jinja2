@@ -21,6 +21,13 @@ async def {{ operation_id }}({{ params }}) -> {% if return_type.type is none or 
             '{{ method }}',
             base_path + path,
             params=query_params,
+    {% if body_param %}
+        {% if use_orjson %}
+            data=orjson.dumps({{ body_param }})
+        {% else %}
+            json = {{ body_param }}
+        {% endif %}
+    {% endif %}
         ) as inital_response:
             if inital_response.status != {{ return_type.status_code }}:
                 raise HTTPException(inital_response.status, f'{{ operationId }} failed with status code: {inital_response.status}')
