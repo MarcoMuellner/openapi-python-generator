@@ -110,6 +110,15 @@
             },
             "name": "user_id",
             "in": "path"
+          },
+          {
+            "required": true,
+            "schema": {
+              "title": "Api-Key",
+              "type": "string"
+            },
+            "name": "api-key",
+            "in": "header"
           }
         ],
         "responses": {

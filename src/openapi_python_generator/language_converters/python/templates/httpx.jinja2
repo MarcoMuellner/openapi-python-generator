@@ -5,6 +5,7 @@
         'Content-Type': 'application/json',
         'Accept': 'application/json',
         'Authorization': f'Bearer { APIConfig.get_access_token() }',
+        {{ header_params | join(',\n') | safe }}
     }
     query_params : Dict[str,Any] = {
     {% if query_params|length > 0 %}

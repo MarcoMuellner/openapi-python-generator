@@ -1,0 +1,1038 @@
+{
+	"openapi": "3.0.2",
+	"info": {
+		"title": "GetCourse Integration",
+		"description": "Provide hooks for GetCourse processes and export/import of GetCourse data.",
+		"version": "0.1.0"
+	},
+	"servers": [],
+	"paths": {
+		"/v1/exports/groups/": {
+			"post": {
+				"tags": [
+					"exports"
+				],
+				"summary": "Get Groups",
+				"operationId": "get_groups_v1_exports_groups__post",
+				"parameters": [
+					{
+						"required": true,
+						"schema": {
+							"title": "Api-Key",
+							"type": "string"
+						},
+						"name": "api-key",
+						"in": "header"
+					}
+				],
+				"requestBody": {
+					"content": {
+						"application/json": {
+							"schema": {
+								"title": "AccountGroupsRequest",
+								"required": [
+									"domain"
+								],
+								"type": "object",
+								"properties": {
+									"domain": {
+										"title": "Domain",
+										"type": "string"
+									}
+								}
+							}
+						}
+					},
+					"required": true
+				},
+				"responses": {
+					"200": {
+						"description": "Successful Response",
+						"content": {
+							"application/json": {
+								"schema": {
+									"title": "AccountGroupsResponse",
+									"required": [
+										"ok",
+										"groups"
+									],
+									"type": "object",
+									"properties": {
+										"ok": {
+											"title": "Ok",
+											"type": "boolean"
+										},
+										"groups": {
+											"title": "Groups",
+											"type": "array",
+											"items": {
+												"title": "Group",
+												"required": [
+													"id",
+													"name"
+												],
+												"type": "object",
+												"properties": {
+													"id": {
+														"title": "Id",
+														"type": "string"
+													},
+													"name": {
+														"title": "Name",
+														"type": "string"
+													},
+													"last_added_at": {
+														"title": "Last Added At",
+														"type": "string",
+														"format": "date-time"
+													}
+												}
+											}
+										}
+									}
+								}
+							}
+						}
+					},
+					"422": {
+						"description": "Validation Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"title": "HTTPValidationError",
+									"type": "object",
+									"properties": {
+										"detail": {
+											"title": "Detail",
+											"type": "array",
+											"items": {
+												"title": "ValidationError",
+												"required": [
+													"loc",
+													"msg",
+													"type"
+												],
+												"type": "object",
+												"properties": {
+													"loc": {
+														"title": "Location",
+														"type": "array",
+														"items": {
+															"anyOf": [
+																{
+																	"type": "string"
+																},
+																{
+																	"type": "integer"
+																}
+															]
+														}
+													},
+													"msg": {
+														"title": "Message",
+														"type": "string"
+													},
+													"type": {
+														"title": "Error Type",
+														"type": "string"
+													}
+												}
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/v1/gc/members/add": {
+			"get": {
+				"tags": [
+					"hooks"
+				],
+				"summary": "Add Member",
+				"operationId": "add_member_v1_gc_members_add_get",
+				"parameters": [
+					{
+						"required": true,
+						"schema": {
+							"title": "Domain",
+							"type": "string"
+						},
+						"name": "domain",
+						"in": "query"
+					},
+					{
+						"required": true,
+						"schema": {
+							"title": "Gid",
+							"type": "string"
+						},
+						"name": "gid",
+						"in": "query"
+					},
+					{
+						"required": true,
+						"schema": {
+							"title": "Uid",
+							"type": "string"
+						},
+						"name": "uid",
+						"in": "query"
+					},
+					{
+						"required": true,
+						"schema": {
+							"title": "Name",
+							"type": "string"
+						},
+						"name": "name",
+						"in": "query"
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Successful Response",
+						"content": {
+							"application/json": {
+								"schema": {
+									"title": "AddGroupMemberResponse",
+									"required": [
+										"ok"
+									],
+									"type": "object",
+									"properties": {
+										"ok": {
+											"title": "Ok",
+											"type": "boolean"
+										}
+									}
+								}
+							}
+						}
+					},
+					"422": {
+						"description": "Validation Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"title": "HTTPValidationError",
+									"type": "object",
+									"properties": {
+										"detail": {
+											"title": "Detail",
+											"type": "array",
+											"items": {
+												"title": "ValidationError",
+												"required": [
+													"loc",
+													"msg",
+													"type"
+												],
+												"type": "object",
+												"properties": {
+													"loc": {
+														"title": "Location",
+														"type": "array",
+														"items": {
+															"anyOf": [
+																{
+																	"type": "string"
+																},
+																{
+																	"type": "integer"
+																}
+															]
+														}
+													},
+													"msg": {
+														"title": "Message",
+														"type": "string"
+													},
+													"type": {
+														"title": "Error Type",
+														"type": "string"
+													}
+												}
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/v1/gc/members/remove": {
+			"get": {
+				"tags": [
+					"hooks"
+				],
+				"summary": "Remove Member",
+				"operationId": "remove_member_v1_gc_members_remove_get",
+				"parameters": [
+					{
+						"required": true,
+						"schema": {
+							"title": "Domain",
+							"type": "string"
+						},
+						"name": "domain",
+						"in": "query"
+					},
+					{
+						"required": true,
+						"schema": {
+							"title": "Gid",
+							"type": "string"
+						},
+						"name": "gid",
+						"in": "query"
+					},
+					{
+						"required": true,
+						"schema": {
+							"title": "Uid",
+							"type": "string"
+						},
+						"name": "uid",
+						"in": "query"
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Successful Response",
+						"content": {
+							"application/json": {
+								"schema": {
+									"title": "RemoveGroupMemberResponse",
+									"required": [
+										"ok"
+									],
+									"type": "object",
+									"properties": {
+										"ok": {
+											"title": "Ok",
+											"type": "boolean"
+										}
+									}
+								}
+							}
+						}
+					},
+					"422": {
+						"description": "Validation Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"title": "HTTPValidationError",
+									"type": "object",
+									"properties": {
+										"detail": {
+											"title": "Detail",
+											"type": "array",
+											"items": {
+												"title": "ValidationError",
+												"required": [
+													"loc",
+													"msg",
+													"type"
+												],
+												"type": "object",
+												"properties": {
+													"loc": {
+														"title": "Location",
+														"type": "array",
+														"items": {
+															"anyOf": [
+																{
+																	"type": "string"
+																},
+																{
+																	"type": "integer"
+																}
+															]
+														}
+													},
+													"msg": {
+														"title": "Message",
+														"type": "string"
+													},
+													"type": {
+														"title": "Error Type",
+														"type": "string"
+													}
+												}
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/v1/actions/accounts/create": {
+			"post": {
+				"tags": [
+					"actions"
+				],
+				"summary": "Create Account",
+				"operationId": "create_account_v1_actions_accounts_create_post",
+				"requestBody": {
+					"content": {
+						"application/json": {
+							"schema": {
+								"title": "AccountRequest",
+								"required": [
+									"domain"
+								],
+								"type": "object",
+								"properties": {
+									"domain": {
+										"title": "Domain",
+										"type": "string"
+									}
+								}
+							}
+						}
+					},
+					"required": true
+				},
+				"responses": {
+					"200": {
+						"description": "Successful Response",
+						"content": {
+							"application/json": {
+								"schema": {
+									"title": "CreateAccountResponse",
+									"required": [
+										"ok",
+										"created",
+										"account"
+									],
+									"type": "object",
+									"properties": {
+										"ok": {
+											"title": "Ok",
+											"type": "boolean"
+										},
+										"created": {
+											"title": "Created",
+											"type": "boolean"
+										},
+										"account": {
+											"title": "Account",
+											"type": "string"
+										}
+									}
+								}
+							}
+						}
+					},
+					"422": {
+						"description": "Validation Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"title": "HTTPValidationError",
+									"type": "object",
+									"properties": {
+										"detail": {
+											"title": "Detail",
+											"type": "array",
+											"items": {
+												"title": "ValidationError",
+												"required": [
+													"loc",
+													"msg",
+													"type"
+												],
+												"type": "object",
+												"properties": {
+													"loc": {
+														"title": "Location",
+														"type": "array",
+														"items": {
+															"anyOf": [
+																{
+																	"type": "string"
+																},
+																{
+																	"type": "integer"
+																}
+															]
+														}
+													},
+													"msg": {
+														"title": "Message",
+														"type": "string"
+													},
+													"type": {
+														"title": "Error Type",
+														"type": "string"
+													}
+												}
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/v1/actions/accounts/update_groups": {
+			"post": {
+				"tags": [
+					"actions"
+				],
+				"summary": "Update Groups",
+				"operationId": "update_groups_v1_actions_accounts_update_groups_post",
+				"parameters": [
+					{
+						"required": true,
+						"schema": {
+							"title": "Api-Key",
+							"type": "string"
+						},
+						"name": "api-key",
+						"in": "header"
+					}
+				],
+				"requestBody": {
+					"content": {
+						"application/json": {
+							"schema": {
+								"title": "AccountRequest",
+								"required": [
+									"domain"
+								],
+								"type": "object",
+								"properties": {
+									"domain": {
+										"title": "Domain",
+										"type": "string"
+									}
+								}
+							}
+						}
+					},
+					"required": true
+				},
+				"responses": {
+					"200": {
+						"description": "Successful Response",
+						"content": {
+							"application/json": {
+								"schema": {
+									"title": "UpdateAccountGroupsResponse",
+									"required": [
+										"ok",
+										"account",
+										"groups"
+									],
+									"type": "object",
+									"properties": {
+										"ok": {
+											"title": "Ok",
+											"type": "boolean"
+										},
+										"account": {
+											"title": "Account",
+											"type": "string"
+										},
+										"groups": {
+											"title": "Groups",
+											"type": "array",
+											"items": {
+												"type": "string"
+											}
+										}
+									}
+								}
+							}
+						}
+					},
+					"422": {
+						"description": "Validation Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"title": "HTTPValidationError",
+									"type": "object",
+									"properties": {
+										"detail": {
+											"title": "Detail",
+											"type": "array",
+											"items": {
+												"title": "ValidationError",
+												"required": [
+													"loc",
+													"msg",
+													"type"
+												],
+												"type": "object",
+												"properties": {
+													"loc": {
+														"title": "Location",
+														"type": "array",
+														"items": {
+															"anyOf": [
+																{
+																	"type": "string"
+																},
+																{
+																	"type": "integer"
+																}
+															]
+														}
+													},
+													"msg": {
+														"title": "Message",
+														"type": "string"
+													},
+													"type": {
+														"title": "Error Type",
+														"type": "string"
+													}
+												}
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/v1/actions/members/register_group_member": {
+			"post": {
+				"tags": [
+					"actions"
+				],
+				"summary": "Register Group Member",
+				"operationId": "register_group_member_v1_actions_members_register_group_member_post",
+				"requestBody": {
+					"content": {
+						"application/json": {
+							"schema": {
+								"title": "RegisterGroupMemberRequest",
+								"required": [
+									"domain",
+									"gid",
+									"uid",
+									"user_id"
+								],
+								"type": "object",
+								"properties": {
+									"domain": {
+										"title": "Domain",
+										"type": "string"
+									},
+									"gid": {
+										"title": "Gid",
+										"type": "string"
+									},
+									"uid": {
+										"title": "Uid",
+										"type": "string"
+									},
+									"user_id": {
+										"title": "User Id",
+										"type": "integer"
+									}
+								}
+							}
+						}
+					},
+					"required": true
+				},
+				"responses": {
+					"200": {
+						"description": "Successful Response",
+						"content": {
+							"application/json": {
+								"schema": {
+									"title": "RegisterGroupMemberResponse",
+									"required": [
+										"ok",
+										"member",
+										"group"
+									],
+									"type": "object",
+									"properties": {
+										"ok": {
+											"title": "Ok",
+											"type": "boolean"
+										},
+										"member": {
+											"title": "Member",
+											"type": "string"
+										},
+										"group": {
+											"title": "Group",
+											"type": "string"
+										}
+									}
+								}
+							}
+						}
+					},
+					"422": {
+						"description": "Validation Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"title": "HTTPValidationError",
+									"type": "object",
+									"properties": {
+										"detail": {
+											"title": "Detail",
+											"type": "array",
+											"items": {
+												"title": "ValidationError",
+												"required": [
+													"loc",
+													"msg",
+													"type"
+												],
+												"type": "object",
+												"properties": {
+													"loc": {
+														"title": "Location",
+														"type": "array",
+														"items": {
+															"anyOf": [
+																{
+																	"type": "string"
+																},
+																{
+																	"type": "integer"
+																}
+															]
+														}
+													},
+													"msg": {
+														"title": "Message",
+														"type": "string"
+													},
+													"type": {
+														"title": "Error Type",
+														"type": "string"
+													}
+												}
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	},
+	"components": {
+		"schemas": {
+			"AccountGroupsRequest": {
+				"title": "AccountGroupsRequest",
+				"required": [
+					"domain"
+				],
+				"type": "object",
+				"properties": {
+					"domain": {
+						"title": "Domain",
+						"type": "string"
+					}
+				}
+			},
+			"AccountGroupsResponse": {
+				"title": "AccountGroupsResponse",
+				"required": [
+					"ok",
+					"groups"
+				],
+				"type": "object",
+				"properties": {
+					"ok": {
+						"title": "Ok",
+						"type": "boolean"
+					},
+					"groups": {
+						"title": "Groups",
+						"type": "array",
+						"items": {
+							"title": "Group",
+							"required": [
+								"id",
+								"name"
+							],
+							"type": "object",
+							"properties": {
+								"id": {
+									"title": "Id",
+									"type": "string"
+								},
+								"name": {
+									"title": "Name",
+									"type": "string"
+								},
+								"last_added_at": {
+									"title": "Last Added At",
+									"type": "string",
+									"format": "date-time"
+								}
+							}
+						}
+					}
+				}
+			},
+			"AccountRequest": {
+				"title": "AccountRequest",
+				"required": [
+					"domain"
+				],
+				"type": "object",
+				"properties": {
+					"domain": {
+						"title": "Domain",
+						"type": "string"
+					}
+				}
+			},
+			"AddGroupMemberResponse": {
+				"title": "AddGroupMemberResponse",
+				"required": [
+					"ok"
+				],
+				"type": "object",
+				"properties": {
+					"ok": {
+						"title": "Ok",
+						"type": "boolean"
+					}
+				}
+			},
+			"CreateAccountResponse": {
+				"title": "CreateAccountResponse",
+				"required": [
+					"ok",
+					"created",
+					"account"
+				],
+				"type": "object",
+				"properties": {
+					"ok": {
+						"title": "Ok",
+						"type": "boolean"
+					},
+					"created": {
+						"title": "Created",
+						"type": "boolean"
+					},
+					"account": {
+						"title": "Account",
+						"type": "string"
+					}
+				}
+			},
+			"Group": {
+				"title": "Group",
+				"required": [
+					"id",
+					"name"
+				],
+				"type": "object",
+				"properties": {
+					"id": {
+						"title": "Id",
+						"type": "string"
+					},
+					"name": {
+						"title": "Name",
+						"type": "string"
+					},
+					"last_added_at": {
+						"title": "Last Added At",
+						"type": "string",
+						"format": "date-time"
+					}
+				}
+			},
+			"HTTPValidationError": {
+				"title": "HTTPValidationError",
+				"type": "object",
+				"properties": {
+					"detail": {
+						"title": "Detail",
+						"type": "array",
+						"items": {
+							"title": "ValidationError",
+							"required": [
+								"loc",
+								"msg",
+								"type"
+							],
+							"type": "object",
+							"properties": {
+								"loc": {
+									"title": "Location",
+									"type": "array",
+									"items": {
+										"anyOf": [
+											{
+												"type": "string"
+											},
+											{
+												"type": "integer"
+											}
+										]
+									}
+								},
+								"msg": {
+									"title": "Message",
+									"type": "string"
+								},
+								"type": {
+									"title": "Error Type",
+									"type": "string"
+								}
+							}
+						}
+					}
+				}
+			},
+			"RegisterGroupMemberRequest": {
+				"title": "RegisterGroupMemberRequest",
+				"required": [
+					"domain",
+					"gid",
+					"uid",
+					"user_id"
+				],
+				"type": "object",
+				"properties": {
+					"domain": {
+						"title": "Domain",
+						"type": "string"
+					},
+					"gid": {
+						"title": "Gid",
+						"type": "string"
+					},
+					"uid": {
+						"title": "Uid",
+						"type": "string"
+					},
+					"user_id": {
+						"title": "User Id",
+						"type": "integer"
+					}
+				}
+			},
+			"RegisterGroupMemberResponse": {
+				"title": "RegisterGroupMemberResponse",
+				"required": [
+					"ok",
+					"member",
+					"group"
+				],
+				"type": "object",
+				"properties": {
+					"ok": {
+						"title": "Ok",
+						"type": "boolean"
+					},
+					"member": {
+						"title": "Member",
+						"type": "string"
+					},
+					"group": {
+						"title": "Group",
+						"type": "string"
+					}
+				}
+			},
+			"RemoveGroupMemberResponse": {
+				"title": "RemoveGroupMemberResponse",
+				"required": [
+					"ok"
+				],
+				"type": "object",
+				"properties": {
+					"ok": {
+						"title": "Ok",
+						"type": "boolean"
+					}
+				}
+			},
+			"UpdateAccountGroupsResponse": {
+				"title": "UpdateAccountGroupsResponse",
+				"required": [
+					"ok",
+					"account",
+					"groups"
+				],
+				"type": "object",
+				"properties": {
+					"ok": {
+						"title": "Ok",
+						"type": "boolean"
+					},
+					"account": {
+						"title": "Account",
+						"type": "string"
+					},
+					"groups": {
+						"title": "Groups",
+						"type": "array",
+						"items": {
+							"type": "string"
+						}
+					}
+				}
+			},
+			"ValidationError": {
+				"title": "ValidationError",
+				"required": [
+					"loc",
+					"msg",
+					"type"
+				],
+				"type": "object",
+				"properties": {
+					"loc": {
+						"title": "Location",
+						"type": "array",
+						"items": {
+							"anyOf": [
+								{
+									"type": "string"
+								},
+								{
+									"type": "integer"
+								}
+							]
+						}
+					},
+					"msg": {
+						"title": "Message",
+						"type": "string"
+					},
+					"type": {
+						"title": "Error Type",
+						"type": "string"
+					}
+				}
+			}
+		}
+	}
+}

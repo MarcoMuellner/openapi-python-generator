@@ -20,5 +20,5 @@ def generate_api_config(
         content=JINJA_ENV.get_template(API_CONFIG_TEMPLATE).render(
             env_token_name=env_token_name, **data.dict()
         ),
-        base_url=data.servers[0].url,
+        base_url=data.servers[0].url if len(data.servers) > 0 else "NO SERVER",
     )

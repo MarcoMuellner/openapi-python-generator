@@ -32,6 +32,7 @@ class ServiceOperation(BaseModel):
     params: str
     operation_id: str
     query_params: List[str]
+    header_params: List[str]
     return_type: OpReturnType
     operation: Operation
     pathItem: PathItem
