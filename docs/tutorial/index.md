@@ -788,12 +788,12 @@ only sync (for __requests__) or only async (for __aiohttp__) services.
     ``` py
     ...
     async def async_root__get() -> RootResponse:
-        base_path = APIConfig.base_path
+        base_path = APIConfig().base_path
         path = f"/"
         headers = {
             "Content-Type": "application/json",
             "Accept": "application/json",
-            "Authorization": f"Bearer { APIConfig.get_access_token() }",
+            "Authorization": f"Bearer { APIConfig().get_access_token() }",
         }
         query_params = {}
 
@@ -815,12 +815,12 @@ only sync (for __requests__) or only async (for __aiohttp__) services.
     ``` py
     ...
     def root__get() -> RootResponse:
-        base_path = APIConfig.base_path
+        base_path = APIConfig().base_path
         path = f"/"
         headers = {
             "Content-Type": "application/json",
             "Accept": "application/json",
-            "Authorization": f"Bearer { APIConfig.get_access_token() }",
+            "Authorization": f"Bearer { APIConfig().get_access_token() }",
         }
         query_params = {}
 
