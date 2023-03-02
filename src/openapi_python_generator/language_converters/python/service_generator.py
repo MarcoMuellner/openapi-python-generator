@@ -1,5 +1,5 @@
 import re
-from typing import Dict
+from typing import Dict, Literal
 from typing import List
 from typing import Tuple
 from typing import Union
@@ -158,19 +158,24 @@ def generate_operation_id(operation: Operation, http_op: str) -> str:
         raise Exception(f"OperationId is not defined for {http_op}")  # pragma: no cover
 
 
-def generate_query_params(operation: Operation) -> List[str]:
+def _generate_params(operation: Operation, param_in : Literal["query", "header"] = "query"):
     if operation.parameters is None:
         return []
 
     params = []
     for param in operation.parameters:
-        if isinstance(param, Parameter) and param.param_in == "query":
+        if isinstance(param, Parameter) and param.param_in == param_in:
             param_name_cleaned = param.name.replace("-", "_")
 
             params.append(f"'{param.name}' : {param_name_cleaned}")
 
     return params
 
+def generate_query_params(operation: Operation) -> List[str]:
+    return _generate_params(operation, "query")
+
+def generate_header_params(operation: Operation) -> List[str]:
+    return _generate_params(operation, "header")
 
 def generate_return_type(operation: Operation) -> OpReturnType:
     if operation.responses is None:
@@ -257,6 +262,7 @@ def generate_services(
         params = generate_params(op)
         operation_id = generate_operation_id(op, http_operation)
         query_params = generate_query_params(op)
+        header_params = generate_header_params(op)
         return_type = generate_return_type(op)
         body_param = generate_body_param(op)
 
@@ -264,6 +270,7 @@ def generate_services(
             params=params,
             operation_id=operation_id,
             query_params=query_params,
+            header_params=header_params,
             return_type=return_type,
             operation=op,
             pathItem=path,

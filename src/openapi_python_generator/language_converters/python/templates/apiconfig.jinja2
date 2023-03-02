@@ -3,7 +3,8 @@
 from typing import Optional, Union
 
 class APIConfig():
-    base_path: str = '{{ servers[0].url }}'
+    base_path: str = {% if servers|length > 0 %} '{{ servers[0].url }}' {% else %} 'NO SERVER' {% endif %}
+
     verify: Union[bool, str] = True
 {% if env_token_name is none %}
     _access_token : Optional[str] = None

@@ -34,6 +34,7 @@ def write_code(path: Path, content) -> None:
                 formatted_contend = black.format_file_contents(
                     content, fast=False, mode=black.FileMode(line_length=120)
                 )
+
             except NothingChanged:
                 formatted_contend = content
             formatted_contend = isort.code(formatted_contend, line_length=120)
@@ -142,5 +143,7 @@ def generate_data(
     """
     data = get_open_api(source)
     click.echo(f"Generating data from {source}")
+
     result = generator(data, library_config_dict[library], env_token_name, use_orjson)
+
     write_data(result, output)

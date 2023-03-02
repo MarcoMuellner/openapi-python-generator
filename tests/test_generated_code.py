@@ -250,7 +250,7 @@ def test_generate_code(model_data_with_cleanup, library, use_orjson):
     exec(exec_code_base, globals(), _locals)
     assert get_users_route.called
 
-    exec_code_base = f"from .test_result.services.general_service import *\nresp_result = get_user_users__user_id__get(1)"
+    exec_code_base = f"from .test_result.services.general_service import *\nresp_result = get_user_users__user_id__get(1,'test')"
 
     exec(exec_code_base, globals(), _locals)
 
@@ -260,6 +260,7 @@ def test_generate_code(model_data_with_cleanup, library, use_orjson):
         _locals,
     )
     assert get_user_route.called
+    assert len([(key,value) for key,value in get_user_route.calls[0][0].headers.raw if b'api-key' in key and b'test' in value]) == 1
 
     data = dict(
         id=1, username="user1", email="x@y.com", password="123456", is_active=True
