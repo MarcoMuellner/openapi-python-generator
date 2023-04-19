@@ -110,6 +110,7 @@ def generate_params(operation: Operation) -> str:
         "application/json",
         "text/plain",
         "multipart/form-data",
+        "application/x-www-form-urlencoded"
     ]
 
     if operation.requestBody is not None:

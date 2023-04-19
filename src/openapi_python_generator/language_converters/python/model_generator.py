@@ -45,7 +45,7 @@ def type_converter(schema: Schema,  required: bool = False, model_name: Optional
             if isinstance(sub_schema, Schema):
                 conversions.append(type_converter(sub_schema, True))
             else:
-                import_type = sub_schema.ref.split("/")[-1]
+                import_type = sub_schema.ref.split("/")[-1].replace(".", "_")
                 if import_type == model_name:
                     conversions.append(
                         TypeConversion(
@@ -87,7 +87,7 @@ def type_converter(schema: Schema,  required: bool = False, model_name: Optional
             if isinstance(sub_schema, Schema):
                 conversions.append(type_converter(sub_schema, True))
             else:
-                import_type = sub_schema.ref.split("/")[-1]
+                import_type = sub_schema.ref.split("/")[-1].replace(".", "_")
                 import_types = [f"from .{import_type} import {import_type}"]
                 conversions.append(
                     TypeConversion(
@@ -199,7 +199,12 @@ def _generate_property_from_reference(
         and parent_schema.required is not None
         and name in parent_schema.required
     ) or force_required
-    import_model = reference.ref.split("/")[-1]
+
+    if "issuing.transaction" in reference.ref:
+        print("debug")
+
+    reference.ref = reference.ref.replace(".", "_")
+    import_model = reference.ref.split("/")[-1].replace(".", "_")
 
     if import_model == model_name:
         type_conv = TypeConversion(
@@ -237,6 +242,10 @@ def generate_models(components: Components) -> List[Model]:
         return models
 
     for name, schema_or_reference in components.schemas.items():
+        name = name.replace(".", "_")
+        if name == 'balance_transaction':
+            print("debug")
+        
         if schema_or_reference.enum is not None:
             value_dict = schema_or_reference.dict()
             regex = re.compile(r"[\s\/=\*\+]+")
@@ -275,6 +284,7 @@ def generate_models(components: Components) -> List[Model]:
                 conv_property = _generate_property_from_schema(
                     name, prop_name, property, schema_or_reference
                 )
+      
             properties.append(conv_property)
 
         generated_content = JINJA_ENV.get_template(MODELS_TEMPLATE).render(
