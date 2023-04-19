@@ -206,9 +206,9 @@ def generate_return_type(operation: Operation) -> OpReturnType:
     if isinstance(media_type_schema, MediaType):
         if isinstance(media_type_schema.media_type_schema, Reference):
             type_conv = TypeConversion(
-                original_type=media_type_schema.media_type_schema.ref,
-                converted_type=media_type_schema.media_type_schema.ref.split("/")[-1],
-                import_types=[media_type_schema.media_type_schema.ref.split("/")[-1]],
+                original_type=media_type_schema.media_type_schema.ref.replace(".", "_"),
+                converted_type=media_type_schema.media_type_schema.ref.split("/")[-1].replace(".", "_"),
+                import_types=[media_type_schema.media_type_schema.ref.split("/")[-1].replace(".", "_")],
             )
             return OpReturnType(
                 type=type_conv,
