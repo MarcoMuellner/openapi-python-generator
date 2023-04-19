@@ -29,6 +29,9 @@ def generator(
     common.set_use_orjson(use_orjson)
 
     if data.components is not None:
+        if data.components.schemas is not None:
+            data.components.schemas = {k.replace(".", "_"): v for k, v in data.components.schemas.items()}
+
         models = generate_models(data.components)
     else:
         models = []

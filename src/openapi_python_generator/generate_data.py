@@ -97,7 +97,7 @@ def write_data(data: ConversionResult, output: Union[str, Path]) -> None:
 
     # Write the models.
     for model in data.models:
-        files.append(model.file_name)
+        files.append(model.file_name.replace(".", "_"))
         write_code(models_path / f"{model.file_name}.py", model.content)
 
     # Create models.__init__.py file containing imports to all models.
