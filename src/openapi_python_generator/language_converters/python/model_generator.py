@@ -200,9 +200,6 @@ def _generate_property_from_reference(
         and name in parent_schema.required
     ) or force_required
 
-    if "issuing.transaction" in reference.ref:
-        print("debug")
-
     reference.ref = reference.ref.replace(".", "_")
     import_model = reference.ref.split("/")[-1].replace(".", "_")
 
@@ -243,8 +240,6 @@ def generate_models(components: Components) -> List[Model]:
 
     for name, schema_or_reference in components.schemas.items():
         name = name.replace(".", "_")
-        if name == 'balance_transaction':
-            print("debug")
         
         if schema_or_reference.enum is not None:
             value_dict = schema_or_reference.dict()
