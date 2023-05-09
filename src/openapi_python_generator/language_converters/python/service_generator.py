@@ -14,6 +14,7 @@ from openapi_schema_pydantic import RequestBody
 from openapi_schema_pydantic import Response
 from openapi_schema_pydantic import Schema
 
+from openapi_python_generator.exceptions import InvalidDataclassError
 from openapi_python_generator.language_converters.python import common
 from openapi_python_generator.language_converters.python.jinja_config import JINJA_ENV
 from openapi_python_generator.language_converters.python.model_generator import (
@@ -155,7 +156,8 @@ def generate_operation_id(operation: Operation, http_op: str) -> str:
     if operation.operationId is not None:
         return f"{operation.operationId.replace('-', '_')}"
     else:
-        raise Exception(f"OperationId is not defined for {http_op}")  # pragma: no cover
+        raise InvalidDataclassError(f"OperationId is not defined for {http_op} on {operation.summary}. "
+                        f"Please provide an operationId to uniquely identify this.")  # pragma: no cover
 
 
 def _generate_params(operation: Operation, param_in : Literal["query", "header"] = "query"):

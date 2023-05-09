@@ -1,0 +1,2 @@
+class InvalidDataclassError(Exception):
+    pass
