@@ -119,6 +119,14 @@ def type_converter(schema: Schema,  required: bool = False, model_name: Optional
         schema.schema_format is None or not common.get_use_orjson()
     ):
         converted_type = pre_type + "str" + post_type
+    elif schema.type == "string" and schema.schema_format.startswith("uuid") and common.get_use_orjson():
+        if len(schema.schema_format) > 4 and schema.schema_format[4].isnumeric():
+            uuid_type = schema.schema_format.upper()
+            converted_type = pre_type + uuid_type + post_type
+            import_types = ["from pydantic import " + uuid_type]
+        else:
+            converted_type = pre_type + "UUID" + post_type
+            import_types = ["from uuid import UUID"]
     elif schema.type == "string" and schema.schema_format == "date-time":
         converted_type = pre_type + "datetime" + post_type
         import_types = ["from datetime import datetime"]

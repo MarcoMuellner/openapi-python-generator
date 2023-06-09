@@ -68,6 +68,26 @@ from openapi_python_generator.models import TypeConversion
             Schema(type="null"),
             TypeConversion(original_type="null", converted_type="Any"),
         ),
+        (
+            Schema(type="string", schema_format="uuid"),
+            TypeConversion(original_type="string", converted_type="str"),
+        ),
+        (
+            Schema(type="string", schema_format="uuid1"),
+            TypeConversion(original_type="string", converted_type="str"),
+        ),
+        (
+            Schema(type="string", schema_format="uuid3"),
+            TypeConversion(original_type="string", converted_type="str"),
+        ),
+        (
+            Schema(type="string", schema_format="uuid4"),
+            TypeConversion(original_type="string", converted_type="str"),
+        ),
+        (
+            Schema(type="string", schema_format="uuid5"),
+            TypeConversion(original_type="string", converted_type="str"),
+        ),
     ],
 )
 def test_type_converter_simple(test_openapi_types, expected_python_types):
@@ -138,6 +158,42 @@ def test_type_converter_simple(test_openapi_types, expected_python_types):
             Schema(type="null"),
             TypeConversion(original_type="null", converted_type="Any"),
         ),
+        (
+            Schema(type="string", schema_format="uuid"),
+            TypeConversion(original_type="string", converted_type="UUID", import_types=['from uuid import UUID']),
+        ),
+        (
+            Schema(type="string", schema_format="uuid1"),
+            TypeConversion(
+                original_type="string",
+                converted_type="UUID1",
+                import_types=['from pydantic import UUID1']
+            ),
+        ),
+        (
+            Schema(type="string", schema_format="uuid3"),
+            TypeConversion(
+                original_type="string",
+                converted_type="UUID3",
+                import_types=['from pydantic import UUID3']
+            ),
+        ),
+        (
+            Schema(type="string", schema_format="uuid4"),
+            TypeConversion(
+                original_type="string",
+                converted_type="UUID4",
+                import_types=['from pydantic import UUID4']
+            ),
+        ),
+        (
+            Schema(type="string", schema_format="uuid5"),
+            TypeConversion(
+                original_type="string",
+                converted_type="UUID5",
+                import_types=['from pydantic import UUID5']
+            ),
+        )
     ],
 )
 def test_type_converter_simple_orjson(test_openapi_types, expected_python_types):
