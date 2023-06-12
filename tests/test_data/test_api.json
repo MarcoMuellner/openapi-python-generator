@@ -530,6 +530,49 @@
           }
         }
       },
+      "UserWithUuid": {
+        "title": "User",
+        "required": [
+          "id",
+          "username",
+          "email",
+          "password"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string",
+            "format": "uuid"
+          },
+          "username": {
+            "title": "Username",
+            "type": "string"
+          },
+          "email": {
+            "title": "Email",
+            "type": "string"
+          },
+          "password": {
+            "title": "Password",
+            "type": "string"
+          },
+          "is_active": {
+            "title": "Is Active",
+            "type": "boolean"
+          },
+          "created_at": {
+            "title": "Created At",
+            "type": "string",
+            "format": "date-time"
+          },
+          "some_foreign_key": {
+            "title": "Some Foreign Key",
+            "type": "string",
+            "format": "uuid4"
+          }
+        }
+      },
       "EnumComponent": {
         "title": "EnumComponent",
         "enum": [
