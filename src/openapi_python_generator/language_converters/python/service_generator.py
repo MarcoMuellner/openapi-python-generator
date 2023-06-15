@@ -83,16 +83,17 @@ def generate_params(operation: Operation) -> str:
                 continue  # pragma: no cover
             converted_result = ""
             required = False
+            param_name_cleaned = common.normalize_symbol(param.name)
 
             if isinstance(param.param_schema, Schema):
                 converted_result = (
-                    f"{param.name} : {type_converter(param.param_schema, param.required).converted_type}"
+                    f"{param_name_cleaned} : {type_converter(param.param_schema, param.required).converted_type}"
                     + ("" if param.required else " = None")
                 )
                 required = param.required
             elif isinstance(param.param_schema, Reference):
                 converted_result = (
-                    f"{param.name} : {param.param_schema.ref.split('/')[-1] }"
+                    f"{param_name_cleaned} : {param.param_schema.ref.split('/')[-1] }"
                     + (
                         ""
                         if isinstance(param, Reference) or param.required
@@ -153,7 +154,7 @@ def generate_params(operation: Operation) -> str:
 
 def generate_operation_id(operation: Operation, http_op: str) -> str:
     if operation.operationId is not None:
-        return f"{operation.operationId.replace('-', '_')}"
+        return common.normalize_symbol(operation.operationId)
     else:
         raise Exception(f"OperationId is not defined for {http_op}")  # pragma: no cover
 
@@ -165,8 +166,7 @@ def _generate_params(operation: Operation, param_in : Literal["query", "header"]
     params = []
     for param in operation.parameters:
         if isinstance(param, Parameter) and param.param_in == param_in:
-            param_name_cleaned = param.name.replace("-", "_")
-
+            param_name_cleaned = common.normalize_symbol(param.name)
             params.append(f"'{param.name}' : {param_name_cleaned}")
 
     return params
