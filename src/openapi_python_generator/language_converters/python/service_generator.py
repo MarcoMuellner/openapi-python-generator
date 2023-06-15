@@ -31,12 +31,13 @@ from openapi_python_generator.models import TypeConversion
 HTTP_OPERATIONS = ["get", "post", "put", "delete", "options", "head", "patch", "trace"]
 
 
-def generate_body_param(operation: Operation) -> Union[str, None]:
+def generate_body_param(operation: Operation, dict_arg: List[str] = None) -> Union[str, None]:
     if operation.requestBody is None:
         return None
     else:
         if isinstance(operation.requestBody, Reference):
-            return "data.dict()"
+            arguments = ", ".join(common.get_dict_args())
+            return f"data.dict({arguments})"
 
         if operation.requestBody.content is None:
             return None  # pragma: no cover
@@ -50,11 +51,13 @@ def generate_body_param(operation: Operation) -> Union[str, None]:
             return None  # pragma: no cover
 
         if isinstance(media_type.media_type_schema, Reference):
-            return "data.dict()"
+            arguments = ", ".join(common.get_dict_args())
+            return f"data.dict({arguments})"
         elif isinstance(media_type.media_type_schema, Schema):
             schema = media_type.media_type_schema
             if schema.type == "array":
-                return "[i.dict() for i in data]"
+                arguments = ", ".join(common.get_dict_args())
+                return f"[i.dict({arguments}) for i in data]"
             elif schema.type == "object":
                 return "data"
             else:

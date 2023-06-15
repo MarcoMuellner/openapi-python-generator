@@ -28,6 +28,8 @@ def test_issue_11(runner: CliRunner, model_data_with_cleanup, library) -> None:
             str(test_result_path),
             "--library",
             library.value,
+            "--dict-arg",
+            "exclude_unset=True"
         ],
     )
     assert result.exit_code == 0

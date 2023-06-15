@@ -29,7 +29,7 @@ def test_get_open_api(model_data):
 
 
 def test_generate_data(model_data_with_cleanup):
-    generate_data(test_data_path, test_result_path)
+    generate_data(test_data_path, test_result_path, [])
     assert test_result_path.exists()
     assert test_result_path.is_dir()
     assert (test_result_path / "api_config.py").exists()
@@ -46,7 +46,7 @@ def test_generate_data(model_data_with_cleanup):
 
 
 def test_write_data(model_data_with_cleanup):
-    result = generator(model_data_with_cleanup, library_config_dict[HTTPLibrary.httpx])
+    result = generator(model_data_with_cleanup, library_config_dict[HTTPLibrary.httpx], [])
     write_data(result, test_result_path)
 
     assert test_result_path.exists()
@@ -70,7 +70,7 @@ def test_write_data(model_data_with_cleanup):
     model_data_copy.components = None
     model_data_copy.paths = None
 
-    result = generator(model_data_copy, library_config_dict[HTTPLibrary.httpx])
+    result = generator(model_data_copy, library_config_dict[HTTPLibrary.httpx], [])
     write_data(result, test_result_path)
 
     assert test_result_path.exists()

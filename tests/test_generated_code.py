@@ -18,7 +18,7 @@ from .conftest import test_result_path
 
 
 def test_get_auth_token_without_env(model_data_with_cleanup):
-    generate_data(test_data_path, test_result_path)
+    generate_data(test_data_path, test_result_path, [])
 
     _locals = locals()
 
@@ -30,7 +30,7 @@ def test_get_auth_token_without_env(model_data_with_cleanup):
 
 
 def test_set_auth_token():
-    generate_data(test_data_path, test_result_path)
+    generate_data(test_data_path, test_result_path, [])
 
     _locals = locals()
     program = """from .test_result import APIConfig
@@ -47,26 +47,26 @@ assert api_config.get_access_token() == 'foo_bar'
 
 
 @pytest.mark.parametrize(
-    "library, use_orjson, custom_ip",
+    "library, use_orjson, custom_ip, dict_arg",
     [
-        (HTTPLibrary.httpx, False, None),
-        (HTTPLibrary.requests, False, None),
-        (HTTPLibrary.httpx, True, None),
-        (HTTPLibrary.requests, True, None),
-        (HTTPLibrary.aiohttp, True, None),
-        (HTTPLibrary.aiohttp, False, None),
-        (HTTPLibrary.httpx, False, "http://localhost:5000"),
-        (HTTPLibrary.requests, False, "http://localhost:5000"),
-        (HTTPLibrary.httpx, True, "http://localhost:5000"),
-        (HTTPLibrary.requests, True, "http://localhost:5000"),
-        (HTTPLibrary.aiohttp, True, "http://localhost:5000"),
-        (HTTPLibrary.aiohttp, False, "http://localhost:5000"),
+        (HTTPLibrary.httpx, False, None, []),
+        (HTTPLibrary.requests, False, None, []),
+        (HTTPLibrary.httpx, True, None, ["exclude_unset=True", "exclude_none=True"]),
+        (HTTPLibrary.requests, True, None, []),
+        (HTTPLibrary.aiohttp, True, None, ["exclude_unset=True", "exclude_none=True"]),
+        (HTTPLibrary.aiohttp, False, None, []),
+        (HTTPLibrary.httpx, False, "http://localhost:5000", []),
+        (HTTPLibrary.requests, False, "http://localhost:5000", []),
+        (HTTPLibrary.httpx, True, "http://localhost:5000", ["exclude_unset=True", "exclude_none=True"]),
+        (HTTPLibrary.requests, True, "http://localhost:5000", []),
+        (HTTPLibrary.aiohttp, True, "http://localhost:5000", ["exclude_unset=True", "exclude_none=True"]),
+        (HTTPLibrary.aiohttp, False, "http://localhost:5000", []),
     ],
 )
 @respx.mock
-def test_generate_code(model_data_with_cleanup, library, use_orjson, custom_ip):
-    generate_data(test_data_path, test_result_path, library, use_orjson=use_orjson)
-    result = generator(model_data_with_cleanup, library_config_dict[library])
+def test_generate_code(model_data_with_cleanup, library, use_orjson, custom_ip, dict_arg):
+    generate_data(test_data_path, test_result_path, dict_arg, library, use_orjson=use_orjson)
+    result = generator(model_data_with_cleanup, library_config_dict[library], dict_arg)
 
     if custom_ip is not None:
         api_config_custom = result.api_config
