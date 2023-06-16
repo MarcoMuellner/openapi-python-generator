@@ -1,0 +1,55 @@
+{
+	"openapi": "3.0.2",
+	"info": {
+		"title": "Test case for ",
+		"description": "Provide hooks for GetCourse processes and export/import of GetCourse data.",
+		"version": "0.1.0"
+	},
+	"servers": [],
+	"paths": {
+		"/v1/diffs": {
+			"post": {
+				"tags": [
+				],
+				"summary": "Get Groups",
+				"operationId": "get_groups_v1_exports_groups__post",
+				"parameters": [
+					{
+						"required": true,
+						"schema": {
+							"title": "from_sha of a diff",
+							"type": "string"
+						},
+						"name": "from",
+						"in": "query"
+					}
+				],
+				"requestBody": {
+					"content": {
+						"application/json": {
+							"schema": {
+								"title": "AccountGroupsRequest",
+								"required": [
+									"domain"
+								],
+								"type": "object",
+								"properties": {
+									"from": {
+										"title": "Domain",
+										"type": "string"
+									}
+								}
+							}
+						}
+					},
+					"required": true
+				},
+				"responses": {
+				}
+			}
+		}
+	},
+	"components": {
+		"schemas": {}
+	}
+}
