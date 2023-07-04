@@ -647,10 +647,10 @@ take a look at the `User.py` and the `Team.py` files:
 
     ``` py
     from typing import *
-    
+
     from pydantic import BaseModel, Field
-    
-    
+
+
     class User(BaseModel):
     """
     User model
@@ -675,9 +675,9 @@ take a look at the `User.py` and the `Team.py` files:
 
     ``` py
     from typing import *
-    
+
     from pydantic import BaseModel, Field
-    
+
     from .User import User
 
 

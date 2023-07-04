@@ -12,6 +12,7 @@ def runner() -> CliRunner:
     """Fixture for invoking command-line interfaces."""
     return CliRunner()
 
+
 @pytest.mark.parametrize(
     "library",
     [HTTPLibrary.httpx, HTTPLibrary.requests, HTTPLibrary.aiohttp],
@@ -30,4 +31,3 @@ def test_issue_11(runner: CliRunner, model_data_with_cleanup, library) -> None:
         ],
     )
     assert result.exit_code == 0
-

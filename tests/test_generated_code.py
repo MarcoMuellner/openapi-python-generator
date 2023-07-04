@@ -232,10 +232,9 @@ def test_generate_code(model_data_with_cleanup, library, use_orjson, custom_ip):
 
     passed_api_config = None
 
-
-
     if custom_ip:
         from .test_result.api_config import APIConfig
+
         passed_api_config = APIConfig()
         passed_api_config.base_path = custom_ip
 
@@ -283,7 +282,16 @@ def test_generate_code(model_data_with_cleanup, library, use_orjson, custom_ip):
         _locals,
     )
     assert get_user_route.called
-    assert len([(key,value) for key,value in get_user_route.calls[0][0].headers.raw if b'api-key' in key and b'test' in value]) == 1
+    assert (
+        len(
+            [
+                (key, value)
+                for key, value in get_user_route.calls[0][0].headers.raw
+                if b"api-key" in key and b"test" in value
+            ]
+        )
+        == 1
+    )
 
     data = dict(
         id=1, username="user1", email="x@y.com", password="123456", is_active=True

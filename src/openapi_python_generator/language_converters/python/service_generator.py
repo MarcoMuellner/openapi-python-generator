@@ -1,6 +1,7 @@
 import re
-from typing import Dict, Literal
+from typing import Dict
 from typing import List
+from typing import Literal
 from typing import Tuple
 from typing import Union
 
@@ -159,7 +160,9 @@ def generate_operation_id(operation: Operation, http_op: str) -> str:
         raise Exception(f"OperationId is not defined for {http_op}")  # pragma: no cover
 
 
-def _generate_params(operation: Operation, param_in : Literal["query", "header"] = "query"):
+def _generate_params(
+    operation: Operation, param_in: Literal["query", "header"] = "query"
+):
     if operation.parameters is None:
         return []
 
@@ -167,15 +170,18 @@ def _generate_params(operation: Operation, param_in : Literal["query", "header"]
     for param in operation.parameters:
         if isinstance(param, Parameter) and param.param_in == param_in:
             param_name_cleaned = common.normalize_symbol(param.name)
-            params.append(f"'{param.name}' : {param_name_cleaned}")
+            params.append(f"{param.name!r} : {param_name_cleaned}")
 
     return params
+
 
 def generate_query_params(operation: Operation) -> List[str]:
     return _generate_params(operation, "query")
 
+
 def generate_header_params(operation: Operation) -> List[str]:
     return _generate_params(operation, "header")
+
 
 def generate_return_type(operation: Operation) -> OpReturnType:
     if operation.responses is None:
