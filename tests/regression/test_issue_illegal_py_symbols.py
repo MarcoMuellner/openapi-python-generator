@@ -17,7 +17,9 @@ def runner() -> CliRunner:
     "library",
     [HTTPLibrary.httpx, HTTPLibrary.requests, HTTPLibrary.aiohttp],
 )
-def test_issue_keyword_parameter_name(runner: CliRunner, model_data_with_cleanup, library) -> None:
+def test_issue_keyword_parameter_name(
+    runner: CliRunner, model_data_with_cleanup, library
+) -> None:
     result = runner.invoke(
         main,
         [
@@ -34,7 +36,9 @@ def test_issue_keyword_parameter_name(runner: CliRunner, model_data_with_cleanup
     "library",
     [HTTPLibrary.httpx, HTTPLibrary.requests, HTTPLibrary.aiohttp],
 )
-def test_issue_illegal_character_in_operation_id(runner: CliRunner, model_data_with_cleanup, library) -> None:
+def test_issue_illegal_character_in_operation_id(
+    runner: CliRunner, model_data_with_cleanup, library
+) -> None:
     result = runner.invoke(
         main,
         [

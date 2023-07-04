@@ -93,8 +93,12 @@ from openapi_python_generator.models import TypeConversion
 def test_type_converter_simple(test_openapi_types, expected_python_types):
     assert type_converter(test_openapi_types, True) == expected_python_types
 
-    if test_openapi_types.type == "array" and isinstance(test_openapi_types.items, Reference):
-        expected_type = expected_python_types.converted_type.split("[")[-1].split("]")[0]
+    if test_openapi_types.type == "array" and isinstance(
+        test_openapi_types.items, Reference
+    ):
+        expected_type = expected_python_types.converted_type.split("[")[-1].split("]")[
+            0
+        ]
 
         assert (
             type_converter(test_openapi_types, False).converted_type
@@ -160,14 +164,18 @@ def test_type_converter_simple(test_openapi_types, expected_python_types):
         ),
         (
             Schema(type="string", schema_format="uuid"),
-            TypeConversion(original_type="string", converted_type="UUID", import_types=['from uuid import UUID']),
+            TypeConversion(
+                original_type="string",
+                converted_type="UUID",
+                import_types=["from uuid import UUID"],
+            ),
         ),
         (
             Schema(type="string", schema_format="uuid1"),
             TypeConversion(
                 original_type="string",
                 converted_type="UUID1",
-                import_types=['from pydantic import UUID1']
+                import_types=["from pydantic import UUID1"],
             ),
         ),
         (
@@ -175,7 +183,7 @@ def test_type_converter_simple(test_openapi_types, expected_python_types):
             TypeConversion(
                 original_type="string",
                 converted_type="UUID3",
-                import_types=['from pydantic import UUID3']
+                import_types=["from pydantic import UUID3"],
             ),
         ),
         (
@@ -183,7 +191,7 @@ def test_type_converter_simple(test_openapi_types, expected_python_types):
             TypeConversion(
                 original_type="string",
                 converted_type="UUID4",
-                import_types=['from pydantic import UUID4']
+                import_types=["from pydantic import UUID4"],
             ),
         ),
         (
@@ -191,17 +199,21 @@ def test_type_converter_simple(test_openapi_types, expected_python_types):
             TypeConversion(
                 original_type="string",
                 converted_type="UUID5",
-                import_types=['from pydantic import UUID5']
+                import_types=["from pydantic import UUID5"],
             ),
-        )
+        ),
     ],
 )
 def test_type_converter_simple_orjson(test_openapi_types, expected_python_types):
     orjson_usage = common.get_use_orjson()
     common.set_use_orjson(True)
     assert type_converter(test_openapi_types, True) == expected_python_types
-    if test_openapi_types.type == "array" and isinstance(test_openapi_types.items, Reference):
-        expected_type = expected_python_types.converted_type.split("[")[-1].split("]")[0]
+    if test_openapi_types.type == "array" and isinstance(
+        test_openapi_types.items, Reference
+    ):
+        expected_type = expected_python_types.converted_type.split("[")[-1].split("]")[
+            0
+        ]
 
         assert (
             type_converter(test_openapi_types, False).converted_type
@@ -318,8 +330,12 @@ def test_type_converter_exceptions():
             Schema(allOf=[Reference(ref="#/components/schemas/SomeModel")]),
             Schema(type="object", required=["SomeModel"]),
             Property(
-                name='SomeModel',
-                type=TypeConversion(original_type='tuple<#/components/schemas/SomeModel>', converted_type='"SomeModel"',import_types = []),
+                name="SomeModel",
+                type=TypeConversion(
+                    original_type="tuple<#/components/schemas/SomeModel>",
+                    converted_type='"SomeModel"',
+                    import_types=[],
+                ),
                 required=True,
                 imported_type=[],
             ),
@@ -330,7 +346,9 @@ def test_type_converter_property(
     test_model_name, test_name, test_schema, test_parent_schema, expected_property
 ):
     assert (
-        _generate_property_from_schema(test_model_name,test_name, test_schema, test_parent_schema)
+        _generate_property_from_schema(
+            test_model_name, test_name, test_schema, test_parent_schema
+        )
         == expected_property
     )
 
@@ -376,7 +394,7 @@ def test_type_converter_property_reference(
     test_name, test_reference, parent_schema, expected_property
 ):
     assert (
-        _generate_property_from_reference("",test_name, test_reference, parent_schema)
+        _generate_property_from_reference("", test_name, test_reference, parent_schema)
         == expected_property
     )
 

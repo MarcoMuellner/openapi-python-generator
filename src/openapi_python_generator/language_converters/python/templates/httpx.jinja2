@@ -32,7 +32,7 @@ with httpx.Client(base_url=base_path, verify=api_config.verify) as client:
         {% if use_orjson %}
         content=orjson.dumps({{ body_param }})
         {% else %}
-        json = json.dumps({{ body_param }})
+        json = {{ body_param }}
         {% endif %}
         {% endif %}
     )
