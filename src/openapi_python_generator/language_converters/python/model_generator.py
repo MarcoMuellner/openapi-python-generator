@@ -21,7 +21,7 @@ from openapi_python_generator.models import Property
 from openapi_python_generator.models import TypeConversion
 
 
-def type_converter(
+def type_converter(  # noqa: C901
     schema: Schema,
     required: bool = False,
     model_name: Optional[str] = None,

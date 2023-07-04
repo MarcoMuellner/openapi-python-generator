@@ -170,7 +170,7 @@ def _generate_params(
     for param in operation.parameters:
         if isinstance(param, Parameter) and param.param_in == param_in:
             param_name_cleaned = common.normalize_symbol(param.name)
-            params.append(f"'{param.name}' : {param_name_cleaned}")
+            params.append(f"{param.name!r} : {param_name_cleaned}")
 
     return params
 
