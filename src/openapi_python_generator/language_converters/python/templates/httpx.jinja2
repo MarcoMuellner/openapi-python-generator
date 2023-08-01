@@ -9,7 +9,6 @@
     headers = {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
-        'Authorization': f'Bearer { api_config.get_access_token() }',
         {{ header_params | join(',\n') | safe }}
     }
     query_params : Dict[str,Any] = {
