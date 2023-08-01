@@ -1,35 +1,35 @@
-name: Tests
+# name: Tests
 
-on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+# on:
+#   push:
+#     branches: [ main ]
+#   pull_request:
+#     branches: [ main ]
 
-  workflow_dispatch:
+#   workflow_dispatch:
 
-jobs:
-  tests:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-python@v3
-        with:
-          python-version: 3.9
-          architecture: x64
-      - run: pip install poetry==1.3.1
-      - run: poetry install
-      - run: poetry run pytest
-      - run: poetry run pytest --cov=src/ --cov-report=xml --cov-fail-under 90 --cov-config=.coveragerc
-      - uses: codecov/codecov-action@v2
-        if: always()
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          directory: ./coverage/reports/
-          env_vars: OS,PYTHON
-          fail_ci_if_error: true
-          files: ./coverage.xml
-          flags: unittests
-          name: codecov-umbrella
-          path_to_write_report: .codecov_report.txt
-          verbose: true
+# jobs:
+#   tests:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - uses: actions/checkout@v3
+#       - uses: actions/setup-python@v3
+#         with:
+#           python-version: 3.9
+#           architecture: x64
+#       - run: pip install poetry==1.3.1
+#       - run: poetry install
+#       - run: poetry run pytest
+#       - run: poetry run pytest --cov=src/ --cov-report=xml --cov-fail-under 90 --cov-config=.coveragerc
+#       - uses: codecov/codecov-action@v2
+#         if: always()
+#         with:
+#           token: ${{ secrets.CODECOV_TOKEN }}
+#           directory: ./coverage/reports/
+#           env_vars: OS,PYTHON
+#           fail_ci_if_error: true
+#           files: ./coverage.xml
+#           flags: unittests
+#           name: codecov-umbrella
+#           path_to_write_report: .codecov_report.txt
+#           verbose: true

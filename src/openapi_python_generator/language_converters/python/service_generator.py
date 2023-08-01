@@ -26,11 +26,19 @@ from openapi_python_generator.models import Service
 from openapi_python_generator.models import ServiceOperation
 from openapi_python_generator.models import TypeConversion
 
+class ClassService(Service):
+    class_name: str
 
 HTTP_OPERATIONS = ["get", "post", "put", "delete", "options", "head", "patch", "trace"]
 
+def convert_to_camel_case(word: str):
+    # split underscore using split
+    temp = word.split('_')
+    # joining result
+    return temp[0].title() + ''.join(ele.title() for ele in temp[1:])
 
 def generate_body_param(operation: Operation) -> Union[str, None]:
+
     if operation.requestBody is None:
         return None
     else:
@@ -198,6 +206,17 @@ def generate_return_type(operation: Operation) -> OpReturnType:
     chosen_response = good_responses[0][1]
 
     if isinstance(chosen_response, Response) and chosen_response.content is not None:
+        html_content = chosen_response.content.get("text/html") or chosen_response.content.get("application/html")
+
+        if html_content is not None:
+            return OpReturnType(
+                type=TypeConversion(
+                    original_type= "html",
+                    converted_type= "str"
+                ),
+                status_code=good_responses[0][0],
+                complex_type=False,
+            )
         media_type_schema = chosen_response.content.get("application/json")
     elif isinstance(chosen_response, Reference):
         media_type_schema = MediaType(
@@ -321,9 +340,11 @@ def generate_services(
     tags = set([so.tag for so in service_ops])
 
     for tag in tags:
+        file_name=f"{tag}_service".replace(" ", "_").lower()
         services.append(
-            Service(
-                file_name=f"{tag}_service",
+            ClassService(
+                file_name=file_name,
+                class_name=convert_to_camel_case(file_name),
                 operations=[
                     so for so in service_ops if so.tag == tag and not so.async_client
                 ],
@@ -341,9 +362,11 @@ def generate_services(
         )
 
     for tag in tags:
+        file_name=f"async_{tag}_service".replace(" ", "_").lower()
         services.append(
-            Service(
-                file_name=f"async_{tag}_service",
+            ClassService(
+                file_name=file_name,
+                class_name=convert_to_camel_case(file_name),
                 operations=[
                     so for so in service_ops if so.tag == tag and so.async_client
                 ],

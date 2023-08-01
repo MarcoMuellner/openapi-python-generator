@@ -1,5 +1,8 @@
-{%  if async_client %}async {% endif %}def {{ operation_id }}({{ params }} api_config_override : Optional[APIConfig] = None) -> {% if return_type.type is none or return_type.type.converted_type is none %}None{% else %}{{ return_type.type.converted_type}}{% endif %}:
-    api_config = api_config_override if api_config_override else APIConfig()
+{%  if async_client %}async {% endif %}def {{ operation_id }}(self, {{ params }} api_config_override : Optional[APIConfig] = None) -> {% if return_type.type is none or return_type.type.converted_type is none %}None{% else %}{{ return_type.type.converted_type}}{% endif %}:
+    api_config = api_config_override if api_config_override else self.config,
+    x_interaction_id=self.set_interaction_id(x_interaction_id),
+    client_id=self.client_id,
+    client_secret=self.client_secret,
 
     base_path = api_config.base_path
     path = f'{{ path_name }}'
@@ -17,6 +20,8 @@
 
     query_params = {key:value for (key,value) in query_params.items() if value is not None}
 
+    filtered_headers = {key:value for (key,value) in headers.items() if value is not None}
+
     {% if async_client %}
 async with httpx.AsyncClient(base_url=base_path, verify=api_config.verify) as client:
         response = await client.request(
@@ -26,7 +31,7 @@ with httpx.Client(base_url=base_path, verify=api_config.verify) as client:
     {% endif %}
         '{{ method }}',
         httpx.URL(path),
-        headers=headers,
+        headers=filtered_headers,
         params=query_params,
         {% if body_param %}
         {% if use_orjson %}
@@ -38,10 +43,12 @@ with httpx.Client(base_url=base_path, verify=api_config.verify) as client:
     )
 
     if response.status_code != {{ return_type.status_code }}:
-        raise HTTPException(response.status_code, f'{{ operationId }} failed with status code: {response.status_code}')
+        raise HTTPException(response=response)
 
 {% if return_type.type is none or return_type.type.converted_type is none %}
     return None
+{% elif return_type.type is not none or return_type.type.converted_type == "html" %}
+    return response.text
 {% elif return_type.complex_type %}
     {%- if return_type.list_type is none %}
     return {{ return_type.type.converted_type }}(**response.json()) if response.json() is not None else {{ return_type.type.converted_type }}()

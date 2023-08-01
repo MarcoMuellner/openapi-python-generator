@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Any
 from typing import Optional
 
 from openapi_schema_pydantic import Operation
@@ -74,8 +74,13 @@ class APIConfig(BaseModel):
     base_url: str
     content: str
 
+class APISDK(BaseModel):
+    file_name: str
+    content: str
+    classes: List[Any] = []
 
 class ConversionResult(BaseModel):
     models: List[Model]
     services: List[Service]
     api_config: APIConfig
+    api_sdk: APISDK
