@@ -4,16 +4,19 @@ from openapi_schema_pydantic import OpenAPI
 
 from openapi_python_generator.language_converters.python import common
 from openapi_python_generator.language_converters.python.api_config_generator import (
-    generate_api_config,
+    generate_api_config, generate_api_sdk
 )
 from openapi_python_generator.language_converters.python.model_generator import (
     generate_models,
 )
 from openapi_python_generator.language_converters.python.service_generator import (
-    generate_services,
+    generate_services
 )
+
+
 from openapi_python_generator.models import ConversionResult
 from openapi_python_generator.models import LibraryConfig
+
 
 
 def generator(
@@ -39,9 +42,12 @@ def generator(
         services = []
 
     api_config = generate_api_config(data, env_token_name)
+    api_sdk = generate_api_sdk(data, env_token_name, classes=[ {"class_name" :service.class_name , "file_name": service.file_name} for service in services ])
+
 
     return ConversionResult(
         models=models,
         services=services,
         api_config=api_config,
+        api_sdk=api_sdk
     )

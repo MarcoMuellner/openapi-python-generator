@@ -1,0 +1,33 @@
+from typing import Optional
+from structlog.stdlib import BoundLogger
+from .services import {{ classes | map(attribute='class_name') | join(', ') }}
+from .models import *
+from .api_config import APIConfig
+
+class SDK(object):
+    def __init__(
+        self,
+        sdk_name:str,
+        host: str,
+        env: str,
+        logger: BoundLogger,
+        client_id: Optional[str] = None,
+        client_secret: Optional[str] = None,
+    ):
+
+        self.logger = logger.bind(sdk=sdk_name, client_id=client_id, )
+        self.logger.info(f"init {sdk_name} Client SDK")
+
+        self.env = env
+        self.config = APIConfig(base_path=host, client_id=client_id, client_secret=client_secret)
+
+{% for class in classes %}
+        self._{{class.file_name}} = {{class.class_name}}(config=self.config, logger=self.logger)
+{% endfor %}
+
+{% for class in classes %}
+    @property
+    def {{class.file_name}}(self) -> {{class.class_name}}:
+        return self._{{class.file_name}}
+
+{% endfor %}

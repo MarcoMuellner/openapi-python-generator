@@ -1,38 +1,41 @@
-{% if env_token_name is not none %}import os{% endif %}
+from pydantic import BaseModel
+from typing import Optional, Any, Union
+from httpx import Response
 
-from pydantic import BaseModel, Field
-from typing import Optional, Union
+class UIErrorMessage(BaseModel):
+    en: str
+    ar: str
+
+class ErrorResponseDetails(BaseModel):
+    code: str
+    message: str
+    ui_error_message: UIErrorMessage
+
 
 class APIConfig(BaseModel):
+    client_id: Optional[str]
+    client_secret: Optional[str]
     base_path: str = {% if servers|length > 0 %} '{{ servers[0].url }}' {% else %} 'NO SERVER' {% endif %}
 
-    verify: Union[bool, str] = True
-{% if env_token_name is none %}
-    access_token : Optional[str] = None
-{% endif %}
+    verify: Union[bool, str] = False
 
-    def get_access_token(self) -> Optional[str]:
-{% if env_token_name is not none %}
-        try:
-            return os.environ['{{ env_token_name }}']
-        except KeyError:
-            return None
-{% else %}
-        return self.access_token
-{% endif %}
-
-    def set_access_token(self, value : str):
-{% if env_token_name is not none %}
-        raise Exception("This client was generated with an environment variable for the access token. Please set the environment variable '{{ env_token_name }}' to the access token.")
-{% else %}
-        self.access_token = value
-{% endif %}
 
 class HTTPException(Exception):
-    def __init__(self, status_code: int, message: str):
-        self.status_code = status_code
-        self.message = message
-        super().__init__(f"{status_code} {message}")
+    def __init__(self, response : Optional[Response] = None, error: Optional[Any]=None):
 
-    def __str__(self):
-        return f"{self.status_code} {self.message}"
+        try:
+            self.details = ErrorResponseDetails(**response.json().get("detail")) if response is not None else ErrorResponseDetails(** error.details.dict())
+
+        except Exception as e:
+            self.details = response.text
+
+        if response is not None:
+            self.status_code = response.status_code
+        elif hasattr(error, "status_code"):
+            self.status_code = error.status_code
+
+        def __call__(self, *args):
+            self.__class__(*(self.args + args))
+
+        def __str__(self):
+            return ": ".join(self.args)

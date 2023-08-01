@@ -1,6 +1,7 @@
 from typing import *
+from uuid4 import uuid4
+from structlog.stdlib import BoundLogger
 import {{ library_import }}
-import json
 {% if use_orjson %}
 import orjson
 {% endif %}
@@ -8,4 +9,14 @@ import orjson
 from ..models import *
 from ..api_config import APIConfig, HTTPException
 
-{{ content | safe}}
+class {{class_name}}:
+    def __init__(self, config: APIConfig, logger:BoundLogger):
+        self.config = config
+        self.logger = logger
+
+    def set_interaction_id(self, x_interaction_id: str = None) -> str:
+        return x_interaction_id if x_interaction_id else str(uuid4())
+
+{% filter indent(width=4) %}
+    {{ content | safe}}
+{% endfilter %}
