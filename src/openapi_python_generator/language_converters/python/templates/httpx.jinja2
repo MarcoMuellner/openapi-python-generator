@@ -46,7 +46,7 @@ with httpx.Client(base_url=base_path, verify=api_config.verify) as client:
 
 {% if return_type.type is none or return_type.type.converted_type is none %}
     return None
-{% elif return_type.type is not none or return_type.type.converted_type == "html" %}
+{% elif return_type.type is not none and return_type.type.converted_type == "html" %}
     return response.text
 {% elif return_type.complex_type %}
     {%- if return_type.list_type is none %}
