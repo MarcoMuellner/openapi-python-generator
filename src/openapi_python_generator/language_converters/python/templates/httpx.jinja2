@@ -22,7 +22,7 @@
     filtered_headers = {key:value for (key,value) in headers.items() if value is not None}
 
     {% if async_client %}
-async with httpx.AsyncClient(base_url=base_path, verify=api_config.verify) as client:
+async with httpx.AsyncClient(base_url=base_path, verify=api_config.verify, timeout=api_config.timeout) as client:
         response = await client.request(
     {% else %}
 with httpx.Client(base_url=base_path, verify=api_config.verify) as client:
