@@ -16,7 +16,7 @@ class ErrorResponseDetails(BaseModel):
 class APIConfig(BaseModel):
     client_id: Optional[str]
     client_secret: Optional[str]
-    timeout = httpx.TimeoutConfig(connect_timeout=10, read_timeout=10 * 60 , write_timeout=10)
+    timeout = httpx.Timeout(connect=10, read=None, write=10)
     base_path: str = {% if servers|length > 0 %} '{{ servers[0].url }}' {% else %} 'NO SERVER' {% endif %}
 
 
