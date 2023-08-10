@@ -1,6 +1,7 @@
+import httpx
 from pydantic import BaseModel
 from typing import Optional, Any, Union
-from httpx import Response, TimeoutConfig
+from httpx import Response
 
 class UIErrorMessage(BaseModel):
     en: str
@@ -15,7 +16,7 @@ class ErrorResponseDetails(BaseModel):
 class APIConfig(BaseModel):
     client_id: Optional[str]
     client_secret: Optional[str]
-    timeout:TimeoutConfig = TimeoutConfig(connect_timeout=10, read_timeout=10 * 60 , write_timeout=10)
+    timeout = httpx.TimeoutConfig(connect_timeout=10, read_timeout=10 * 60 , write_timeout=10)
     base_path: str = {% if servers|length > 0 %} '{{ servers[0].url }}' {% else %} 'NO SERVER' {% endif %}
 
 
