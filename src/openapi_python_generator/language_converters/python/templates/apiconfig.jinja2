@@ -11,6 +11,7 @@ class ErrorResponseDetails(BaseModel):
     code: str
     message: str
     ui_error_message: UIErrorMessage
+    context: Optional[dict] = None
 
 
 class APIConfig(BaseModel):
