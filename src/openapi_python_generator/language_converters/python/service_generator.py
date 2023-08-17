@@ -16,6 +16,7 @@ from openapi_schema_pydantic import Response
 from openapi_schema_pydantic import Schema
 
 from openapi_python_generator.language_converters.python import common
+from openapi_python_generator.language_converters.python.common import normalize_symbol
 from openapi_python_generator.language_converters.python.jinja_config import JINJA_ENV
 from openapi_python_generator.language_converters.python.model_generator import (
     type_converter,
@@ -293,7 +294,7 @@ def generate_services(
         )
 
         if op.tags is not None and len(op.tags) > 0:
-            so.tag = op.tags[0]
+            so.tag = normalize_symbol(op.tags[0])
 
         try:
             compile(so.content, "<string>", "exec")
