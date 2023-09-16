@@ -66,7 +66,7 @@ from openapi_python_generator.models import TypeConversion
         ),
         (
             Schema(type="null"),
-            TypeConversion(original_type="null", converted_type="Any"),
+            TypeConversion(original_type="null", converted_type="None"),
         ),
         (
             Schema(type="string", schema_format="uuid"),
@@ -160,7 +160,7 @@ def test_type_converter_simple(test_openapi_types, expected_python_types):
         ),
         (
             Schema(type="null"),
-            TypeConversion(original_type="null", converted_type="Any"),
+            TypeConversion(original_type="null", converted_type="None"),
         ),
         (
             Schema(type="string", schema_format="uuid"),
