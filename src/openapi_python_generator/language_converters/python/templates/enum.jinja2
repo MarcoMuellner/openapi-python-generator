@@ -4,6 +4,6 @@ class {{ name }}(str, Enum):
     {% for enumItem in enum %}
 
     {% if enumItem is string %}
-    {{ enumItem.lower() }} = '{{ enumItem }}'{% else %}
+    {{ enumItem.upper() }} = '{{ enumItem }}'{% else %}
     value_{{ enumItem }} = {{ enumItem }}{% endif %}
     {% endfor %}
