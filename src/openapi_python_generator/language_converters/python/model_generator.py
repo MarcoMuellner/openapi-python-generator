@@ -164,7 +164,7 @@ def type_converter(  # noqa: C901
     elif schema.type == "object":
         converted_type = pre_type + "Dict[str, Any]" + post_type
     elif schema.type is None or schema.type == "null":
-        converted_type = pre_type + "Any" + post_type
+        converted_type = pre_type + "None" + post_type
     else:
         raise TypeError(f"Unknown type: {schema.type}")
 
