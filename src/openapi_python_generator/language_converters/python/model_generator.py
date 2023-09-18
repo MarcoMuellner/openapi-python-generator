@@ -267,7 +267,7 @@ def generate_models(components: Components) -> List[Model]:
             value_dict = schema_or_reference.dict()
             regex = re.compile(r"[\s\/=\*\+]+")
             value_dict["enum"] = [
-                re.sub(regex, "_", i) if isinstance(i, str) else f"value_{i}"
+                {"key": re.sub(regex, "_", i), "value": i} if isinstance(i, str) else {"key": f"value_{i}", "value": f"value_{i}"}
                 for i in value_dict["enum"]
             ]
             m = Model(
