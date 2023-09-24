@@ -49,7 +49,7 @@ def type_converter(  # noqa: C901
             if isinstance(sub_schema, Schema):
                 conversions.append(type_converter(sub_schema, True))
             else:
-                import_type = sub_schema.ref.split("/")[-1]
+                import_type = common.normalize_symbol(sub_schema.ref.split("/")[-1])
                 if import_type == model_name:
                     conversions.append(
                         TypeConversion(
@@ -91,7 +91,7 @@ def type_converter(  # noqa: C901
             if isinstance(sub_schema, Schema):
                 conversions.append(type_converter(sub_schema, True))
             else:
-                import_type = sub_schema.ref.split("/")[-1]
+                import_type = common.normalize_symbol(sub_schema.ref.split("/")[-1])
                 import_types = [f"from .{import_type} import {import_type}"]
                 conversions.append(
                     TypeConversion(
@@ -164,7 +164,7 @@ def type_converter(  # noqa: C901
     elif schema.type == "object":
         converted_type = pre_type + "Dict[str, Any]" + post_type
     elif schema.type is None or schema.type == "null":
-        converted_type = pre_type + "Any" + post_type
+        converted_type = pre_type + "None" + post_type
     else:
         raise TypeError(f"Unknown type: {schema.type}")
 
@@ -221,7 +221,7 @@ def _generate_property_from_reference(
         and parent_schema.required is not None
         and name in parent_schema.required
     ) or force_required
-    import_model = reference.ref.split("/")[-1]
+    import_model = common.normalize_symbol(reference.ref.split("/")[-1])
 
     if import_model == model_name:
         type_conv = TypeConversion(
@@ -262,7 +262,8 @@ def generate_models(components: Components) -> List[Model]:
     if components.schemas is None:
         return models
 
-    for name, schema_or_reference in components.schemas.items():
+    for schema_name, schema_or_reference in components.schemas.items():
+        name = common.normalize_symbol(schema_name)
         if schema_or_reference.enum is not None:
             value_dict = schema_or_reference.dict()
             regex = re.compile(r"[\s\/=\*\+]+")
