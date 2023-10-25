@@ -1,5 +1,5 @@
 import re
-from typing import Dict
+from typing import Dict, Optional
 from typing import List
 from typing import Literal
 from typing import Tuple
@@ -154,7 +154,7 @@ def generate_params(operation: Operation) -> str:
     return params + default_params
 
 
-def generate_operation_id(operation: Operation, http_op: str, path_name: str | None = None) -> str:
+def generate_operation_id(operation: Operation, http_op: str, path_name: Optional[str] = None) -> str:
     if operation.operationId is not None:
         return common.normalize_symbol(operation.operationId)
     elif path_name is not None:
