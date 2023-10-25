@@ -1,0 +1,480 @@
+{
+  "openapi": "3.0.2",
+  "paths": {
+    "/pallets": {
+      "post": {
+        "tags": [],
+        "parameters": [],
+        "requestBody": {
+          "description": "Body",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "vlmNumber": {
+                    "type": "number"
+                  },
+                  "trayNumber": {
+                    "type": "number"
+                  },
+                  "trayColumnNumber": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "vlmNumber",
+                  "trayNumber",
+                  "trayColumnNumber"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "201",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "result"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "400",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "summary": "Query for pallets in the system",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "type",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "EMPTY",
+                "LANG_1PLATE_CFGA",
+                "LANG_2PLATE_CFGA",
+                "LANG_3PLATE_CFGA",
+                "ToolPalletV0Schema"
+              ]
+            }
+          },
+          {
+            "name": "workOrderId",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "workOrderOperationId",
+            "in": "query",
+            "schema": {
+              "type": "number",
+              "nullable": true
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "200",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "results": {
+                      "type": "array",
+                      "items": {
+                        "discriminator": {
+                          "propertyName": "type"
+                        },
+                        "oneOf": [
+                          {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string"
+                              },
+                              "type": {
+                                "type": "string",
+                                "enum": [
+                                  "EMPTY"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "id",
+                              "type"
+                            ]
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string"
+                              },
+                              "type": {
+                                "type": "string",
+                                "enum": [
+                                  "LANG_1PLATE_CFGA"
+                                ]
+                              },
+                              "setupSheetsHashId": {
+                                "type": "string",
+                                "nullable": true
+                              },
+                              "workholdingConfigurations": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "workOrderId": {
+                                      "type": "string"
+                                    },
+                                    "workOrderOperationId": {
+                                      "type": "number"
+                                    },
+                                    "unitId": {
+                                      "type": "number",
+                                      "nullable": true
+                                    }
+                                  },
+                                  "required": [
+                                    "workOrderId",
+                                    "workOrderOperationId",
+                                    "unitId"
+                                  ]
+                                },
+                                "minItems": 0
+                              }
+                            },
+                            "required": [
+                              "id",
+                              "type",
+                              "setupSheetsHashId",
+                              "workholdingConfigurations"
+                            ]
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string"
+                              },
+                              "type": {
+                                "type": "string",
+                                "enum": [
+                                  "LANG_2PLATE_CFGA"
+                                ]
+                              },
+                              "setupSheetsHashId": {
+                                "type": "string",
+                                "nullable": true
+                              },
+                              "workholdingConfigurations": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "workOrderId": {
+                                      "type": "string"
+                                    },
+                                    "workOrderOperationId": {
+                                      "type": "number"
+                                    },
+                                    "unitId": {
+                                      "type": "number",
+                                      "nullable": true
+                                    }
+                                  },
+                                  "required": [
+                                    "workOrderId",
+                                    "workOrderOperationId",
+                                    "unitId"
+                                  ]
+                                },
+                                "minItems": 0
+                              }
+                            },
+                            "required": [
+                              "id",
+                              "type",
+                              "setupSheetsHashId",
+                              "workholdingConfigurations"
+                            ]
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string"
+                              },
+                              "type": {
+                                "type": "string",
+                                "enum": [
+                                  "LANG_3PLATE_CFGA"
+                                ]
+                              },
+                              "setupSheetsHashId": {
+                                "type": "string",
+                                "nullable": true
+                              },
+                              "workholdingConfigurations": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "workOrderId": {
+                                      "type": "string"
+                                    },
+                                    "workOrderOperationId": {
+                                      "type": "number"
+                                    },
+                                    "unitId": {
+                                      "type": "number",
+                                      "nullable": true
+                                    }
+                                  },
+                                  "required": [
+                                    "workOrderId",
+                                    "workOrderOperationId",
+                                    "unitId"
+                                  ]
+                                },
+                                "minItems": 0
+                              }
+                            },
+                            "required": [
+                              "id",
+                              "type",
+                              "setupSheetsHashId",
+                              "workholdingConfigurations"
+                            ]
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string"
+                              },
+                              "type": {
+                                "type": "string",
+                                "enum": [
+                                  "TOOL_PALLET_V0_SCHEMA"
+                                ]
+                              },
+                              "slots": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "id": {
+                                      "type": "string"
+                                    },
+                                    "toolData": {
+                                      "type": "object",
+                                      "properties": {
+                                        "nc_number": {
+                                          "type": "string"
+                                        },
+                                        "tool_type": {
+                                          "type": "integer"
+                                        },
+                                        "num_cutting_edges": {
+                                          "type": "integer"
+                                        },
+                                        "current_time": {
+                                          "type": "number"
+                                        },
+                                        "total_life": {
+                                          "type": "number"
+                                        },
+                                        "locked": {
+                                          "type": "boolean"
+                                        },
+                                        "length_offset": {
+                                          "type": "number"
+                                        },
+                                        "radius_offset": {
+                                          "type": "number"
+                                        },
+                                        "length_tol": {
+                                          "type": "number"
+                                        },
+                                        "radius_tol": {
+                                          "type": "number"
+                                        },
+                                        "length_break": {
+                                          "type": "number"
+                                        },
+                                        "radius_break": {
+                                          "type": "number"
+                                        },
+                                        "num_teeth": {
+                                          "type": "integer"
+                                        },
+                                        "max_rpm": {
+                                          "type": "integer"
+                                        },
+                                        "indexes": {
+                                          "type": "array",
+                                          "items": {
+                                            "type": "object",
+                                            "properties": {
+                                              "length": {
+                                                "type": "number"
+                                              },
+                                              "radius": {
+                                                "type": "number"
+                                              },
+                                              "radius_2": {
+                                                "type": "number"
+                                              }
+                                            },
+                                            "required": [
+                                              "length",
+                                              "radius",
+                                              "radius_2"
+                                            ]
+                                          }
+                                        }
+                                      },
+                                      "required": [
+                                        "nc_number",
+                                        "tool_type",
+                                        "num_cutting_edges",
+                                        "current_time",
+                                        "total_life",
+                                        "locked",
+                                        "length_offset",
+                                        "radius_offset",
+                                        "length_tol",
+                                        "radius_tol",
+                                        "length_break",
+                                        "radius_break",
+                                        "num_teeth",
+                                        "max_rpm",
+                                        "indexes"
+                                      ],
+                                      "nullable": true
+                                    }
+                                  },
+                                  "required": [
+                                    "id",
+                                    "toolData"
+                                  ]
+                                },
+                                "minItems": 18,
+                                "maxItems": 18
+                              }
+                            },
+                            "required": [
+                              "id",
+                              "type",
+                              "slots"
+                            ]
+                          }
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "results"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "400",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "info": {
+    "title": "Sample API",
+    "version": "1.0.0"
+  }
+}
