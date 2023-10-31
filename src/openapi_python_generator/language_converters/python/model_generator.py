@@ -268,7 +268,9 @@ def generate_models(components: Components) -> List[Model]:
             value_dict = schema_or_reference.dict()
             regex = re.compile(r"[\s\/=\*\+]+")
             value_dict["enum"] = [
-                {"key": re.sub(regex, "_", i), "value": i} if isinstance(i, str) else {"key": f"value_{i}", "value": f"value_{i}"}
+                {"key": re.sub(regex, "_", i), "value": i}
+                if isinstance(i, str)
+                else {"key": f"value_{i}", "value": f"value_{i}"}
                 for i in value_dict["enum"]
             ]
             m = Model(
@@ -284,7 +286,11 @@ def generate_models(components: Components) -> List[Model]:
                 models.append(m)
             except SyntaxError as e:  # pragma: no cover
                 print("m.content", m.content)
-                click.echo(f"Error in model {name}: {e}")
+                if "invalid decimal literal" in str(e):
+                    models.append(m)
+                    click.echo(f"Warn the model {name} use an invalid decimal literal")
+                else:
+                    click.echo(f"Error in model {name}: {e}")
 
             continue  # pragma: no cover
 
