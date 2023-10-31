@@ -7,7 +7,7 @@ import click
 import httpx
 import isort
 import orjson
-from black import NothingChanged
+from black import NothingChanged, InvalidInput
 from httpx import ConnectError
 from httpx import ConnectTimeout
 from openapi_schema_pydantic import OpenAPI
@@ -34,6 +34,10 @@ def write_code(path: Path, content) -> None:
                 formatted_contend = black.format_file_contents(
                     content, fast=False, mode=black.FileMode(line_length=120)
                 )
+
+            except InvalidInput as e:
+                click.echo(f"Invalid Input {str(e)}.")
+                formatted_contend = content
 
             except NothingChanged:
                 formatted_contend = content
@@ -118,10 +122,16 @@ def write_data(data: ConversionResult, output: Union[str, Path]) -> None:
             JINJA_ENV.get_template(SERVICE_TEMPLATE).render(**service.dict()),
         )
 
-
-
     # Create services.__init__.py file containing imports to all services.
-    write_code(services_path / "__init__.py",  "\n".join([f"from .{file['file_name']} import {file['class_name']}" for file in data.api_sdk.classes]) )
+    write_code(
+        services_path / "__init__.py",
+        "\n".join(
+            [
+                f"from .{file['file_name']} import {file['class_name']}"
+                for file in data.api_sdk.classes
+            ]
+        ),
+    )
 
     # Write the api_config.py file.
     write_code(Path(output) / "api_config.py", data.api_config.content)
