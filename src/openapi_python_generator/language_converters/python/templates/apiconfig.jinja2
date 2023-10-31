@@ -39,6 +39,7 @@ class HTTPException(Exception):
             self.status_code = response.status_code
         elif hasattr(error, "status_code"):
             self.status_code = error.status_code
+            self.http_code = error.status_code
 
         def __call__(self, *args):
             self.__class__(*(self.args + args))
