@@ -285,7 +285,6 @@ def generate_models(components: Components) -> List[Model]:
                 compile(m.content, "<string>", "exec")
                 models.append(m)
             except SyntaxError as e:  # pragma: no cover
-                print("m.content", m.content)
                 if "invalid decimal literal" in str(e):
                     models.append(m)
                     click.echo(f"Warn the model {name} use an invalid decimal literal")
