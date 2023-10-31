@@ -283,6 +283,7 @@ def generate_models(components: Components) -> List[Model]:
                 compile(m.content, "<string>", "exec")
                 models.append(m)
             except SyntaxError as e:  # pragma: no cover
+                print("m.content", m.content)
                 click.echo(f"Error in model {name}: {e}")
 
             continue  # pragma: no cover

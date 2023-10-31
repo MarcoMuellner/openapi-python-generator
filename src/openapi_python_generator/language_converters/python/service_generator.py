@@ -66,16 +66,10 @@ def generate_body_param(operation: Operation) -> Union[str, None]:
             elif schema.type == "object":
                 return "data"
             else:
-                print("&&&&&&&&&&&&&&&&&&----------------------&&&&&&&&&&&&&&&&&&&")
-                print(schema)
-                print(media_type)
                 raise Exception(
                     f"Unsupported schema type for request body: {schema.type}"
                 )  # pragma: no cover
         else:
-            print("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&")
-            print(schema)
-            print(media_type)
             raise Exception(
                 f"Unsupported schema type for request body: {type(media_type.media_type_schema)}"
             )  # pragma: no cover
