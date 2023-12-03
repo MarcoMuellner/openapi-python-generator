@@ -30,6 +30,8 @@ def normalize_symbol(symbol: str) -> str:
     :param symbol: name of the identifier
     :return: normalized identifier name
     """
+
+    print("********************************** normalize_symbol", symbol)
     symbol = symbol.replace("-", "_")
     normalized_symbol = _symbol_ascii_strip_re.sub("", symbol)
     if normalized_symbol in keyword.kwlist:

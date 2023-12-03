@@ -263,6 +263,7 @@ def generate_models(components: Components) -> List[Model]:
         return models
 
     for schema_name, schema_or_reference in components.schemas.items():
+        print("schema_name", schema_name)
         name = common.normalize_symbol(schema_name)
         if schema_or_reference.enum is not None:
             value_dict = schema_or_reference.dict()
@@ -299,14 +300,14 @@ def generate_models(components: Components) -> List[Model]:
             if schema_or_reference.properties is not None
             else {}
         )
-        for prop_name, property in property_iterator:
-            if isinstance(property, Reference):
+        for prop_name, _property in property_iterator:
+            if isinstance(_property, Reference):
                 conv_property = _generate_property_from_reference(
-                    name, prop_name, property, schema_or_reference
+                    name, prop_name, _property, schema_or_reference
                 )
             else:
                 conv_property = _generate_property_from_schema(
-                    name, prop_name, property, schema_or_reference
+                    name, prop_name, _property, schema_or_reference
                 )
             properties.append(conv_property)
 

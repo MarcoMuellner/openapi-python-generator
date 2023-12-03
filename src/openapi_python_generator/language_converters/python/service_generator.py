@@ -341,6 +341,8 @@ def generate_services(
     tags = set([so.tag for so in service_ops])
 
     for tag in tags:
+        print("********************************** tag", tag)
+    for tag in tags:
         file_name=f"{tag}_service".replace(" ", "_").lower()
         services.append(
             ClassService(
