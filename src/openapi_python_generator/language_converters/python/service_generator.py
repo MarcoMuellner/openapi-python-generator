@@ -27,19 +27,22 @@ from openapi_python_generator.models import Service
 from openapi_python_generator.models import ServiceOperation
 from openapi_python_generator.models import TypeConversion
 
+
 class ClassService(Service):
     class_name: str
 
+
 HTTP_OPERATIONS = ["get", "post", "put", "delete", "options", "head", "patch", "trace"]
+
 
 def convert_to_camel_case(word: str):
     # split underscore using split
-    temp = word.split('_')
+    temp = word.split("_")
     # joining result
-    return temp[0].title() + ''.join(ele.title() for ele in temp[1:])
+    return temp[0].title() + "".join(ele.title() for ele in temp[1:])
+
 
 def generate_body_param(operation: Operation) -> Union[str, None]:
-
     if operation.requestBody is None:
         return None
     else:
@@ -207,14 +210,13 @@ def generate_return_type(operation: Operation) -> OpReturnType:
     chosen_response = good_responses[0][1]
 
     if isinstance(chosen_response, Response) and chosen_response.content is not None:
-        html_content = chosen_response.content.get("text/html") or chosen_response.content.get("application/html")
+        html_content = chosen_response.content.get(
+            "text/html"
+        ) or chosen_response.content.get("application/html")
 
         if html_content is not None:
             return OpReturnType(
-                type=TypeConversion(
-                    original_type= "html",
-                    converted_type= "str"
-                ),
+                type=TypeConversion(original_type="html", converted_type="str"),
                 status_code=good_responses[0][0],
                 complex_type=False,
             )
@@ -340,10 +342,18 @@ def generate_services(
 
     tags = set([so.tag for so in service_ops])
 
+    def camel_case_split(identifier):
+        matches = re.finditer(
+            ".+?(?:(?<=[a-z])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])|$)", identifier
+        )
+        result = [m.group(0) for m in matches]
+        if len(result) > 1:
+            return "_".join(result).lower()
+        else:
+            return identifier.lower()
+
     for tag in tags:
-        print("********************************** tag", tag)
-    for tag in tags:
-        file_name=f"{tag}_service".replace(" ", "_").lower()
+        file_name = f"{camel_case_split(tag)}_service".replace(" ", "_").lower()
         services.append(
             ClassService(
                 file_name=file_name,
@@ -365,7 +375,7 @@ def generate_services(
         )
 
     for tag in tags:
-        file_name=f"async_{tag}_service".replace(" ", "_").lower()
+        file_name = f"async_{tag}_service".replace(" ", "_").lower()
         services.append(
             ClassService(
                 file_name=file_name,

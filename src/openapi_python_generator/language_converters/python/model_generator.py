@@ -263,7 +263,6 @@ def generate_models(components: Components) -> List[Model]:
         return models
 
     for schema_name, schema_or_reference in components.schemas.items():
-        print("schema_name", schema_name)
         name = common.normalize_symbol(schema_name)
         if schema_or_reference.enum is not None:
             value_dict = schema_or_reference.dict()
