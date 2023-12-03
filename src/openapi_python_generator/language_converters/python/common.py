@@ -36,3 +36,14 @@ def normalize_symbol(symbol: str) -> str:
     if normalized_symbol in keyword.kwlist:
         normalized_symbol = normalized_symbol + "_"
     return normalized_symbol
+
+
+def camel_case_split(identifier):
+    matches = re.finditer(
+        ".+?(?:(?<=[a-z])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])|$)", identifier
+    )
+    result = [m.group(0) for m in matches]
+    if len(result) > 1:
+        return "_".join(result).lower()
+    else:
+        return identifier.lower()

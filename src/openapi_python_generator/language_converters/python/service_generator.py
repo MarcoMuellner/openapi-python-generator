@@ -342,18 +342,10 @@ def generate_services(
 
     tags = set([so.tag for so in service_ops])
 
-    def camel_case_split(identifier):
-        matches = re.finditer(
-            ".+?(?:(?<=[a-z])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])|$)", identifier
-        )
-        result = [m.group(0) for m in matches]
-        if len(result) > 1:
-            return "_".join(result).lower()
-        else:
-            return identifier.lower()
-
     for tag in tags:
-        file_name = f"{camel_case_split(tag)}_service".replace(" ", "_").lower()
+        file_name = f"{common.camel_case_split(tag)}_service".replace(
+            " ", "_"
+        ).lower()
         services.append(
             ClassService(
                 file_name=file_name,
@@ -375,7 +367,7 @@ def generate_services(
         )
 
     for tag in tags:
-        file_name = f"async_{tag}_service".replace(" ", "_").lower()
+        file_name = f"async_{common.camel_case_split(tag)}_service".replace(" ", "_").lower()
         services.append(
             ClassService(
                 file_name=file_name,
