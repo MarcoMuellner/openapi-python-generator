@@ -2,6 +2,7 @@ import re
 from typing import Dict
 from typing import List
 from typing import Literal
+from typing import Optional
 from typing import Tuple
 from typing import Union
 
@@ -165,11 +166,17 @@ def generate_params(operation: Operation) -> str:
     return params + default_params
 
 
-def generate_operation_id(operation: Operation, http_op: str) -> str:
+def generate_operation_id(
+    operation: Operation, http_op: str, path_name: Optional[str] = None
+) -> str:
     if operation.operationId is not None:
         return common.normalize_symbol(operation.operationId)
+    elif path_name is not None:
+        return common.normalize_symbol(f"{http_op}_{path_name}")
     else:
-        raise Exception(f"OperationId is not defined for {http_op}")  # pragma: no cover
+        raise Exception(
+            f"OperationId is not defined for {http_op} of path_name {path_name} --> {operation.summary}"
+        )  # pragma: no cover
 
 
 def _generate_params(
@@ -288,7 +295,7 @@ def generate_services(
         op: Operation, path_name: str, async_type: bool
     ) -> ServiceOperation:
         params = generate_params(op)
-        operation_id = generate_operation_id(op, http_operation)
+        operation_id = generate_operation_id(op, http_operation, path_name)
         query_params = generate_query_params(op)
         header_params = generate_header_params(op)
         return_type = generate_return_type(op)

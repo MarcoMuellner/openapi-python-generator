@@ -22,6 +22,6 @@ def test_issue_11(runner: CliRunner, model_data_with_cleanup, library) -> None:
     https://github.com/MarcoMuellner/openapi-python-generator/issues/7
     """
     assert (
-        generate_data(test_data_folder / "issue_17.json", test_result_path, library)
+        generate_data(test_data_folder / "issue_51.json", test_result_path, library)
         is None
     )
