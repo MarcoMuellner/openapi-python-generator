@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List
 
 import click
 
@@ -32,13 +32,26 @@ from openapi_python_generator.generate_data import generate_data
     help="Use the orjson library to serialize the data. This is faster than the default json library and provides "
     "serialization of datetimes and other types that are not supported by the default json library.",
 )
+@click.option(
+    "--dict-arg",
+    multiple=True,
+    default=[],
+    help="Keyword arguments passed to the dict() method of generated Pydantic models. i.e. --dict-option "
+         "exclude_unset=True --dict-option exclude_none=True",
+    type=click.Choice([
+        "exclude_unset=True",
+        "exclude_defaults=True",
+        "exclude_none=True"
+    ], case_sensitive=False)
+)
 @click.version_option(version=__version__)
 def main(
     source: str,
     output: str,
+    dict_arg: List[str],
     library: Optional[HTTPLibrary] = HTTPLibrary.httpx,
     env_token_name: Optional[str] = None,
-    use_orjson: bool = False,
+    use_orjson: bool = False
 ) -> None:
     """
     Generate Python code from an OpenAPI 3.0 specification.
@@ -46,7 +59,7 @@ def main(
     Provide a SOURCE (file or URL) containing the OpenAPI 3 specification and
     an OUTPUT path, where the resulting client is created.
     """
-    generate_data(source, output, library, env_token_name, use_orjson)
+    generate_data(source, output, dict_arg, library, env_token_name, use_orjson)
 
 
 if __name__ == "__main__":  # pragma: no cover

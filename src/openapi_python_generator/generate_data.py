@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Optional
+from typing import Optional, List
 from typing import Union
 
 import black
@@ -134,9 +134,10 @@ def write_data(data: ConversionResult, output: Union[str, Path]) -> None:
 def generate_data(
     source: Union[str, Path],
     output: Union[str, Path],
+    dict_arg: List[str],
     library: Optional[HTTPLibrary] = HTTPLibrary.httpx,
     env_token_name: Optional[str] = None,
-    use_orjson: bool = False,
+    use_orjson: bool = False
 ) -> None:
     """
     Generate Python code from an OpenAPI 3.0 specification.
@@ -144,6 +145,6 @@ def generate_data(
     data = get_open_api(source)
     click.echo(f"Generating data from {source}")
 
-    result = generator(data, library_config_dict[library], env_token_name, use_orjson)
+    result = generator(data, library_config_dict[library], dict_arg, env_token_name, use_orjson)
 
     write_data(result, output)

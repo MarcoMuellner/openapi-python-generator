@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List
 
 from openapi_schema_pydantic import OpenAPI
 
@@ -19,6 +19,7 @@ from openapi_python_generator.models import LibraryConfig
 def generator(
     data: OpenAPI,
     library_config: LibraryConfig,
+    dict_arg: List[str],
     env_token_name: Optional[str] = None,
     use_orjson: bool = False,
 ) -> ConversionResult:
@@ -27,6 +28,7 @@ def generator(
     """
 
     common.set_use_orjson(use_orjson)
+    common.set_dict_args(dict_arg)
 
     if data.components is not None:
         models = generate_models(data.components)
