@@ -32,6 +32,12 @@ from openapi_python_generator.generate_data import generate_data
     help="Use the orjson library to serialize the data. This is faster than the default json library and provides "
     "serialization of datetimes and other types that are not supported by the default json library.",
 )
+@click.option(
+    "--custom-template-path",
+    type=str,
+    default=None,
+    help="Custom template path to use. Allows overriding of the built in templates",
+)
 @click.version_option(version=__version__)
 def main(
     source: str,
@@ -39,6 +45,7 @@ def main(
     library: Optional[HTTPLibrary] = HTTPLibrary.httpx,
     env_token_name: Optional[str] = None,
     use_orjson: bool = False,
+    custom_template_path: Optional[str] = None,
 ) -> None:
     """
     Generate Python code from an OpenAPI 3.0 specification.
@@ -46,7 +53,9 @@ def main(
     Provide a SOURCE (file or URL) containing the OpenAPI 3 specification and
     an OUTPUT path, where the resulting client is created.
     """
-    generate_data(source, output, library, env_token_name, use_orjson)
+    generate_data(
+        source, output, library, env_token_name, use_orjson, custom_template_path
+    )
 
 
 if __name__ == "__main__":  # pragma: no cover
