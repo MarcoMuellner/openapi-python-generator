@@ -16,8 +16,8 @@ from pydantic import ValidationError
 from .common import HTTPLibrary
 from .common import library_config_dict
 from .language_converters.python.generator import generator
-from .language_converters.python.jinja_config import JINJA_ENV
 from .language_converters.python.jinja_config import SERVICE_TEMPLATE
+from .language_converters.python.jinja_config import create_jinja_env
 from .models import ConversionResult
 
 
@@ -109,13 +109,14 @@ def write_data(data: ConversionResult, output: Union[str, Path]) -> None:
     files = []
 
     # Write the services.
+    jinja_env = create_jinja_env()
     for service in data.services:
         if len(service.operations) == 0:
             continue
         files.append(service.file_name)
         write_code(
             services_path / f"{service.file_name}.py",
-            JINJA_ENV.get_template(SERVICE_TEMPLATE).render(**service.dict()),
+            jinja_env.get_template(SERVICE_TEMPLATE).render(**service.dict()),
         )
 
     # Create services.__init__.py file containing imports to all services.
@@ -137,6 +138,7 @@ def generate_data(
     library: Optional[HTTPLibrary] = HTTPLibrary.httpx,
     env_token_name: Optional[str] = None,
     use_orjson: bool = False,
+    custom_template_path: Optional[str] = None,
 ) -> None:
     """
     Generate Python code from an OpenAPI 3.0 specification.
@@ -144,6 +146,12 @@ def generate_data(
     data = get_open_api(source)
     click.echo(f"Generating data from {source}")
 
-    result = generator(data, library_config_dict[library], env_token_name, use_orjson)
+    result = generator(
+        data,
+        library_config_dict[library],
+        env_token_name,
+        use_orjson,
+        custom_template_path,
+    )
 
     write_data(result, output)

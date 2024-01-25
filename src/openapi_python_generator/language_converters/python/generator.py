@@ -21,12 +21,14 @@ def generator(
     library_config: LibraryConfig,
     env_token_name: Optional[str] = None,
     use_orjson: bool = False,
+    custom_template_path: Optional[str] = None,
 ) -> ConversionResult:
     """
     Generate Python code from an OpenAPI 3.0 specification.
     """
 
     common.set_use_orjson(use_orjson)
+    common.set_custom_template_path(custom_template_path)
 
     if data.components is not None:
         models = generate_models(data.components)
