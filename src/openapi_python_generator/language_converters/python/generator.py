@@ -1,6 +1,6 @@
 from typing import Optional
 
-from openapi_schema_pydantic import OpenAPI
+from openapi_pydantic import OpenAPI
 
 from openapi_python_generator.language_converters.python import common
 from openapi_python_generator.language_converters.python.api_config_generator import (

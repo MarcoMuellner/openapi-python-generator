@@ -1,11 +1,11 @@
 import pytest
-from openapi_schema_pydantic import MediaType
-from openapi_schema_pydantic import Operation
-from openapi_schema_pydantic import Parameter
-from openapi_schema_pydantic import Reference
-from openapi_schema_pydantic import RequestBody
-from openapi_schema_pydantic import Response
-from openapi_schema_pydantic import Schema
+from openapi_pydantic import MediaType
+from openapi_pydantic import Operation
+from openapi_pydantic import Parameter
+from openapi_pydantic import Reference
+from openapi_pydantic import RequestBody
+from openapi_pydantic import Response
+from openapi_pydantic import Schema
 
 from openapi_python_generator.common import HTTPLibrary
 from openapi_python_generator.common import library_config_dict

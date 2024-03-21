@@ -1,7 +1,7 @@
 import pytest
-from openapi_schema_pydantic import OpenAPI
-from openapi_schema_pydantic import Reference
-from openapi_schema_pydantic import Schema
+from openapi_pydantic import OpenAPI
+from openapi_pydantic import Reference
+from openapi_pydantic import Schema
 
 from openapi_python_generator.language_converters.python import common
 from openapi_python_generator.language_converters.python.model_generator import (

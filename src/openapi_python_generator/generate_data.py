@@ -10,7 +10,7 @@ import orjson
 from black import NothingChanged
 from httpx import ConnectError
 from httpx import ConnectTimeout
-from openapi_schema_pydantic import OpenAPI
+from openapi_pydantic import OpenAPI
 from pydantic import ValidationError
 
 from .common import HTTPLibrary

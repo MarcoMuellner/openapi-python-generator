@@ -1217,18 +1217,18 @@ files = [
 setuptools = "*"
 
 [[package]]
-name = "openapi-schema-pydantic"
-version = "1.2.4"
-description = "OpenAPI (v3) specification schema as pydantic class"
+name = "openapi-pydantic"
+version = "0.4.0"
+description = "Pydantic OpenAPI schema implementation"
 optional = false
-python-versions = ">=3.6.1"
+python-versions = ">=3.8,<4.0"
 files = [
-    {file = "openapi-schema-pydantic-1.2.4.tar.gz", hash = "sha256:3e22cf58b74a69f752cc7e5f1537f6e44164282db2700cbbcd3bb99ddd065196"},
-    {file = "openapi_schema_pydantic-1.2.4-py3-none-any.whl", hash = "sha256:a932ecc5dcbb308950282088956e94dea069c9823c84e507d64f6b622222098c"},
+    {file = "openapi_pydantic-0.4.0-py3-none-any.whl", hash = "sha256:8f782be72a4792bf6b5bbc4cf694fda2ca0719c0354ee6a062179982544fb5c0"},
+    {file = "openapi_pydantic-0.4.0.tar.gz", hash = "sha256:22c43e0da5f479d28e11c083d6d3492e09a6ef9e2b3201ccddbfbc8786db1ffb"},
 ]
 
 [package.dependencies]
-pydantic = ">=1.8.2"
+pydantic = ">=1.8"
 
 [[package]]
 name = "orjson"
@@ -2299,4 +2299,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.11,<3.12"
-content-hash = "876193c5f1add6f3cf0886addc927501ad3c9971bf4b67e83e0ecb2fdecf6a90"
+content-hash = "99f09ca291ce23cc35cdfb07cc5b4a90964571a0f5f1479271c7440046b6cec8"
