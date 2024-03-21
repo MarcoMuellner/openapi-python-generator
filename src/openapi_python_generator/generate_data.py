@@ -120,7 +120,10 @@ def write_data(data: ConversionResult, output: Union[str, Path]) -> None:
         )
 
     # Create services.__init__.py file containing imports to all services.
-    write_code(services_path / "__init__.py", "")
+    write_code(
+        services_path / "__init__.py",
+        "\n".join([f"from .{file} import *" for file in files]),
+    )
 
     # Write the api_config.py file.
     write_code(Path(output) / "api_config.py", data.api_config.content)
