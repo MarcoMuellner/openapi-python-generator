@@ -17,9 +17,9 @@ keywords = ["OpenAPI", "Generator", "Python", "async"]
 Changelog = "https://github.com/MarcoMuellner/openapi-python-generator/releases"
 
 [tool.poetry.dependencies]
-python = "^3.7"
+python = ">=3.11,<3.12"
 httpx = {extras = ["all"], version = "^0.23.0"}
-pydantic = "^1.9.1"
+pydantic = "^2.6.2"
 orjson = "^3.7.2"
 openapi-schema-pydantic = "^1.2.3"
 Jinja2 = "^3.1.2"
@@ -48,7 +48,7 @@ typeguard = ">=2.13.3"
 xdoctest = {extras = ["colors"], version = ">=0.15.10"}
 myst-parser = {version = ">=0.16.1"}
 pytest-cov = "^3.0.0"
-fastapi = "^0.78.0"
+fastapi = "^0.109.2"
 uvicorn = "^0.18.1"
 respx = "^0.20.1"
 aiohttp = "^3.8.3"
