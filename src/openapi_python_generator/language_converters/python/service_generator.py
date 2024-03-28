@@ -7,14 +7,14 @@ from typing import Tuple
 from typing import Union
 
 import click
-from openapi_schema_pydantic import MediaType
-from openapi_schema_pydantic import Operation
-from openapi_schema_pydantic import Parameter
-from openapi_schema_pydantic import PathItem
-from openapi_schema_pydantic import Reference
-from openapi_schema_pydantic import RequestBody
-from openapi_schema_pydantic import Response
-from openapi_schema_pydantic import Schema
+from openapi_pydantic import MediaType
+from openapi_pydantic import Operation
+from openapi_pydantic import Parameter
+from openapi_pydantic import PathItem
+from openapi_pydantic import Reference
+from openapi_pydantic import RequestBody
+from openapi_pydantic import Response
+from openapi_pydantic import Schema
 
 from openapi_python_generator.language_converters.python import common
 from openapi_python_generator.language_converters.python.common import normalize_symbol

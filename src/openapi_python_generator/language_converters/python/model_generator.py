@@ -4,9 +4,9 @@ from typing import List
 from typing import Optional
 
 import click
-from openapi_schema_pydantic import Components
-from openapi_schema_pydantic import Reference
-from openapi_schema_pydantic import Schema
+from openapi_pydantic import Components
+from openapi_pydantic import Reference
+from openapi_pydantic import Schema
 
 from openapi_python_generator.language_converters.python import common
 from openapi_python_generator.language_converters.python.jinja_config import (
@@ -230,17 +230,17 @@ def _generate_property_from_reference(
     if import_model == model_name:
         type_conv = TypeConversion(
             original_type=reference.ref,
-            converted_type=import_model
-            if required
-            else 'Optional["' + import_model + '"]',
+            converted_type=(
+                import_model if required else 'Optional["' + import_model + '"]'
+            ),
             import_types=None,
         )
     else:
         type_conv = TypeConversion(
             original_type=reference.ref,
-            converted_type=import_model
-            if required
-            else "Optional[" + import_model + "]",
+            converted_type=(
+                import_model if required else "Optional[" + import_model + "]"
+            ),
             import_types=[f"from .{import_model} import {import_model}"],
         )
     return Property(

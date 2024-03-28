@@ -5,7 +5,7 @@ from typing import Dict
 from typing import Generator
 
 import pytest
-from openapi_schema_pydantic import OpenAPI
+from openapi_pydantic import OpenAPI
 
 
 test_data_folder = Path(__file__).parent / "test_data"
