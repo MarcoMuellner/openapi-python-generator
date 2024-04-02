@@ -31,9 +31,9 @@ async def {{ operation_id }}({{ params }} api_config_override : Optional[APIConf
         {% endif %}
     {% endif %}
         ) as inital_response:
-            if inital_response.status != {{ return_type.status_code }}:
-                raise HTTPException(inital_response.status, f'{{ operationId }} failed with status code: {inital_response.status}')
             response = await inital_response.json()
+            if inital_response.status != {{ return_type.status_code }}:
+                raise HTTPException(inital_response.status, f'{ response }')
 
 {% if return_type.type is none or return_type.type.converted_type is none %}
             return None
