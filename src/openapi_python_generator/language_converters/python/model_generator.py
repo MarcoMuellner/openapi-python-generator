@@ -288,7 +288,7 @@ def generate_models(components: Components) -> List[Model]:
                 compile(m.content, "<string>", "exec")
                 models.append(m)
             except SyntaxError as e:  # pragma: no cover
-                click.echo(f"Error in model {name}: {e}")
+                click.echo(f"Error in model {name}: {e}\n{e.__traceback__}")
 
             continue  # pragma: no cover
 
@@ -316,7 +316,9 @@ def generate_models(components: Components) -> List[Model]:
         try:
             compile(generated_content, "<string>", "exec")
         except SyntaxError as e:  # pragma: no cover
-            click.echo(f"Error in model {name}: {e}")  # pragma: no cover
+            click.echo(
+                f"Error in model {name}: {e}\n{e.__traceback__}"
+            )  # pragma: no cover
 
         models.append(
             Model(
