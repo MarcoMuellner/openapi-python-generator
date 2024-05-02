@@ -31,7 +31,11 @@ async def {{ operation_id }}({{ params }} api_config_override : Optional[APIConf
         {% endif %}
     {% endif %}
         ) as inital_response:
-            response = await inital_response.json()
+            try:
+                response = await inital_response.json()
+            except aiohttp.exceptions.ContentTypeError:
+                response_text = await inital_response.text()
+                raise HTTPException(inital_response.status, f'Invalid response from server: { response_text}')
             if inital_response.status != {{ return_type.status_code }}:
                 raise HTTPException(inital_response.status, f'{ response }')
 
