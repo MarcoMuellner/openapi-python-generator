@@ -277,7 +277,6 @@ def generate_models(components: Components) -> List[Model]:
                 (re.sub(regex, "_", i) if isinstance(i, str) else f"value_{i}", i)
                 for i in value_dict["enum"]
             ]
-
             m = Model(
                 file_name=name,
                 content=jinja_env.get_template(ENUM_TEMPLATE).render(
