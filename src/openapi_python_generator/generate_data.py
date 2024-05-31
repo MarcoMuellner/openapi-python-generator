@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Optional
+from typing import Any, Optional
 from typing import Union
 
 import black
@@ -10,7 +10,6 @@ import orjson
 from black import NothingChanged
 from httpx import ConnectError
 from httpx import ConnectTimeout
-from openapi_pydantic import OpenAPI
 from pydantic import ValidationError
 
 from .common import HTTPLibrary
@@ -43,20 +42,21 @@ def write_code(path: Path, content) -> None:
         raise e
 
 
-def get_open_api(source: Union[str, Path]) -> OpenAPI:
+def get_open_api(source: Union[str, Path]) -> Any:
     """
     Tries to fetch the openapi.json file from the web or load from a local file. Returns the according OpenAPI object.
     :param source:
     :return:
     """
+    text = None
+
     try:
         if not isinstance(source, Path) and (
             source.startswith("http://") or source.startswith("https://")
         ):
-            return OpenAPI(**orjson.loads(httpx.get(source).text))
-
+            text = httpx.get(source).text
         with open(source, "r") as f:
-            return OpenAPI(**orjson.loads(f.read()))
+            text = f.read()
     except FileNotFoundError:
         click.echo(
             f"File {source} not found. Please make sure to pass the path to the OpenAPI 3.0 specification."
@@ -70,6 +70,13 @@ def get_open_api(source: Union[str, Path]) -> OpenAPI:
             f"File {source} is not a valid OpenAPI 3.0 specification, or there may be a problem with your JSON."
         )
         raise
+
+    if '"openapi": "3.0.3"' in text:
+        from openapi_pydantic.v3.v3_0_3.open_api import OpenAPI
+    else:
+        from openapi_pydantic.v3.v3_1_0.open_api import OpenAPI
+
+    return OpenAPI(**orjson.loads(text))
 
 
 def write_data(data: ConversionResult, output: Union[str, Path]) -> None:

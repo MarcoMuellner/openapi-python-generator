@@ -12,13 +12,14 @@ classifiers = [
     "Development Status :: 3 - Alpha",
 ]
 keywords = ["OpenAPI", "Generator", "Python", "async"]
+package-mode = true
 
 [tool.poetry.urls]
 Changelog = "https://github.com/MarcoMuellner/openapi-python-generator/releases"
 
 [tool.poetry.dependencies]
 python = ">=3.11,<3.12"
-httpx = {extras = ["all"], version = "^0.23.0"}
+httpx = "*"
 pydantic = "^2.6.2"
 orjson = "^3.7.2"
 openapi-pydantic = "^0.4.0"
