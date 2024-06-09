@@ -29,6 +29,7 @@ black = ">=21.10b0"
 isort = ">=5.10.1"
 deep-translator = "^1.11.4"
 case-converter = "^1.1.0"
+pyyaml = "^6.0.1"
 
 [tool.poetry.dev-dependencies]
 Pygments = ">=2.10.0"

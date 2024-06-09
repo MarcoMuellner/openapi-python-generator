@@ -129,6 +129,14 @@ def generate_models(
     for response_name, response in components.responses.items():
         name = pascalcase(response_name)
         if response.content is None:
+            models.append(
+                Model(
+                    file_name=name,
+                    content=f"from pydantic import BaseModel\n\nclass {name}(BaseModel):\n    pass",
+                    openapi_object=Schema(),
+                    properties=[],
+                )
+            )
             continue
         if "application/json" not in response.content:
             continue
