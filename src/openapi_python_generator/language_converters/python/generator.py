@@ -1,6 +1,10 @@
 from typing import Optional
+from openapi_python_generator import OPENAPI_VERSION
 
-from openapi_pydantic import OpenAPI
+if OPENAPI_VERSION == "3.0":
+    from openapi_pydantic.v3.v3_0_3.open_api import OpenAPI
+else:
+    from openapi_pydantic import OpenAPI
 
 from openapi_python_generator.language_converters.python import common
 from openapi_python_generator.language_converters.python.api_config_generator import (
@@ -13,7 +17,7 @@ from openapi_python_generator.language_converters.python.service_generator impor
     generate_services,
 )
 from openapi_python_generator.models import ConversionResult
-from openapi_python_generator.models import LibraryConfig
+from openapi_python_generator.common import LibraryConfig
 
 
 def generator(
@@ -31,12 +35,12 @@ def generator(
     common.set_custom_template_path(custom_template_path)
 
     if data.components is not None:
-        models = generate_models(data.components)
+        models = generate_models(data.components, data.paths)
     else:
         models = []
 
     if data.paths is not None:
-        services = generate_services(data.paths, library_config)
+        services = generate_services(data.paths, data.components, library_config)
     else:
         services = []
 

@@ -5,26 +5,42 @@ from typing import Literal
 from typing import Optional
 from typing import Tuple
 from typing import Union
+from deep_translator import GoogleTranslator
+from caseconverter import snakecase
+from caseconverter import pascalcase
 
 import click
-from openapi_pydantic import MediaType
-from openapi_pydantic import Operation
-from openapi_pydantic import Parameter
-from openapi_pydantic import PathItem
-from openapi_pydantic import Reference
-from openapi_pydantic import RequestBody
-from openapi_pydantic import Response
-from openapi_pydantic import Schema
+from openapi_pydantic import DataType
+import openapi_python_generator
+from openapi_python_generator.language_converters.python.utils import type_converter
+
+if openapi_python_generator.OPENAPI_VERSION == "3.0":
+    from openapi_pydantic.v3.v3_0_3.media_type import MediaType
+    from openapi_pydantic.v3.v3_0_3.operation import Operation
+    from openapi_pydantic.v3.v3_0_3.parameter import Parameter
+    from openapi_pydantic.v3.v3_0_3.path_item import PathItem
+    from openapi_pydantic.v3.v3_0_3.reference import Reference
+    from openapi_pydantic.v3.v3_0_3.request_body import RequestBody
+    from openapi_pydantic.v3.v3_0_3.response import Response
+    from openapi_pydantic.v3.v3_0_3.schema import Schema
+    from openapi_pydantic.v3.v3_0_3.components import Components
+else:
+    from openapi_pydantic import MediaType
+    from openapi_pydantic import Operation
+    from openapi_pydantic import Parameter
+    from openapi_pydantic import PathItem
+    from openapi_pydantic import Reference
+    from openapi_pydantic import RequestBody
+    from openapi_pydantic import Response
+    from openapi_pydantic import Schema
+    from openapi_pydantic import Components
 
 from openapi_python_generator.language_converters.python import common
 from openapi_python_generator.language_converters.python.common import normalize_symbol
 from openapi_python_generator.language_converters.python.jinja_config import (
     create_jinja_env,
 )
-from openapi_python_generator.language_converters.python.model_generator import (
-    type_converter,
-)
-from openapi_python_generator.models import LibraryConfig
+from openapi_python_generator.common import LibraryConfig
 from openapi_python_generator.models import OpReturnType
 from openapi_python_generator.models import Service
 from openapi_python_generator.models import ServiceOperation
@@ -60,6 +76,8 @@ def generate_body_param(operation: Operation) -> Union[str, None]:
                 return "[i.dict() for i in data]"
             elif schema.type == "object":
                 return "data"
+            elif schema.type is None and schema.oneOf is not None:
+                return "data.dict()"
             else:
                 raise Exception(
                     f"Unsupported schema type for request body: {schema.type}"
@@ -70,10 +88,15 @@ def generate_body_param(operation: Operation) -> Union[str, None]:
             )  # pragma: no cover
 
 
-def generate_params(operation: Operation) -> str:
+def generate_params(
+    operation: Operation,
+    components: Components,
+) -> str:
     def _generate_params_from_content(content: Union[Reference, Schema]):
         if isinstance(content, Reference):
-            return f"data : {content.ref.split('/')[-1]}"
+            type_name = content.ref.split("/")[-1]
+            type_name = pascalcase(type_name)
+            return f"data : {type_name}"
         else:
             return f"data : {type_converter(content, True).converted_type}"
 
@@ -84,8 +107,15 @@ def generate_params(operation: Operation) -> str:
     default_params = ""
     if operation.parameters is not None:
         for param in operation.parameters:
-            if not isinstance(param, Parameter):
-                continue  # pragma: no cover
+            if not isinstance(param, Parameter) and not isinstance(param, Reference):
+                raise NotImplementedError(f"Unsupported parameter type: {type(param)}")
+
+            if isinstance(param, Reference):
+                ref = param.ref.split("/")[-1]
+                param = components.parameters.get(ref)
+                if param is None:
+                    raise Exception(f"Unable to find parameter {ref}")
+
             converted_result = ""
             required = False
             param_name_cleaned = common.normalize_symbol(param.name)
@@ -146,6 +176,8 @@ def generate_params(operation: Operation) -> str:
                 raise Exception(
                     f"Unsupported media type schema for {str(operation)}"
                 )  # pragma: no cover
+        elif isinstance(operation.requestBody, Reference):
+            params += f"data : {operation.requestBody.ref.split('/')[-1]}, "
         else:
             raise Exception(
                 f"Unsupported request body type: {type(operation.requestBody)}"
@@ -171,13 +203,21 @@ def generate_operation_id(
 
 
 def _generate_params(
-    operation: Operation, param_in: Literal["query", "header"] = "query"
+    operation: Operation,
+    components: Components,
+    param_in: Literal["query", "header"] = "query",
 ):
     if operation.parameters is None:
         return []
 
     params = []
     for param in operation.parameters:
+        if isinstance(param, Reference):
+            ref = param.ref.split("/")[-1]
+            param = components.parameters.get(ref)
+            if param is None:
+                raise Exception(f"Unable to find parameter {ref}")
+
         if isinstance(param, Parameter) and param.param_in == param_in:
             param_name_cleaned = common.normalize_symbol(param.name)
             params.append(f"{param.name!r} : {param_name_cleaned}")
@@ -185,15 +225,23 @@ def _generate_params(
     return params
 
 
-def generate_query_params(operation: Operation) -> List[str]:
-    return _generate_params(operation, "query")
+def generate_query_params(
+    operation: Operation,
+    components: Components,
+) -> List[str]:
+    return _generate_params(operation, components, "query")
 
 
-def generate_header_params(operation: Operation) -> List[str]:
-    return _generate_params(operation, "header")
+def generate_header_params(
+    operation: Operation,
+    components: Components,
+) -> List[str]:
+    return _generate_params(operation, components, "header")
 
 
-def generate_return_type(operation: Operation) -> OpReturnType:
+def generate_return_type(
+    operation: Operation, http_opertaion: str, path_name: str
+) -> OpReturnType:
     if operation.responses is None:
         return OpReturnType(type=None, status_code=200, complex_type=False)
 
@@ -220,10 +268,12 @@ def generate_return_type(operation: Operation) -> OpReturnType:
 
     if isinstance(media_type_schema, MediaType):
         if isinstance(media_type_schema.media_type_schema, Reference):
+            response_model_name = media_type_schema.media_type_schema.ref.split("/")[-1]
+            response_model_name = pascalcase(response_model_name)
             type_conv = TypeConversion(
                 original_type=media_type_schema.media_type_schema.ref,
-                converted_type=media_type_schema.media_type_schema.ref.split("/")[-1],
-                import_types=[media_type_schema.media_type_schema.ref.split("/")[-1]],
+                converted_type=response_model_name,
+                import_types=[response_model_name],
             )
             return OpReturnType(
                 type=type_conv,
@@ -231,26 +281,44 @@ def generate_return_type(operation: Operation) -> OpReturnType:
                 complex_type=True,
             )
         elif isinstance(media_type_schema.media_type_schema, Schema):
-            converted_result = type_converter(media_type_schema.media_type_schema, True)
-            if "array" in converted_result.original_type and isinstance(
-                converted_result.import_types, list
-            ):
-                matched = re.findall(r"List\[(.+)\]", converted_result.converted_type)
-                if len(matched) > 0:
-                    list_type = matched[0]
-                else:
-                    raise Exception(
-                        f"Unable to parse list type from {converted_result.converted_type}"
-                    )  # pragma: no cover
+            if media_type_schema.media_type_schema.type == DataType.OBJECT:
+                response_model_name = f"{pascalcase(path_name.replace('/', '_'))}{http_opertaion.capitalize()}Response"
+                type_conv = TypeConversion(
+                    original_type=response_model_name,
+                    converted_type=response_model_name,
+                    import_types=[response_model_name],
+                )
+                return OpReturnType(
+                    type=type_conv,
+                    status_code=good_responses[0][0],
+                    complex_type=True,
+                )
             else:
-                list_type = None
-            return OpReturnType(
-                type=converted_result,
-                status_code=good_responses[0][0],
-                complex_type=converted_result.import_types is not None
-                and len(converted_result.import_types) > 0,
-                list_type=list_type,
-            )
+                converted_result = type_converter(
+                    media_type_schema.media_type_schema,
+                    True,
+                )
+                if "array" in converted_result.original_type and isinstance(
+                    converted_result.import_types, list
+                ):
+                    matched = re.findall(
+                        r"List\[(.+)\]", converted_result.converted_type
+                    )
+                    if len(matched) > 0:
+                        list_type = matched[0]
+                    else:
+                        raise Exception(
+                            f"Unable to parse list type from {converted_result.converted_type}"
+                        )  # pragma: no cover
+                else:
+                    list_type = None
+                return OpReturnType(
+                    type=converted_result,
+                    status_code=good_responses[0][0],
+                    complex_type=converted_result.import_types is not None
+                    and len(converted_result.import_types) > 0,
+                    list_type=list_type,
+                )
         else:
             raise Exception("Unknown media type schema type")  # pragma: no cover
     elif media_type_schema is None:
@@ -264,7 +332,9 @@ def generate_return_type(operation: Operation) -> OpReturnType:
 
 
 def generate_services(
-    paths: Dict[str, PathItem], library_config: LibraryConfig
+    paths: Dict[str, PathItem],
+    components: Components,
+    library_config: LibraryConfig,
 ) -> List[Service]:
     """
     Generates services from a paths object.
@@ -274,13 +344,15 @@ def generate_services(
     jinja_env = create_jinja_env()
 
     def generate_service_operation(
-        op: Operation, path_name: str, async_type: bool
+        op: Operation,
+        path_name: str,
+        async_type: bool,
     ) -> ServiceOperation:
-        params = generate_params(op)
+        params = generate_params(op, components)
         operation_id = generate_operation_id(op, http_operation, path_name)
-        query_params = generate_query_params(op)
-        header_params = generate_header_params(op)
-        return_type = generate_return_type(op)
+        query_params = generate_query_params(op, components)
+        header_params = generate_header_params(op, components)
+        return_type = generate_return_type(op, http_operation, path_name)
         body_param = generate_body_param(op)
 
         so = ServiceOperation(
@@ -304,7 +376,11 @@ def generate_services(
         )
 
         if op.tags is not None and len(op.tags) > 0:
-            so.tag = normalize_symbol(op.tags[0])
+            tag = op.tags[0]
+            if tag is not None:
+                tag = GoogleTranslator(source="auto", target="en").translate(tag)
+                tag = snakecase(tag)
+                so.tag = normalize_symbol(tag)
 
         try:
             compile(so.content, "<string>", "exec")
@@ -354,7 +430,7 @@ def generate_services(
     for tag in tags:
         services.append(
             Service(
-                file_name=f"async_{tag}_service",
+                file_name=f"async_{tag + '_' if tag else ''}service",
                 operations=[
                     so for so in service_ops if so.tag == tag and so.async_client
                 ],

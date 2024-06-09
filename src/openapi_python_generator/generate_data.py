@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Any, Optional
+from typing import TYPE_CHECKING, Any, Optional
 from typing import Union
 
 import black
@@ -7,17 +7,20 @@ import click
 import httpx
 import isort
 import orjson
+import yaml
 from black import NothingChanged
 from httpx import ConnectError
 from httpx import ConnectTimeout
 from pydantic import ValidationError
 
+import openapi_python_generator
 from .common import HTTPLibrary
 from .common import library_config_dict
-from .language_converters.python.generator import generator
 from .language_converters.python.jinja_config import SERVICE_TEMPLATE
 from .language_converters.python.jinja_config import create_jinja_env
-from .models import ConversionResult
+
+if TYPE_CHECKING:
+    from .models import ConversionResult
 
 
 def write_code(path: Path, content) -> None:
@@ -71,15 +74,22 @@ def get_open_api(source: Union[str, Path]) -> Any:
         )
         raise
 
-    if '"openapi": "3.0.3"' in text:
+    try:
+        data = orjson.loads(text)
+    except:
+        data = yaml.safe_load(text)
+
+    if data["openapi"].startswith("3.0"):
+        openapi_python_generator.OPENAPI_VERSION = "3.0"
         from openapi_pydantic.v3.v3_0_3.open_api import OpenAPI
     else:
+        openapi_python_generator.OPENAPI_VERSION = "3.1"
         from openapi_pydantic.v3.v3_1_0.open_api import OpenAPI
 
-    return OpenAPI(**orjson.loads(text))
+    return OpenAPI(**data)
 
 
-def write_data(data: ConversionResult, output: Union[str, Path]) -> None:
+def write_data(data: "ConversionResult", output: Union[str, Path]) -> None:
     """
     This function will firstly create the folderstrucutre of output, if it doesn't exist. Then it will create the
     models from data.models into the models sub module of the output folder. After this, the services will be created
@@ -155,6 +165,8 @@ def generate_data(
     """
     data = get_open_api(source)
     click.echo(f"Generating data from {source}")
+
+    from .language_converters.python.generator import generator
 
     result = generator(
         data,

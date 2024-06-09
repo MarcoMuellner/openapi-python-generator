@@ -2,7 +2,15 @@ from enum import Enum
 from typing import Dict
 from typing import Optional
 
-from openapi_python_generator.models import LibraryConfig
+from pydantic import BaseModel
+
+
+class LibraryConfig(BaseModel):
+    name: str
+    library_name: str
+    template_name: str
+    include_async: bool
+    include_sync: bool
 
 
 class HTTPLibrary(str, Enum):

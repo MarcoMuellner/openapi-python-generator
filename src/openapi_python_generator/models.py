@@ -1,18 +1,18 @@
 from typing import List
 from typing import Optional
 
-from openapi_pydantic import Operation
-from openapi_pydantic import PathItem
-from openapi_pydantic import Schema
 from pydantic import BaseModel
 
+import openapi_python_generator
 
-class LibraryConfig(BaseModel):
-    name: str
-    library_name: str
-    template_name: str
-    include_async: bool
-    include_sync: bool
+if openapi_python_generator.OPENAPI_VERSION == "3.0":
+    from openapi_pydantic.v3.v3_0_3.operation import Operation
+    from openapi_pydantic.v3.v3_0_3.path_item import PathItem
+    from openapi_pydantic.v3.v3_0_3.schema import Schema
+else:
+    from openapi_pydantic import Operation
+    from openapi_pydantic import PathItem
+    from openapi_pydantic import Schema
 
 
 class TypeConversion(BaseModel):

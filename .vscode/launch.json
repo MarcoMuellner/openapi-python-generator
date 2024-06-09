@@ -9,7 +9,7 @@
             "type": "debugpy",
             "request": "launch",
             "program": "${workspaceFolder}/src/openapi_python_generator",
-            "args": ["--library", "aiohttp", "./openapi.json", "test_api"],
+            "args": ["--library", "aiohttp", "./openapi.yaml", "test_api"],
             "cwd": "${workspaceFolder}/tests/test_data"
         }
     ]
