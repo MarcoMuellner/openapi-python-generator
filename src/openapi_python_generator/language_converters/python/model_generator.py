@@ -126,128 +126,130 @@ def generate_models(
             )
         )
 
-    for response_name, response in components.responses.items():
-        name = pascalcase(response_name)
-        if response.content is None:
+    if components.responses is not None:
+        for response_name, response in components.responses.items():
+            name = pascalcase(response_name)
+            if response.content is None:
+                models.append(
+                    Model(
+                        file_name=name,
+                        content=f"from pydantic import BaseModel\n\nclass {name}(BaseModel):\n    pass",
+                        openapi_object=Schema(),
+                        properties=[],
+                    )
+                )
+                continue
+            if "application/json" not in response.content:
+                continue
+            media_type = response.content["application/json"]
+
+            if media_type.media_type_schema is None:
+                continue
+
+            if isinstance(media_type.media_type_schema, Reference):
+                ref_name = media_type.media_type_schema.ref.split("/")[-1]
+                ref_model_name = pascalcase(ref_name)
+                models.append(
+                    Model(
+                        file_name=name,
+                        content=f"from .{ref_model_name} import {ref_model_name}\n\nclass {name}({ref_model_name}):\n    pass",
+                        openapi_object=Schema(),
+                        properties=[],
+                    )
+                )
+                continue
+
+            properties = []
+            property_iterator = (
+                media_type.media_type_schema.properties.items()
+                if media_type.media_type_schema.properties is not None
+                else {}
+            )
+            for prop_name, property in property_iterator:
+                if isinstance(property, Reference):
+                    conv_property = _generate_property_from_reference(
+                        name, prop_name, property, media_type.media_type_schema
+                    )
+                else:
+                    conv_property = _generate_property_from_schema(
+                        name, prop_name, property, media_type.media_type_schema
+                    )
+                properties.append(conv_property)
+
+            generated_content = jinja_env.get_template(MODELS_TEMPLATE).render(
+                schema_name=name,
+                schema=media_type.media_type_schema,
+                properties=properties,
+            )
+
+            try:
+                compile(generated_content, "<string>", "exec")
+            except SyntaxError as e:  # pragma: no cover
+                click.echo(
+                    f"Error in model {name}: {traceback.format_exc()}"
+                )  # pragma: no cover
+
             models.append(
                 Model(
                     file_name=name,
-                    content=f"from pydantic import BaseModel\n\nclass {name}(BaseModel):\n    pass",
-                    openapi_object=Schema(),
-                    properties=[],
+                    content=generated_content,
+                    openapi_object=media_type.media_type_schema,
+                    properties=properties,
                 )
             )
-            continue
-        if "application/json" not in response.content:
-            continue
-        media_type = response.content["application/json"]
 
-        if media_type.media_type_schema is None:
-            continue
+    if components.requestBodies is not None:
+        for body_name, body in components.requestBodies.items():
+            if body.content is None:
+                continue
+            if "application/json" not in body.content:
+                continue
+            media_type = body.content["application/json"]
 
-        if isinstance(media_type.media_type_schema, Reference):
-            ref_name = media_type.media_type_schema.ref.split("/")[-1]
-            ref_model_name = pascalcase(ref_name)
+            if media_type.media_type_schema is None:
+                continue
+
+            if not isinstance(media_type.media_type_schema, Schema):
+                continue
+
+            name = pascalcase(body_name)
+
+            properties = []
+            property_iterator = (
+                media_type.media_type_schema.properties.items()
+                if media_type.media_type_schema.properties is not None
+                else {}
+            )
+            for prop_name, property in property_iterator:
+                if isinstance(property, Reference):
+                    conv_property = _generate_property_from_reference(
+                        name, prop_name, property, media_type.media_type_schema
+                    )
+                else:
+                    conv_property = _generate_property_from_schema(
+                        name, prop_name, property, media_type.media_type_schema
+                    )
+                properties.append(conv_property)
+
+            generated_content = jinja_env.get_template(MODELS_TEMPLATE).render(
+                schema_name=name,
+                schema=media_type.media_type_schema,
+                properties=properties,
+            )
+
+            try:
+                compile(generated_content, "<string>", "exec")
+            except SyntaxError as e:  # pragma: no cover
+                click.echo(f"Error in model {name}: {traceback.format_exc()}")
+
             models.append(
                 Model(
                     file_name=name,
-                    content=f"from .{ref_model_name} import {ref_model_name}\n\nclass {name}({ref_model_name}):\n    pass",
-                    openapi_object=Schema(),
-                    properties=[],
+                    content=generated_content,
+                    openapi_object=media_type.media_type_schema,
+                    properties=properties,
                 )
             )
-            continue
-
-        properties = []
-        property_iterator = (
-            media_type.media_type_schema.properties.items()
-            if media_type.media_type_schema.properties is not None
-            else {}
-        )
-        for prop_name, property in property_iterator:
-            if isinstance(property, Reference):
-                conv_property = _generate_property_from_reference(
-                    name, prop_name, property, media_type.media_type_schema
-                )
-            else:
-                conv_property = _generate_property_from_schema(
-                    name, prop_name, property, media_type.media_type_schema
-                )
-            properties.append(conv_property)
-
-        generated_content = jinja_env.get_template(MODELS_TEMPLATE).render(
-            schema_name=name,
-            schema=media_type.media_type_schema,
-            properties=properties,
-        )
-
-        try:
-            compile(generated_content, "<string>", "exec")
-        except SyntaxError as e:  # pragma: no cover
-            click.echo(
-                f"Error in model {name}: {traceback.format_exc()}"
-            )  # pragma: no cover
-
-        models.append(
-            Model(
-                file_name=name,
-                content=generated_content,
-                openapi_object=media_type.media_type_schema,
-                properties=properties,
-            )
-        )
-
-    for body_name, body in components.requestBodies.items():
-        if body.content is None:
-            continue
-        if "application/json" not in body.content:
-            continue
-        media_type = body.content["application/json"]
-
-        if media_type.media_type_schema is None:
-            continue
-
-        if not isinstance(media_type.media_type_schema, Schema):
-            continue
-
-        name = pascalcase(body_name)
-
-        properties = []
-        property_iterator = (
-            media_type.media_type_schema.properties.items()
-            if media_type.media_type_schema.properties is not None
-            else {}
-        )
-        for prop_name, property in property_iterator:
-            if isinstance(property, Reference):
-                conv_property = _generate_property_from_reference(
-                    name, prop_name, property, media_type.media_type_schema
-                )
-            else:
-                conv_property = _generate_property_from_schema(
-                    name, prop_name, property, media_type.media_type_schema
-                )
-            properties.append(conv_property)
-
-        generated_content = jinja_env.get_template(MODELS_TEMPLATE).render(
-            schema_name=name,
-            schema=media_type.media_type_schema,
-            properties=properties,
-        )
-
-        try:
-            compile(generated_content, "<string>", "exec")
-        except SyntaxError as e:  # pragma: no cover
-            click.echo(f"Error in model {name}: {traceback.format_exc()}")
-
-        models.append(
-            Model(
-                file_name=name,
-                content=generated_content,
-                openapi_object=media_type.media_type_schema,
-                properties=properties,
-            )
-        )
 
     for path_name, path in paths.items():
         for http_operation in HTTP_OPERATIONS:

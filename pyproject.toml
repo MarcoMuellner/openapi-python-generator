@@ -8,9 +8,7 @@ readme = "README.md"
 homepage = "https://github.com/MarcoMuellner/openapi-python-generator"
 repository = "https://github.com/MarcoMuellner/openapi-python-generator"
 documentation = "https://openapi-python-generator.readthedocs.io"
-classifiers = [
-    "Development Status :: 3 - Alpha",
-]
+classifiers = ["Development Status :: 3 - Alpha"]
 keywords = ["OpenAPI", "Generator", "Python", "async"]
 package-mode = true
 
@@ -18,9 +16,9 @@ package-mode = true
 Changelog = "https://github.com/MarcoMuellner/openapi-python-generator/releases"
 
 [tool.poetry.dependencies]
-python = ">=3.11,<3.12"
+python = ">=3.8,<3.12"
 httpx = "*"
-pydantic = "^2.6.2"
+pydantic = ">=1.10.1"
 orjson = "^3.7.2"
 openapi-pydantic = "^0.4.0"
 Jinja2 = "^3.1.2"
@@ -33,7 +31,7 @@ pyyaml = "^6.0.1"
 
 [tool.poetry.dev-dependencies]
 Pygments = ">=2.10.0"
-coverage = {extras = ["toml"], version = "^6.4.1"}
+coverage = { extras = ["toml"], version = "^6.4.1" }
 darglint = ">=1.8.1"
 flake8 = ">=3.0.1"
 flake8-bandit = ">=2.1.2"
@@ -49,8 +47,8 @@ pytest = ">=6.2.5"
 pyupgrade = ">=2.29.1"
 safety = ">=1.10.3"
 typeguard = ">=2.13.3"
-xdoctest = {extras = ["colors"], version = ">=0.15.10"}
-myst-parser = {version = ">=0.16.1"}
+xdoctest = { extras = ["colors"], version = ">=0.15.10" }
+myst-parser = { version = ">=0.16.1" }
 pytest-cov = "^3.0.0"
 fastapi = "^0.109.2"
 uvicorn = "^0.18.1"

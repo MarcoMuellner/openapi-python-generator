@@ -58,8 +58,9 @@ def get_open_api(source: Union[str, Path]) -> Any:
             source.startswith("http://") or source.startswith("https://")
         ):
             text = httpx.get(source).text
-        with open(source, "r") as f:
-            text = f.read()
+        else:
+            with open(source, "r") as f:
+                text = f.read()
     except FileNotFoundError:
         click.echo(
             f"File {source} not found. Please make sure to pass the path to the OpenAPI 3.0 specification."

@@ -78,6 +78,8 @@ def generate_body_param(operation: Operation) -> Union[str, None]:
                 return "data"
             elif schema.type is None and schema.oneOf is not None:
                 return "data.dict()"
+            elif schema.type is None and schema.allOf is not None:
+                return "data.dict()"
             else:
                 raise Exception(
                     f"Unsupported schema type for request body: {schema.type}"

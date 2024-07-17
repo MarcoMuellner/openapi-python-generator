@@ -139,6 +139,7 @@ def type_converter(  # noqa: C901
                 conversions.append(type_converter(sub_schema, True))
             else:
                 import_type = common.normalize_symbol(sub_schema.ref.split("/")[-1])
+                import_type = pascalcase(import_type)
                 if import_type == model_name:
                     conversions.append(
                         TypeConversion(
