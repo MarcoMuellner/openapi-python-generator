@@ -1,7 +1,7 @@
 import re
 import traceback
 from typing import Dict, List
-from caseconverter import pascalcase
+from caseconverter import pascalcase, snakecase
 
 import click
 
@@ -148,7 +148,7 @@ def generate_models(
 
             if isinstance(media_type.media_type_schema, Reference):
                 ref_name = media_type.media_type_schema.ref.split("/")[-1]
-                ref_model_name = pascalcase(ref_name)
+                ref_model_name = snakecase(ref_name)
                 models.append(
                     Model(
                         file_name=name,

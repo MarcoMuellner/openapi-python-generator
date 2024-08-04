@@ -1,6 +1,6 @@
 import itertools
 from typing import List, Optional
-from caseconverter import pascalcase
+from caseconverter import pascalcase, snakecase
 
 import openapi_python_generator
 
@@ -57,7 +57,7 @@ def _generate_property_from_reference(
             converted_type=(
                 import_model if required else "Optional[" + import_model + "]"
             ),
-            import_types=[f"from .{import_model} import {import_model}"],
+            import_types=[f"from .{snakecase(import_model)} import {import_model}"],
         )
     return Property(
         name=name,
@@ -149,7 +149,9 @@ def type_converter(  # noqa: C901
                         )
                     )
                 else:
-                    import_types = [f"from .{import_type} import {import_type}"]
+                    import_types = [
+                        f"from .{snakecase(import_type)} import {import_type}"
+                    ]
                     conversions.append(
                         TypeConversion(
                             original_type=sub_schema.ref,
@@ -182,7 +184,7 @@ def type_converter(  # noqa: C901
                 conversions.append(type_converter(sub_schema, True))
             else:
                 import_type = pascalcase(sub_schema.ref.split("/")[-1])
-                import_types = [f"from .{import_type} import {import_type}"]
+                import_types = [f"from .{snakecase(import_type)} import {import_type}"]
                 conversions.append(
                     TypeConversion(
                         original_type=sub_schema.ref,
@@ -210,6 +212,8 @@ def type_converter(  # noqa: C901
         )
     # We only want to auto convert to datetime if orjson is used throghout the code, otherwise we can not
     # serialize it to JSON.
+    elif schema.type == "string" and schema.schema_format == "binary":
+        converted_type = pre_type + "bytes" + post_type
     elif schema.type == "string" and (
         schema.schema_format is None or not common.get_use_orjson()
     ):

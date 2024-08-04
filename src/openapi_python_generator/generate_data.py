@@ -8,7 +8,7 @@ import httpx
 import isort
 import orjson
 import yaml
-from black import NothingChanged
+from black import NothingChanged, InvalidInput
 from httpx import ConnectError
 from httpx import ConnectTimeout
 from pydantic import ValidationError
@@ -36,8 +36,10 @@ def write_code(path: Path, content) -> None:
                 formatted_contend = black.format_file_contents(
                     content, fast=False, mode=black.FileMode(line_length=120)
                 )
-
             except NothingChanged:
+                formatted_contend = content
+            except InvalidInput as e:
+                print(f"[Skipping formatting] InvalidInput file: {path}")
                 formatted_contend = content
             formatted_contend = isort.code(formatted_contend, line_length=120)
             f.write(formatted_contend)

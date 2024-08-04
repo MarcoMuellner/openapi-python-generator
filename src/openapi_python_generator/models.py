@@ -1,7 +1,8 @@
 from typing import List
 from typing import Optional
+from caseconverter import snakecase
 
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 
 import openapi_python_generator
 
@@ -58,6 +59,13 @@ class Model(BaseModel):
     content: str
     openapi_object: Schema
     properties: List[Property] = []
+
+    @field_validator("file_name")
+    def validate_file_name(cls, value):
+        value = snakecase(value)
+        if value == "pass":
+            value += "_"
+        return value
 
 
 class Service(BaseModel):

@@ -9,4 +9,4 @@ class BodyProductSearchByImage(BaseModel):
 
     """
 
-    image: str = Field(alias="image")
+    image: bytes = Field(alias="image")
