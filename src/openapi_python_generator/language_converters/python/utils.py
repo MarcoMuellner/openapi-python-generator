@@ -57,7 +57,9 @@ def _generate_property_from_reference(
             converted_type=(
                 import_model if required else "Optional[" + import_model + "]"
             ),
-            import_types=[f"from .{snakecase(import_model)} import {import_model}"],
+            import_types=[
+                f"from .{snakecase(import_model)} import {pascalcase(import_model)}"
+            ],
         )
     return Property(
         name=name,
@@ -150,7 +152,7 @@ def type_converter(  # noqa: C901
                     )
                 else:
                     import_types = [
-                        f"from .{snakecase(import_type)} import {import_type}"
+                        f"from .{snakecase(import_type)} import {pascalcase(import_type)}"
                     ]
                     conversions.append(
                         TypeConversion(
@@ -184,7 +186,9 @@ def type_converter(  # noqa: C901
                 conversions.append(type_converter(sub_schema, True))
             else:
                 import_type = pascalcase(sub_schema.ref.split("/")[-1])
-                import_types = [f"from .{snakecase(import_type)} import {import_type}"]
+                import_types = [
+                    f"from .{snakecase(import_type)} import {pascalcase(import_type)}"
+                ]
                 conversions.append(
                     TypeConversion(
                         original_type=sub_schema.ref,

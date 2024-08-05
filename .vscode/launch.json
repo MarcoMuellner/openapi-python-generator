@@ -9,12 +9,7 @@
       "type": "debugpy",
       "request": "launch",
       "program": "${workspaceFolder}/src/openapi_python_generator",
-      "args": [
-        "--library",
-        "aiohttp",
-        "http://localhost:8000/openapi.json",
-        "test_api"
-      ],
+      "args": ["--library", "aiohttp", "./openapi.yaml", "test_api"],
       "cwd": "${workspaceFolder}/tests/test_data"
     }
   ]

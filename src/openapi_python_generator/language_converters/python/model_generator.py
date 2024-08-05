@@ -152,7 +152,7 @@ def generate_models(
                 models.append(
                     Model(
                         file_name=name,
-                        content=f"from .{ref_model_name} import {ref_model_name}\n\nclass {name}({ref_model_name}):\n    pass",
+                        content=f"from .{ref_model_name} import {ref_name}\n\nclass {name}({ref_name}):\n    pass",
                         openapi_object=Schema(),
                         properties=[],
                     )
