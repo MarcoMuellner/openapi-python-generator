@@ -1,5 +1,5 @@
 from typing import *
-from pydantic import BaseModel, RootModel, Field
+from pydantic import BaseModel, Field
 {% for property in properties %}
 {% if property.type.import_types is not none %}
 {% for import_type in property.type.import_types %}
