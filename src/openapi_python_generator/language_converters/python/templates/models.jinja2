@@ -15,7 +15,7 @@ from pydantic import BaseModel, RootModel, Field
 
 {% if root_type %}
 
-{{ schema_name }} = Annotated[{{ root_type }}]
+{{ schema_name }} = {{ root_type }}
 
 {% else %}
 
