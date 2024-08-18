@@ -108,18 +108,18 @@ def generate_models(
                 )
             properties.append(conv_property)
 
-        base_class = None
+        root_type = None
         import_types = None
         if not properties and isinstance(schema_or_reference, Schema):
             type_conv = type_converter(schema_or_reference, required=True)
-            base_class = type_conv.converted_type
+            root_type = type_conv.converted_type
             import_types = type_conv.import_types
 
         generated_content = jinja_env.get_template(MODELS_TEMPLATE).render(
             schema_name=name,
             schema=schema_or_reference,
             properties=properties,
-            base_class=base_class,
+            root_type=root_type,
             import_types=import_types,
         )
 
