@@ -13,7 +13,13 @@ from pydantic import BaseModel, RootModel, Field
 {% endfor %}
 {% endif %}
 
-class {{ schema_name }}({{ 'BaseModel' if not root_type else 'RootModel' }}):
+{% if root_type %}
+
+{{ schema_name }} = Annotated[{{ root_type }}]
+
+{% else %}
+
+class {{ schema_name }}(BaseModel):
     """
     {{ schema.title }} model
     {% if schema.description != None %}
@@ -21,12 +27,10 @@ class {{ schema_name }}({{ 'BaseModel' if not root_type else 'RootModel' }}):
     {{ schema.description }}
     {% endif %}
     """
-    {% if root_type %}
-    
-    root : {{ root_type }}
-    {% endif %}
 
     {% for property in properties %}
 
     {{ property.name | replace("@","") | replace("-","_") }} : {{ property.type.converted_type | safe }} = Field(alias="{{ property.name }}" {% if not property.required %}, default = {{ property.default }} {% endif %})
     {% endfor %}
+
+{% endif %}
