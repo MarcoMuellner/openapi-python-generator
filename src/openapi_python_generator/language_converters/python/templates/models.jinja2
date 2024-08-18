@@ -8,7 +8,7 @@ from pydantic import BaseModel, Field
 {% endif %}
 {% endfor %}
 
-class {{ schema_name }}(BaseModel):
+class {{ schema_name }}({{ base_class or 'BaseModel' }}):
     """
     {{ schema.title }} model
     {% if schema.description != None %}

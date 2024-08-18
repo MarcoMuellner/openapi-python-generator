@@ -4,6 +4,7 @@ from typing import Dict, List
 from caseconverter import pascalcase, snakecase
 
 import click
+from openapi_pydantic import DataType
 
 import openapi_python_generator
 from openapi_python_generator.language_converters.python.service_generator import (
@@ -12,6 +13,7 @@ from openapi_python_generator.language_converters.python.service_generator impor
 from openapi_python_generator.language_converters.python.utils import (
     _generate_property_from_reference,
     _generate_property_from_schema,
+    type_converter,
 )
 
 if openapi_python_generator.OPENAPI_VERSION is None:
@@ -106,8 +108,16 @@ def generate_models(
                 )
             properties.append(conv_property)
 
+        base_class = None
+        if not properties and isinstance(schema_or_reference, Schema):
+            type_conv = type_converter(schema_or_reference, required=True)
+            base_class = type_conv.converted_type
+
         generated_content = jinja_env.get_template(MODELS_TEMPLATE).render(
-            schema_name=name, schema=schema_or_reference, properties=properties
+            schema_name=name,
+            schema=schema_or_reference,
+            properties=properties,
+            base_class=base_class,
         )
 
         try:
