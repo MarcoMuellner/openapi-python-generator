@@ -232,17 +232,17 @@ def _generate_property_from_reference(
     if import_model == model_name:
         type_conv = TypeConversion(
             original_type=reference.ref,
-            converted_type=import_model
-            if required
-            else 'Optional["' + import_model + '"]',
+            converted_type=(
+                import_model if required else 'Optional["' + import_model + '"]'
+            ),
             import_types=None,
         )
     else:
         type_conv = TypeConversion(
             original_type=reference.ref,
-            converted_type=import_model
-            if required
-            else "Optional[" + import_model + "]",
+            converted_type=(
+                import_model if required else "Optional[" + import_model + "]"
+            ),
             import_types=[f"from .{import_model} import {import_model}"],
         )
     return Property(
