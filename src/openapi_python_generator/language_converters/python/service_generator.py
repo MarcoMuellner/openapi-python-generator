@@ -18,7 +18,9 @@ from openapi_schema_pydantic import Schema
 
 from openapi_python_generator.language_converters.python import common
 from openapi_python_generator.language_converters.python.common import normalize_symbol
-from openapi_python_generator.language_converters.python.jinja_config import JINJA_ENV
+from openapi_python_generator.language_converters.python.jinja_config import (
+    create_jinja_env,
+)
 from openapi_python_generator.language_converters.python.model_generator import (
     type_converter,
 )
@@ -269,6 +271,7 @@ def generate_services(
     :param paths: paths object to be converted
     :return: List of services
     """
+    jinja_env = create_jinja_env()
 
     def generate_service_operation(
         op: Operation, path_name: str, async_type: bool
@@ -296,7 +299,7 @@ def generate_services(
             use_orjson=common.get_use_orjson(),
         )
 
-        so.content = JINJA_ENV.get_template(library_config.template_name).render(
+        so.content = jinja_env.get_template(library_config.template_name).render(
             **so.dict()
         )
 

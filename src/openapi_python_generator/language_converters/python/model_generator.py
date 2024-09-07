@@ -12,9 +12,11 @@ from openapi_python_generator.language_converters.python import common
 from openapi_python_generator.language_converters.python.jinja_config import (
     ENUM_TEMPLATE,
 )
-from openapi_python_generator.language_converters.python.jinja_config import JINJA_ENV
 from openapi_python_generator.language_converters.python.jinja_config import (
     MODELS_TEMPLATE,
+)
+from openapi_python_generator.language_converters.python.jinja_config import (
+    create_jinja_env,
 )
 from openapi_python_generator.models import Model
 from openapi_python_generator.models import Property
@@ -165,8 +167,10 @@ def type_converter(  # noqa: C901
         converted_type = retVal + "]" + post_type
     elif schema.type == "object":
         converted_type = pre_type + "Dict[str, Any]" + post_type
-    elif schema.type is None or schema.type == "null":
+    elif schema.type == "null":
         converted_type = pre_type + "None" + post_type
+    elif schema.type is None:
+        converted_type = pre_type + "Any" + post_type
     else:
         raise TypeError(f"Unknown type: {schema.type}")
 
@@ -264,6 +268,7 @@ def generate_models(components: Components) -> List[Model]:
     if components.schemas is None:
         return models
 
+    jinja_env = create_jinja_env()
     for schema_name, schema_or_reference in components.schemas.items():
         name = common.normalize_symbol(schema_name)
         if schema_or_reference.enum is not None:
@@ -275,7 +280,7 @@ def generate_models(components: Components) -> List[Model]:
             ]
             m = Model(
                 file_name=name,
-                content=JINJA_ENV.get_template(ENUM_TEMPLATE).render(
+                content=jinja_env.get_template(ENUM_TEMPLATE).render(
                     name=name, **value_dict
                 ),
                 openapi_object=schema_or_reference,
@@ -306,7 +311,7 @@ def generate_models(components: Components) -> List[Model]:
                 )
             properties.append(conv_property)
 
-        generated_content = JINJA_ENV.get_template(MODELS_TEMPLATE).render(
+        generated_content = jinja_env.get_template(MODELS_TEMPLATE).render(
             schema_name=name, schema=schema_or_reference, properties=properties
         )
 
