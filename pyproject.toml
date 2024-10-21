@@ -20,7 +20,7 @@ Changelog = "https://github.com/MarcoMuellner/openapi-python-generator/releases"
 python = "^3.7"
 httpx = {extras = ["all"], version = "^0.23.0"}
 pydantic = "^1.9.1"
-orjson = "^3.7.2"
+orjson = ">=3.9.15,<4.0"
 openapi-schema-pydantic = "^1.2.3"
 Jinja2 = "^3.1.2"
 click = "^8.1.3"
