@@ -1,6 +1,6 @@
 from typing import Optional
 
-from openapi_schema_pydantic import OpenAPI
+from openapi_pydantic.v3.v3_0 import OpenAPI
 
 from openapi_python_generator.language_converters.python.jinja_config import (
     API_CONFIG_TEMPLATE,

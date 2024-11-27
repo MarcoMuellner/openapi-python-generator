@@ -10,7 +10,7 @@ import orjson
 from black import NothingChanged
 from httpx import ConnectError
 from httpx import ConnectTimeout
-from openapi_schema_pydantic import OpenAPI
+from openapi_pydantic.v3.v3_0 import OpenAPI
 from pydantic import ValidationError
 
 from .common import HTTPLibrary
@@ -56,7 +56,8 @@ def get_open_api(source: Union[str, Path]) -> OpenAPI:
             return OpenAPI(**orjson.loads(httpx.get(source).text))
 
         with open(source, "r") as f:
-            return OpenAPI(**orjson.loads(f.read()))
+            file_content = f.read()
+            return OpenAPI(**orjson.loads(file_content))
     except FileNotFoundError:
         click.echo(
             f"File {source} not found. Please make sure to pass the path to the OpenAPI 3.0 specification."

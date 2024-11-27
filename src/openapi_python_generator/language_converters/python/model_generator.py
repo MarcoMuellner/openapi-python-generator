@@ -4,9 +4,7 @@ from typing import List
 from typing import Optional
 
 import click
-from openapi_schema_pydantic import Components
-from openapi_schema_pydantic import Reference
-from openapi_schema_pydantic import Schema
+from openapi_pydantic.v3.v3_0 import Schema, Reference, Components
 
 from openapi_python_generator.language_converters.python import common
 from openapi_python_generator.language_converters.python.jinja_config import (
@@ -42,7 +40,7 @@ def type_converter(  # noqa: C901
         pre_type = "Optional["
         post_type = "]"
 
-    original_type = schema.type if schema.type is not None else "object"
+    original_type = schema.type.value if schema.type is not None else "object"
     import_types: Optional[List[str]] = None
 
     if schema.allOf is not None:
@@ -156,7 +154,7 @@ def type_converter(  # noqa: C901
             original_type = "array<" + converted_reference.type.original_type + ">"
             retVal += converted_reference.type.converted_type
         elif isinstance(schema.items, Schema):
-            original_type = "array<" + str(schema.items.type) + ">"
+            original_type = "array<" + (str(schema.items.type.value) if schema.items.type is not None else "unknown")+ ">"
             retVal += type_converter(schema.items, True).converted_type
         else:
             original_type = "array<unknown>"
@@ -196,11 +194,17 @@ def _generate_property_from_schema(
         and parent_schema.required is not None
         and name in parent_schema.required
     )
+
+    import_type = None
+    if required:
+        import_type = [] if name == model_name else [name]
+
     return Property(
         name=name,
         type=type_converter(schema, required, model_name),
         required=required,
         default=None if required else "None",
+        import_type=import_type,
     )
 
 
