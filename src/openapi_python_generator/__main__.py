@@ -19,7 +19,7 @@ from openapi_python_generator.generate_data import generate_data
 )
 @click.option(
     "--env-token-name",
-    default="access_token",
+    default=None,
     show_default=True,
     help="Name of the environment variable that contains the token. If you set this, the code expects this environment "
     "variable to be set and will raise an error if it is not.",
