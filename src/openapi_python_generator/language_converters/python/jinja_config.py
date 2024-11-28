@@ -9,9 +9,11 @@ from . import common
 
 ENUM_TEMPLATE = "enum.jinja2"
 MODELS_TEMPLATE = "models.jinja2"
+MODELS_TEMPLATE_PYDANTIC_V2 = "models_pydantic_2.jinja2"
 SERVICE_TEMPLATE = "service.jinja2"
 HTTPX_TEMPLATE = "httpx.jinja2"
 API_CONFIG_TEMPLATE = "apiconfig.jinja2"
+API_CONFIG_TEMPLATE_PYDANTIC_V2 = "apiconfig_pydantic_2.jinja2"
 TEMPLATE_PATH = Path(__file__).parent / "templates"
 
 

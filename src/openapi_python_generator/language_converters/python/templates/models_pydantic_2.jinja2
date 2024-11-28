@@ -1,0 +1,26 @@
+from typing import *
+from pydantic import BaseModel, Field
+{% for property in properties %}
+{% if property.type.import_types is not none %}
+{% for import_type in property.type.import_types %}
+{{ import_type }}
+{% endfor %}
+{% endif %}
+{% endfor %}
+
+class {{ schema_name }}(BaseModel):
+    """
+    {{ schema.title }} model
+    {% if schema.description != None %}
+    {{ schema.description }}
+    {% endif %}
+
+    """
+    model_config = {
+        "populate_by_name": True,
+        "validate_assignment": True
+    }
+    {% for property in properties %}
+
+    {{ property.name | replace("@","") | replace("-","_") }} : {{ property.type.converted_type | safe }} = Field(validation_alias="{{ property.name }}" {% if not property.required %}, default = {{ property.default }} {% endif %})
+    {% endfor %}

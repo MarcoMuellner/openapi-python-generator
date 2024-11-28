@@ -1,6 +1,7 @@
 import pytest
 from openapi_pydantic.v3.v3_0 import Schema, Reference, DataType, OpenAPI
 
+from openapi_python_generator.common import PydanticVersion
 from openapi_python_generator.language_converters.python import common
 from openapi_python_generator.language_converters.python.model_generator import (
     _generate_property_from_reference,
@@ -390,9 +391,9 @@ def test_type_converter_property_reference(
         == expected_property
     )
 
-
-def test_model_generation(model_data: OpenAPI):
-    result = generate_models(model_data.components)  # type: ignore
+@pytest.mark.parametrize("pydantic_version", [PydanticVersion.V1, PydanticVersion.V2])
+def test_model_generation(model_data: OpenAPI, pydantic_version : PydanticVersion):
+    result = generate_models(model_data.components, pydantic_version)  # type: ignore
 
     assert len(result) == len(model_data.components.schemas.keys())  # type: ignore
     for i in result:
@@ -404,6 +405,6 @@ def test_model_generation(model_data: OpenAPI):
     model_data_copy = model_data.model_copy()
     model_data_copy.components.schemas = None  # type: ignore
 
-    result = generate_models(model_data_copy.components)  # type: ignore
+    result = generate_models(model_data_copy.components, pydantic_version)  # type: ignore
 
     assert len(result) == 0

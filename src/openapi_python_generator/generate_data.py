@@ -13,7 +13,7 @@ from httpx import ConnectTimeout
 from openapi_pydantic.v3.v3_0 import OpenAPI
 from pydantic import ValidationError
 
-from .common import HTTPLibrary
+from .common import HTTPLibrary, PydanticVersion
 from .common import library_config_dict
 from .language_converters.python.generator import generator
 from .language_converters.python.jinja_config import SERVICE_TEMPLATE
@@ -140,6 +140,7 @@ def generate_data(
     env_token_name: Optional[str] = None,
     use_orjson: bool = False,
     custom_template_path: Optional[str] = None,
+    pydantic_version: PydanticVersion = PydanticVersion.V2,
 ) -> None:
     """
     Generate Python code from an OpenAPI 3.0 specification.
@@ -153,6 +154,7 @@ def generate_data(
         env_token_name,
         use_orjson,
         custom_template_path,
+        pydantic_version,
     )
 
     write_data(result, output)
