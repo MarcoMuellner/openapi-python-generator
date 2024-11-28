@@ -14,6 +14,10 @@ class HTTPLibrary(str, Enum):
     requests = "requests"
     aiohttp = "aiohttp"
 
+class PydanticVersion(str, Enum):
+    V1 = "v1"
+    V2 = "v2"
+
 
 library_config_dict: Dict[Optional[HTTPLibrary], LibraryConfig] = {
     HTTPLibrary.httpx: LibraryConfig(

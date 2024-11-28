@@ -1,11 +1,11 @@
 from typing import Optional
+from enum import Enum
 
 import click
 
 from openapi_python_generator import __version__
-from openapi_python_generator.common import HTTPLibrary
+from openapi_python_generator.common import HTTPLibrary, PydanticVersion
 from openapi_python_generator.generate_data import generate_data
-
 
 @click.command()
 @click.argument("source")
@@ -38,6 +38,13 @@ from openapi_python_generator.generate_data import generate_data
     default=None,
     help="Custom template path to use. Allows overriding of the built in templates",
 )
+@click.option(
+    "--pydantic-version",
+    type=click.Choice(["v1", "v2"]),
+    default="v2",
+    show_default=True,
+    help="Pydantic version to use for generated models.",
+)
 @click.version_option(version=__version__)
 def main(
     source: str,
@@ -46,6 +53,7 @@ def main(
     env_token_name: Optional[str] = None,
     use_orjson: bool = False,
     custom_template_path: Optional[str] = None,
+    pydantic_version: PydanticVersion = PydanticVersion.V2,
 ) -> None:
     """
     Generate Python code from an OpenAPI 3.0 specification.
@@ -54,7 +62,7 @@ def main(
     an OUTPUT path, where the resulting client is created.
     """
     generate_data(
-        source, output, library, env_token_name, use_orjson, custom_template_path
+        source, output, library, env_token_name, use_orjson, custom_template_path,pydantic_version
     )
 
 

@@ -1,9 +1,7 @@
 from typing import List
 from typing import Optional
 
-from openapi_schema_pydantic import Operation
-from openapi_schema_pydantic import PathItem
-from openapi_schema_pydantic import Schema
+from openapi_pydantic.v3.v3_0 import Operation, PathItem, Schema
 from pydantic import BaseModel
 
 

@@ -15,9 +15,27 @@ Arguments:
 
 Options:
 ```console
---library                  The library to use. Defaults to `httpx`.
---env-token-name           The name of the environment variable to use for the API key. Defaults to `access_token`.
---use-orjson               Use the `orjson` library for serialization. Defaults to `false`.
---custom-template-path     Use a custom template path to override the built in templates.
--h, --help                 Show this help message and exit.
+--library [httpx|requests|aiohttp]
+                          HTTP library to use in the generation of the client. 
+                          Defaults to 'httpx'.
+
+--env-token-name TEXT     Name of the environment variable that contains the token.
+                          If set, code expects this environment variable and will
+                          raise an error if not set.
+                          Defaults to 'access_token'.
+
+--use-orjson             Use the orjson library for JSON serialization. Enables
+                         faster processing and better type support.
+                         Defaults to False.
+
+--custom-template-path TEXT
+                         Custom template path to use. Allows overriding of the
+                         built in templates.
+
+--pydantic-version [v1|v2]
+                         Pydantic version to use for generated models.
+                         Defaults to 'v2'.
+
+--version                Show the version and exit.
+-h, --help              Show this help message and exit.
 ```
