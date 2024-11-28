@@ -7,6 +7,7 @@ import click
 import httpx
 import isort
 import orjson
+import yaml
 from black import NothingChanged
 from httpx import ConnectError
 from httpx import ConnectTimeout
@@ -45,30 +46,61 @@ def write_code(path: Path, content) -> None:
 
 def get_open_api(source: Union[str, Path]) -> OpenAPI:
     """
-    Tries to fetch the openapi.json file from the web or load from a local file. Returns the according OpenAPI object.
-    :param source:
-    :return:
+    Tries to fetch the openapi specification file from the web or load from a local file.
+    Supports both JSON and YAML formats. Returns the according OpenAPI object.
+
+    Args:
+        source: URL or file path to the OpenAPI specification
+
+    Returns:
+        OpenAPI: Parsed OpenAPI specification object
+
+    Raises:
+        FileNotFoundError: If the specified file cannot be found
+        ConnectError: If the URL cannot be accessed
+        ValidationError: If the specification is invalid
+        JSONDecodeError/YAMLError: If the file cannot be parsed
     """
     try:
+        # Handle remote files
         if not isinstance(source, Path) and (
-            source.startswith("http://") or source.startswith("https://")
+                source.startswith("http://") or source.startswith("https://")
         ):
-            return OpenAPI(**orjson.loads(httpx.get(source).text))
+            content = httpx.get(source).text
+            # Try JSON first, then YAML for remote files
+            try:
+                return OpenAPI(**orjson.loads(content))
+            except orjson.JSONDecodeError:
+                return OpenAPI(**yaml.safe_load(content))
 
+        # Handle local files
         with open(source, "r") as f:
             file_content = f.read()
-            return OpenAPI(**orjson.loads(file_content))
+
+            # Try JSON first
+            try:
+                return OpenAPI(**orjson.loads(file_content))
+            except orjson.JSONDecodeError:
+                # If JSON fails, try YAML
+                try:
+                    return OpenAPI(**yaml.safe_load(file_content))
+                except yaml.YAMLError as e:
+                    click.echo(
+                        f"File {source} is neither a valid JSON nor YAML file: {str(e)}"
+                    )
+                    raise
+
     except FileNotFoundError:
         click.echo(
-            f"File {source} not found. Please make sure to pass the path to the OpenAPI 3.0 specification."
+            f"File {source} not found. Please make sure to pass the path to the OpenAPI specification."
         )
         raise
     except (ConnectError, ConnectTimeout):
         click.echo(f"Could not connect to {source}.")
         raise ConnectError(f"Could not connect to {source}.") from None
-    except (ValidationError, orjson.JSONDecodeError):
+    except ValidationError:
         click.echo(
-            f"File {source} is not a valid OpenAPI 3.0 specification, or there may be a problem with your JSON."
+            f"File {source} is not a valid OpenAPI 3.0 specification."
         )
         raise
 
