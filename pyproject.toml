@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "openapi-python-generator"
-version = "1.1.0"
+version = "1.1.1"
 description = "Openapi Python Generator"
 authors = ["Marco Müllner <muellnermarco@gmail.com>"]
 license = "MIT"
@@ -26,6 +26,7 @@ click = "^8.1.3"
 black = ">=21.10b0"
 isort = ">=5.10.1"
 openapi-pydantic = "^0.5.0"
+pyyaml = "^6.0.2"
 
 [tool.poetry.dev-dependencies]
 Pygments = ">=2.10.0"
