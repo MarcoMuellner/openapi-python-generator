@@ -11,11 +11,16 @@ on:
 jobs:
   tests:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.9', '3.10', '3.11', '3.12', '3.13']
+      fail-fast: false
+
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v3
         with:
-          python-version: 3.9
+          python-version: ${{ matrix.python-version }}
           architecture: x64
       - run: pip install poetry==1.3.1
       - run: poetry install
@@ -30,6 +35,6 @@ jobs:
           fail_ci_if_error: true
           files: ./coverage.xml
           flags: unittests
-          name: codecov-umbrella
-          path_to_write_report: .codecov_report.txt
+          name: codecov-umbrella-${{ matrix.python-version }}
+          path_to_write_report: .codecov_report.${{ matrix.python-version }}.txt
           verbose: true
