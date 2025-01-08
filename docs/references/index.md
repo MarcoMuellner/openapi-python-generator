@@ -16,7 +16,7 @@ Arguments:
 Options:
 ```console
 --library [httpx|requests|aiohttp]
-                          HTTP library to use in the generation of the client. 
+                          HTTP library to use in the generation of the client.
                           Defaults to 'httpx'.
 
 --env-token-name TEXT     Name of the environment variable that contains the token.
@@ -35,6 +35,10 @@ Options:
 --pydantic-version [v1|v2]
                          Pydantic version to use for generated models.
                          Defaults to 'v2'.
+
+--formatter [black|none]
+                         Option to choose which auto formatter is applied.
+                         Defaults to 'black'.
 
 --version                Show the version and exit.
 -h, --help              Show this help message and exit.
