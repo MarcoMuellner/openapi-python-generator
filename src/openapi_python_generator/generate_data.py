@@ -15,7 +15,7 @@ from httpx import ConnectTimeout
 from openapi_pydantic.v3.v3_0 import OpenAPI
 from pydantic import ValidationError
 
-from .common import Formatter, HTTPLibrary, PydanticVersion
+from .common import FormatOptions, Formatter, HTTPLibrary, PydanticVersion
 from .common import library_config_dict
 from .language_converters.python.generator import generator
 from .language_converters.python.jinja_config import SERVICE_TEMPLATE
@@ -30,29 +30,24 @@ def write_code(path: Path, content: str, formatter: Formatter) -> None:
     :param content: The content to write.
     :param formatter: The formatter applied to the code written.
     """
-    try:
-        with open(path, "w") as f:
-            if formatter == Formatter.BLACK:
-                formatted_contend = format_using_black(content)
-            elif formatter == Formatter.NONE:
-                formatted_contend = content
-            else:
-                raise NotImplementedError(
-                    f"Missing implementation for formatter {formatter!r}."
-                )
-            f.write(formatted_contend)
-    except Exception as e:
-        raise e
+    if formatter == Formatter.BLACK:
+        formatted_contend = format_using_black(content)
+    elif formatter == Formatter.NONE:
+        formatted_contend = content
+    else:
+        raise NotImplementedError(f"Missing implementation for formatter {formatter!r}.")
+    with open(path, "w") as f:
+        f.write(formatted_contend)
 
 
 def format_using_black(content: str) -> str:
     try:
         formatted_contend = black.format_file_contents(
-            content, fast=False, mode=black.FileMode(line_length=120)
+            content, fast=FormatOptions.skip_validation, mode=black.FileMode(line_length=FormatOptions.line_length)
         )
     except NothingChanged:
         return content
-    return isort.code(formatted_contend, line_length=120)
+    return isort.code(formatted_contend, line_length=FormatOptions.line_length)
 
 
 def get_open_api(source: Union[str, Path]) -> OpenAPI:

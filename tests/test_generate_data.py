@@ -1,4 +1,6 @@
+from pathlib import Path
 import shutil
+import subprocess
 
 import pytest
 import yaml
@@ -6,7 +8,7 @@ from httpx import ConnectError
 from orjson import orjson
 from pydantic import ValidationError
 
-from openapi_python_generator.common import HTTPLibrary
+from openapi_python_generator.common import FormatOptions, Formatter, HTTPLibrary
 from openapi_python_generator.common import library_config_dict
 from openapi_python_generator.generate_data import generate_data
 from openapi_python_generator.generate_data import get_open_api
@@ -66,7 +68,7 @@ def test_generate_data(model_data_with_cleanup):
 
 def test_write_data(model_data_with_cleanup):
     result = generator(model_data_with_cleanup, library_config_dict[HTTPLibrary.httpx])
-    write_data(result, test_result_path)
+    write_data(result, test_result_path, Formatter.BLACK)
 
     assert test_result_path.exists()
     assert test_result_path.is_dir()
@@ -90,7 +92,7 @@ def test_write_data(model_data_with_cleanup):
     model_data_copy.paths = None
 
     result = generator(model_data_copy, library_config_dict[HTTPLibrary.httpx])
-    write_data(result, test_result_path)
+    write_data(result, test_result_path, Formatter.BLACK)
 
     assert test_result_path.exists()
     assert test_result_path.is_dir()
@@ -105,3 +107,78 @@ def test_write_data(model_data_with_cleanup):
     assert (test_result_path / "models" / "__init__.py").is_file()
     assert (test_result_path / "__init__.py").exists()
     assert (test_result_path / "__init__.py").is_file()
+
+def test_write_formatted_data(model_data_with_cleanup):
+    result = generator(model_data_with_cleanup, library_config_dict[HTTPLibrary.httpx])
+
+    # First write code without formatter
+    write_data(result, test_result_path, Formatter.NONE)
+
+    assert test_result_path.exists()
+    assert test_result_path.is_dir()
+    assert (test_result_path / "api_config.py").exists()
+    assert (test_result_path / "models").exists()
+    assert (test_result_path / "models").is_dir()
+    assert (test_result_path / "services").exists()
+    assert (test_result_path / "services").is_dir()
+    assert (test_result_path / "models" / "__init__.py").exists()
+    assert (test_result_path / "services" / "__init__.py").exists()
+    assert (test_result_path / "services" / "__init__.py").is_file()
+    assert (test_result_path / "models" / "__init__.py").is_file()
+    assert (test_result_path / "__init__.py").exists()
+    assert (test_result_path / "__init__.py").is_file()
+
+    assert not files_are_black_formatted(test_result_path)
+
+    # delete test_result_path folder
+    shutil.rmtree(test_result_path)
+
+    model_data_copy = model_data_with_cleanup.copy()
+    model_data_copy.components = None
+    model_data_copy.paths = None
+
+    result = generator(model_data_copy, library_config_dict[HTTPLibrary.httpx])
+    write_data(result, test_result_path, Formatter.BLACK)
+
+    assert test_result_path.exists()
+    assert test_result_path.is_dir()
+    assert (test_result_path / "api_config.py").exists()
+    assert (test_result_path / "models").exists()
+    assert (test_result_path / "models").is_dir()
+    assert (test_result_path / "services").exists()
+    assert (test_result_path / "services").is_dir()
+    assert (test_result_path / "models" / "__init__.py").exists()
+    assert (test_result_path / "services" / "__init__.py").exists()
+    assert (test_result_path / "services" / "__init__.py").is_file()
+    assert (test_result_path / "models" / "__init__.py").is_file()
+    assert (test_result_path / "__init__.py").exists()
+    assert (test_result_path / "__init__.py").is_file()
+
+    assert files_are_black_formatted(test_result_path)
+
+def files_are_black_formatted(test_result_path: Path) -> bool:
+    # Run the `black --check` command on all files. This does not write any file.
+    result = subprocess.run([
+            "black", 
+            "--check",
+            # Overwrite any exclusion due to a .gitignore.
+            "--exclude", "''",
+            # Settings also used when formatting the code when writing it
+            "--fast" if FormatOptions.skip_validation else "--safe",
+            "--line-length", str(FormatOptions.line_length),
+            # The source directory
+            str(test_result_path.absolute())
+        ],
+        capture_output=True,
+        text=True
+    )
+
+    # With `--check` the return status has the following meaning:
+    # - Return code 0 means nothing would change.
+    # - Return code 1 means some files would be reformatted.
+    # - Return code 123 means there was an internal error.
+
+    if result.returncode == 123:
+        result.check_returncode # raise the error
+
+    return result.returncode == 0

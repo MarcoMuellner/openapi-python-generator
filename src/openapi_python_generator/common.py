@@ -28,6 +28,10 @@ class Formatter(str, Enum):
     BLACK = "black"
     NONE = "none"
 
+class FormatOptions:
+    skip_validation: bool = False
+    line_length: int = 120
+
 
 library_config_dict: Dict[Optional[HTTPLibrary], LibraryConfig] = {
     HTTPLibrary.httpx: LibraryConfig(
