@@ -14,9 +14,23 @@ class HTTPLibrary(str, Enum):
     requests = "requests"
     aiohttp = "aiohttp"
 
+
 class PydanticVersion(str, Enum):
     V1 = "v1"
     V2 = "v2"
+
+
+class Formatter(str, Enum):
+    """
+    Enum for the available code formatters.
+    """
+
+    BLACK = "black"
+    NONE = "none"
+
+class FormatOptions:
+    skip_validation: bool = False
+    line_length: int = 120
 
 
 library_config_dict: Dict[Optional[HTTPLibrary], LibraryConfig] = {
