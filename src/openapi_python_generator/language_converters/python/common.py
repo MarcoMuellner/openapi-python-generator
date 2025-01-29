@@ -55,3 +55,11 @@ def normalize_symbol(symbol: str) -> str:
     if normalized_symbol in keyword.kwlist:
         normalized_symbol = normalized_symbol + "_"
     return normalized_symbol
+
+
+def safe_property_name(name: str) -> str:
+    return re.sub(
+        r"^(\d.*)",
+        r"var_\1",
+        name.replace("@", "").replace("-", "_"),
+    )
