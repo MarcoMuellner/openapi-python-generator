@@ -19,7 +19,7 @@ TEMPLATE_PATH = Path(__file__).parent / "templates"
 
 def create_jinja_env():
     custom_template_path = common.get_custom_template_path()
-    return Environment(
+    environment = Environment(
         loader=(
             ChoiceLoader(
                 [
@@ -33,3 +33,5 @@ def create_jinja_env():
         autoescape=True,
         trim_blocks=True,
     )
+    environment.filters["safe_property_name"] = common.safe_property_name
+    return environment
