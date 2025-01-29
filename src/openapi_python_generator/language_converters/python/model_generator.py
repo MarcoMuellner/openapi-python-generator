@@ -278,7 +278,7 @@ def generate_models(components: Components, pydantic_version: PydanticVersion = 
         name = common.normalize_symbol(schema_name)
         if schema_or_reference.enum is not None:
             value_dict = schema_or_reference.dict()
-            regex = re.compile(r"[\s\/=\*\+]+")
+            regex = re.compile(r"[\s\/=\*\+\-]+")
             value_dict["enum"] = [
                 re.sub(regex, "_", i) if isinstance(i, str) else f"value_{i}"
                 for i in value_dict["enum"]
