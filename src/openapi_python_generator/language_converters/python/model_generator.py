@@ -118,14 +118,11 @@ def type_converter(  # noqa: C901
                 *[i.import_types for i in conversions if i.import_types is not None]
             )
         )
-    # We only want to auto convert to datetime if orjson is used throghout the code, otherwise we can not
-    # serialize it to JSON.
-    elif schema.type == "string" and (
-            schema.schema_format is None or not common.get_use_orjson()
-    ):
-        converted_type = pre_type + "str" + post_type
+    # With custom string format fields, in order to cast these to strict types (e.g. date, datetime, UUID)
+    # orjson is required for JSON serialiation.
     elif (
             schema.type == "string"
+            and schema.schema_format is not None
             and schema.schema_format.startswith("uuid")
             and common.get_use_orjson()
     ):
@@ -136,9 +133,17 @@ def type_converter(  # noqa: C901
         else:
             converted_type = pre_type + "UUID" + post_type
             import_types = ["from uuid import UUID"]
-    elif schema.type == "string" and schema.schema_format == "date-time":
+    elif schema.type == "string" and schema.schema_format == "date-time" and common.get_use_orjson():
         converted_type = pre_type + "datetime" + post_type
         import_types = ["from datetime import datetime"]
+    elif schema.type == "string" and schema.schema_format == "date" and common.get_use_orjson():
+        converted_type = pre_type + "date" + post_type
+        import_types = ["from datetime import date"]
+    elif schema.type == "string" and schema.schema_format == "decimal" and common.get_use_orjson():
+        converted_type = pre_type + "Decimal" + post_type
+        import_types = ["from decimal import Decimal"]
+    elif schema.type == "string":
+        converted_type = pre_type + "str" + post_type
     elif schema.type == "integer":
         converted_type = pre_type + "int" + post_type
     elif schema.type == "number":

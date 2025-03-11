@@ -527,6 +527,16 @@
             "title": "Created At",
             "type": "string",
             "format": "date-time"
+          },
+          "birthdate": {
+            "title": "Birthdate",
+            "type": "string",
+            "format": "date"
+          },
+          "position": {
+            "title": "Position",
+            "type": "string",
+            "format": "decimal"
           }
         }
       },

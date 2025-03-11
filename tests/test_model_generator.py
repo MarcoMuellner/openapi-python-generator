@@ -44,6 +44,14 @@ from openapi_python_generator.models import TypeConversion
             TypeConversion(original_type="string", converted_type="str"),
         ),
         (
+            Schema(type=DataType.STRING, schema_format="date"),
+            TypeConversion(original_type="string", converted_type="str"),
+        ),
+        (
+            Schema(type=DataType.STRING, schema_format="decimal"),
+            TypeConversion(original_type="string", converted_type="str"),
+        ),
+        (
             Schema(type=DataType.OBJECT),
             TypeConversion(original_type="object", converted_type="Dict[str, Any]"),
         ),
@@ -135,6 +143,29 @@ def test_type_converter_simple(test_openapi_types, expected_python_types):
                 original_type="string",
                 converted_type="datetime",
                 import_types=["from datetime import datetime"],
+            ),
+        ),
+        (
+            Schema(type=DataType.STRING, schema_format="date"),
+            TypeConversion(
+                original_type="string",
+                converted_type="date",
+                import_types=["from datetime import date"],
+            ),
+        ),
+        (
+            Schema(type=DataType.STRING, schema_format="decimal"),
+            TypeConversion(
+                original_type="string",
+                converted_type="Decimal",
+                import_types=["from decimal import Decimal"],
+            ),
+        ),
+        (
+            Schema(type=DataType.STRING, schema_format="email"),
+            TypeConversion(
+                original_type="string",
+                converted_type="str",
             ),
         ),
         (
