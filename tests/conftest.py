@@ -3,6 +3,7 @@ import shutil
 from pathlib import Path
 from typing import Dict
 from typing import Generator
+from openapi_python_generator.language_converters.python import common
 
 import pytest
 from openapi_pydantic.v3.v3_0 import OpenAPI
@@ -32,3 +33,52 @@ def model_data_with_cleanup_fixture(model_data) -> OpenAPI:  # type: ignore
     if test_result_path.exists():
         # delete folder and all subfolders
         shutil.rmtree(test_result_path)
+
+
+@pytest.fixture
+def with_orjson_enabled():
+    """
+    Fixture to enable orjson for the duration of the test
+    """
+    orjson_usage = common.get_use_orjson()
+    common.set_use_orjson(True)
+    try:
+        yield
+    finally:
+        common.set_use_orjson(orjson_usage)
+
+@pytest.fixture
+def with_orjson_disabled():
+    """
+    Fixture to enable orjson for the duration of the test
+    """
+    orjson_usage = common.get_use_orjson()
+    common.set_use_orjson(False)
+    try:
+        yield
+    finally:
+        common.set_use_orjson(orjson_usage)
+
+@pytest.fixture
+def with_pydantic_v1():
+    """
+    Fixture to set pydantic to v1 for the duration of the test
+    """
+    pydantic_version = common.get_pydantic_version()
+    common.set_pydantic_version(common.PydanticVersion.V1)
+    try:
+        yield
+    finally:
+        common.set_pydantic_version(pydantic_version)
+
+@pytest.fixture
+def with_pydantic_v2():
+    """
+    Fixture to set pydantic to v2 for the duration of the test
+    """
+    pydantic_version = common.get_pydantic_version()
+    common.set_pydantic_version(common.PydanticVersion.V2)
+    try:
+        yield
+    finally:
+        common.set_pydantic_version(pydantic_version)

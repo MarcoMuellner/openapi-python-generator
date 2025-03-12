@@ -532,11 +532,6 @@
             "title": "Birthdate",
             "type": "string",
             "format": "date"
-          },
-          "position": {
-            "title": "Position",
-            "type": "string",
-            "format": "decimal"
           }
         }
       },

@@ -31,6 +31,7 @@ def generator(
 
     common.set_use_orjson(use_orjson)
     common.set_custom_template_path(custom_template_path)
+    common.set_pydantic_version(pydantic_version)
 
     if data.components is not None:
         models = generate_models(data.components, pydantic_version)

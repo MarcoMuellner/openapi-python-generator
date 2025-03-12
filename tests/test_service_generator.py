@@ -68,9 +68,104 @@ default_responses = {
         (Operation(responses=default_responses, requestBody=None), None),
     ],
 )
-def test_generate_body_param(test_openapi_operation, expected_result):
+def test_generate_body_param_pydanticv1(test_openapi_operation, expected_result, with_orjson_disabled, with_pydantic_v1):
     assert generate_body_param(test_openapi_operation) == expected_result
 
+
+@pytest.mark.parametrize(
+    "test_openapi_operation, expected_result",
+    [
+        (
+            Operation(
+                responses=default_responses,
+                requestBody=RequestBody(
+                    content={
+                        "application/json": MediaType(
+                            media_type_schema=Reference(
+                                ref="#/components/schemas/TestModel"
+                            )
+                        )
+                    }
+                )
+            ),
+            "data.model_dump_json()",
+        ),
+        (
+            Operation(
+                responses=default_responses,
+                requestBody=Reference(ref="#/components/schemas/TestModel")
+            ),
+            "data.model_dump_json()",
+        ),
+        (
+            Operation(
+                responses=default_responses,
+                requestBody=RequestBody(
+                    content={
+                        "application/json": MediaType(
+                            media_type_schema=Schema(
+                                type=DataType.ARRAY,
+                                items=Reference(ref="#/components/schemas/TestModel"),
+                            )
+                        )
+                    }
+                )
+            ),
+            "[i.model_dump_json() for i in data]",
+        ),
+        (Operation(responses=default_responses, requestBody=None), None),
+    ],
+)
+def test_generate_body_param_pydanticv2(test_openapi_operation, expected_result, with_orjson_disabled, with_pydantic_v2):
+    assert generate_body_param(test_openapi_operation) == expected_result
+
+
+@pytest.mark.parametrize(
+    "test_openapi_operation, expected_result",
+    [
+        (
+            Operation(
+                responses=default_responses,
+                requestBody=RequestBody(
+                    content={
+                        "application/json": MediaType(
+                            media_type_schema=Reference(
+                                ref="#/components/schemas/TestModel"
+                            )
+                        )
+                    }
+                )
+            ),
+            "data.model_dump()",
+        ),
+        (
+            Operation(
+                responses=default_responses,
+                requestBody=Reference(ref="#/components/schemas/TestModel")
+            ),
+            "data.model_dump()",
+        ),
+        (
+            Operation(
+                responses=default_responses,
+                requestBody=RequestBody(
+                    content={
+                        "application/json": MediaType(
+                            media_type_schema=Schema(
+                                type=DataType.ARRAY,
+                                items=Reference(ref="#/components/schemas/TestModel"),
+                            )
+                        )
+                    }
+                )
+            ),
+            "[i.model_dump() for i in data]",
+        ),
+        (Operation(responses=default_responses, requestBody=None), None),
+    ],
+)
+def test_generate_body_param_orjson_pydanticv2(test_openapi_operation, expected_result, with_orjson_enabled, with_pydantic_v2):
+    assert generate_body_param(test_openapi_operation) == expected_result
 
 @pytest.mark.parametrize(
     "test_openapi_operation, expected_result",

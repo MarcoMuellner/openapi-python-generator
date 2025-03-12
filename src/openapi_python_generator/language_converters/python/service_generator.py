@@ -26,13 +26,29 @@ from openapi_python_generator.models import TypeConversion
 
 HTTP_OPERATIONS = ["get", "post", "put", "delete", "options", "head", "patch", "trace"]
 
+def _generate_body_dump_expression(data = "data") -> str:
+    """
+    Generate expression for dumping abstract body as a dictionary.
+    """
+
+    # Use old v1 method for pydantic
+    if common.get_pydantic_version() == common.PydanticVersion.V1:
+        return f"{data}.dict()"
+
+    # Dump model but allow orjson to serialise (fastest)
+    if common.get_use_orjson():
+        return f"{data}.model_dump()"
+
+    # rely on pydantic v2 to serialise (slowest, but best compatibility)
+    return f"{data}.model_dump_json()"
+
 
 def generate_body_param(operation: Operation) -> Union[str, None]:
     if operation.requestBody is None:
         return None
     else:
         if isinstance(operation.requestBody, Reference):
-            return "data.dict()"
+            return _generate_body_dump_expression("data")
 
         if operation.requestBody.content is None:
             return None  # pragma: no cover
@@ -46,11 +62,12 @@ def generate_body_param(operation: Operation) -> Union[str, None]:
             return None  # pragma: no cover
 
         if isinstance(media_type.media_type_schema, Reference):
-            return "data.dict()"
+            return _generate_body_dump_expression("data")
         elif isinstance(media_type.media_type_schema, Schema):
             schema = media_type.media_type_schema
             if schema.type == "array":
-                return "[i.dict() for i in data]"
+                expression = _generate_body_dump_expression("i")
+                return f"[{expression} for i in data]"
             elif schema.type == "object":
                 return "data"
             else:

@@ -121,10 +121,11 @@ def type_converter(  # noqa: C901
     # With custom string format fields, in order to cast these to strict types (e.g. date, datetime, UUID)
     # orjson is required for JSON serialiation.
     elif (
-            schema.type == "string"
-            and schema.schema_format is not None
-            and schema.schema_format.startswith("uuid")
-            and common.get_use_orjson()
+        schema.type == "string"
+        and schema.schema_format is not None
+        and schema.schema_format.startswith("uuid")
+        # orjson and pydantic v2 both support UUID
+        and (common.get_use_orjson() or common.get_pydantic_version() == PydanticVersion.V2)
     ):
         if len(schema.schema_format) > 4 and schema.schema_format[4].isnumeric():
             uuid_type = schema.schema_format.upper()
@@ -133,13 +134,31 @@ def type_converter(  # noqa: C901
         else:
             converted_type = pre_type + "UUID" + post_type
             import_types = ["from uuid import UUID"]
-    elif schema.type == "string" and schema.schema_format == "date-time" and common.get_use_orjson():
+    elif (
+        schema.type == "string"
+        and schema.schema_format == "date-time"
+        # orjson and pydantic v2 both support datetime
+        and (common.get_use_orjson() or common.get_pydantic_version() == PydanticVersion.V2)
+    ):
         converted_type = pre_type + "datetime" + post_type
         import_types = ["from datetime import datetime"]
-    elif schema.type == "string" and schema.schema_format == "date" and common.get_use_orjson():
+    elif (
+        schema.type == "string"
+        and schema.schema_format == "date"
+        # orjson and pydantic v2 both support date
+        and (common.get_use_orjson() or common.get_pydantic_version() == PydanticVersion.V2)
+    ):
         converted_type = pre_type + "date" + post_type
         import_types = ["from datetime import date"]
-    elif schema.type == "string" and schema.schema_format == "decimal" and common.get_use_orjson():
+    elif (
+        schema.type == "string"
+        and schema.schema_format == "decimal"
+        # orjson does not support Decimal
+        # See https://github.com/ijl/orjson/issues/444
+        and not common.get_use_orjson()
+        # pydantic v2 supports Decimal
+        and common.get_pydantic_version() == PydanticVersion.V2
+    ):
         converted_type = pre_type + "Decimal" + post_type
         import_types = ["from decimal import Decimal"]
     elif schema.type == "string":

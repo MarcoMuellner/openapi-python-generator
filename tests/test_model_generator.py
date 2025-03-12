@@ -97,7 +97,142 @@ from openapi_python_generator.models import TypeConversion
         ),
     ],
 )
-def test_type_converter_simple(test_openapi_types, expected_python_types):
+def test_type_converter_pydanticv1(test_openapi_types, expected_python_types, with_orjson_disabled, with_pydantic_v1):
+    """
+    Test base case with pydantic v1 and orjson disabled
+    """
+    assert type_converter(test_openapi_types, True) == expected_python_types
+
+    if test_openapi_types.type == "array" and isinstance(
+        test_openapi_types.items, Reference
+    ):
+        expected_type = expected_python_types.converted_type.split("[")[-1].split("]")[
+            0
+        ]
+
+        assert (
+            type_converter(test_openapi_types, False).converted_type
+            == "Optional[List[Optional[" + expected_type + "]]]"
+        )
+    else:
+        assert (
+            type_converter(test_openapi_types, False).converted_type
+            == "Optional[" + expected_python_types.converted_type + "]"
+        )
+
+@pytest.mark.parametrize(
+    "test_openapi_types,expected_python_types",
+    [
+        (
+            Schema(type=DataType.STRING),
+            TypeConversion(original_type="string", converted_type="str"),
+        ),
+        (
+            Schema(type=DataType.INTEGER),
+            TypeConversion(original_type="integer", converted_type="int"),
+        ),
+        (
+            Schema(type=DataType.NUMBER),
+            TypeConversion(original_type="number", converted_type="float"),
+        ),
+        (
+            Schema(type=DataType.BOOLEAN),
+            TypeConversion(original_type="boolean", converted_type="bool"),
+        ),
+        (
+            Schema(type=DataType.STRING, schema_format="date-time"),
+            TypeConversion(
+                original_type="string",
+                converted_type="datetime",
+                import_types=["from datetime import datetime"],
+            ),
+        ),
+        (
+            Schema(type=DataType.STRING, schema_format="date"),
+            TypeConversion(
+                original_type="string",
+                converted_type="date",
+                import_types=["from datetime import date"],
+            ),
+        ),
+        (
+            Schema(type=DataType.STRING, schema_format="decimal"),
+            TypeConversion(
+                original_type="string",
+                converted_type="Decimal",
+                import_types=["from decimal import Decimal"],
+            ),
+        ),
+        (
+            Schema(type=DataType.OBJECT),
+            TypeConversion(original_type="object", converted_type="Dict[str, Any]"),
+        ),
+        (
+            Schema(type=DataType.ARRAY),
+            TypeConversion(original_type="array<unknown>", converted_type="List[Any]"),
+        ),
+        (
+            Schema(type=DataType.ARRAY, items=Schema(type=DataType.STRING)),
+            TypeConversion(original_type="array<string>", converted_type="List[str]"),
+        ),
+        (
+            Schema(type=DataType.ARRAY, items=Reference(ref="#/components/schemas/test_name")),
+            TypeConversion(
+                original_type="array<#/components/schemas/test_name>",
+                converted_type="List[test_name]",
+                import_types=["from .test_name import test_name"],
+            ),
+        ),
+        (
+            Schema(type=None),
+            TypeConversion(original_type="object", converted_type="Any"),
+        ),
+        (
+            Schema(type=DataType.STRING, schema_format="uuid"),
+            TypeConversion(
+                original_type="string",
+                converted_type="UUID",
+                import_types=["from uuid import UUID"],
+            ),
+        ),
+        (
+            Schema(type=DataType.STRING, schema_format="uuid1"),
+            TypeConversion(
+                original_type="string",
+                converted_type="UUID1",
+                import_types=["from pydantic import UUID1"],
+            ),
+        ),
+        (
+            Schema(type=DataType.STRING, schema_format="uuid3"),
+            TypeConversion(
+                original_type="string",
+                converted_type="UUID3",
+                import_types=["from pydantic import UUID3"],
+            ),
+        ),
+        (
+            Schema(type=DataType.STRING, schema_format="uuid4"),
+            TypeConversion(
+                original_type="string",
+                converted_type="UUID4",
+                import_types=["from pydantic import UUID4"],
+            ),
+        ),
+        (
+            Schema(type=DataType.STRING, schema_format="uuid5"),
+            TypeConversion(
+                original_type="string",
+                converted_type="UUID5",
+                import_types=["from pydantic import UUID5"],
+            ),
+        ),
+    ],
+)
+def test_type_converter_pydanticv2(test_openapi_types, expected_python_types, with_orjson_disabled, with_pydantic_v2):
+    """
+    Test base case with pydantic v2 and orjson disabled
+    """
     assert type_converter(test_openapi_types, True) == expected_python_types
 
     if test_openapi_types.type == "array" and isinstance(
@@ -155,11 +290,7 @@ def test_type_converter_simple(test_openapi_types, expected_python_types):
         ),
         (
             Schema(type=DataType.STRING, schema_format="decimal"),
-            TypeConversion(
-                original_type="string",
-                converted_type="Decimal",
-                import_types=["from decimal import Decimal"],
-            ),
+            TypeConversion(original_type="string", converted_type="str"),
         ),
         (
             Schema(type=DataType.STRING, schema_format="email"),
@@ -234,9 +365,10 @@ def test_type_converter_simple(test_openapi_types, expected_python_types):
         ),
     ],
 )
-def test_type_converter_simple_orjson(test_openapi_types, expected_python_types):
-    orjson_usage = common.get_use_orjson()
-    common.set_use_orjson(True)
+def test_type_converter_orjson_pydanticv1(test_openapi_types, expected_python_types, with_orjson_enabled, with_pydantic_v1):
+    """
+    Test type conversion with pydantic v1 and orjson enabled
+    """
     assert type_converter(test_openapi_types, True) == expected_python_types
     if test_openapi_types.type == "array" and isinstance(
         test_openapi_types.items, Reference
@@ -254,8 +386,137 @@ def test_type_converter_simple_orjson(test_openapi_types, expected_python_types)
             type_converter(test_openapi_types, False).converted_type
             == "Optional[" + expected_python_types.converted_type + "]"
         )
-        common.set_use_orjson(orjson_usage)
 
+@pytest.mark.parametrize(
+    "test_openapi_types,expected_python_types",
+    [
+        (
+            Schema(type=DataType.STRING),
+            TypeConversion(original_type="string", converted_type="str"),
+        ),
+        (
+            Schema(type=DataType.INTEGER),
+            TypeConversion(original_type="integer", converted_type="int"),
+        ),
+        (
+            Schema(type=DataType.NUMBER),
+            TypeConversion(original_type="number", converted_type="float"),
+        ),
+        (
+            Schema(type=DataType.BOOLEAN),
+            TypeConversion(original_type="boolean", converted_type="bool"),
+        ),
+        (
+            Schema(type=DataType.STRING, schema_format="date-time"),
+            TypeConversion(
+                original_type="string",
+                converted_type="datetime",
+                import_types=["from datetime import datetime"],
+            ),
+        ),
+        (
+            Schema(type=DataType.STRING, schema_format="date"),
+            TypeConversion(
+                original_type="string",
+                converted_type="date",
+                import_types=["from datetime import date"],
+            ),
+        ),
+        (
+            Schema(type=DataType.STRING, schema_format="decimal"),
+            TypeConversion(original_type="string", converted_type="str"),
+        ),
+        (
+            Schema(type=DataType.STRING, schema_format="email"),
+            TypeConversion(original_type="string", converted_type="str"),
+        ),
+        (
+            Schema(type=DataType.OBJECT),
+            TypeConversion(original_type="object", converted_type="Dict[str, Any]"),
+        ),
+        (
+            Schema(type=DataType.ARRAY),
+            TypeConversion(original_type="array<unknown>", converted_type="List[Any]"),
+        ),
+        (
+            Schema(type=DataType.ARRAY, items=Schema(type=DataType.STRING)),
+            TypeConversion(original_type="array<string>", converted_type="List[str]"),
+        ),
+        (
+            Schema(type=DataType.ARRAY, items=Reference(ref="#/components/schemas/test_name")),
+            TypeConversion(
+                original_type="array<#/components/schemas/test_name>",
+                converted_type="List[test_name]",
+                import_types=["from .test_name import test_name"],
+            ),
+        ),
+        (
+            Schema(type=None),
+            TypeConversion(original_type="object", converted_type="Any"),
+        ),
+        (
+            Schema(type=DataType.STRING, schema_format="uuid"),
+            TypeConversion(
+                original_type="string",
+                converted_type="UUID",
+                import_types=["from uuid import UUID"],
+            ),
+        ),
+        (
+            Schema(type=DataType.STRING, schema_format="uuid1"),
+            TypeConversion(
+                original_type="string",
+                converted_type="UUID1",
+                import_types=["from pydantic import UUID1"],
+            ),
+        ),
+        (
+            Schema(type=DataType.STRING, schema_format="uuid3"),
+            TypeConversion(
+                original_type="string",
+                converted_type="UUID3",
+                import_types=["from pydantic import UUID3"],
+            ),
+        ),
+        (
+            Schema(type=DataType.STRING, schema_format="uuid4"),
+            TypeConversion(
+                original_type="string",
+                converted_type="UUID4",
+                import_types=["from pydantic import UUID4"],
+            ),
+        ),
+        (
+            Schema(type=DataType.STRING, schema_format="uuid5"),
+            TypeConversion(
+                original_type="string",
+                converted_type="UUID5",
+                import_types=["from pydantic import UUID5"],
+            ),
+        ),
+    ],
+)
+def test_type_converter_orjson_pydanticv2(test_openapi_types, expected_python_types, with_orjson_enabled, with_pydantic_v2):
+    """
+    Test type conversion with pydantic v2 and orjson enabled
+    """
+    assert type_converter(test_openapi_types, True) == expected_python_types
+    if test_openapi_types.type == "array" and isinstance(
+        test_openapi_types.items, Reference
+    ):
+        expected_type = expected_python_types.converted_type.split("[")[-1].split("]")[
+            0
+        ]
+
+        assert (
+            type_converter(test_openapi_types, False).converted_type
+            == "Optional[List[Optional[" + expected_type + "]]]"
+        )
+    else:
+        assert (
+            type_converter(test_openapi_types, False).converted_type
+            == "Optional[" + expected_python_types.converted_type + "]"
+        )
 
 def test_type_converter_all_of_reference():
     schema = Schema(
