@@ -30,9 +30,9 @@ with httpx.Client(base_url=base_path, verify=api_config.verify) as client:
         params=query_params,
         {% if body_param %}
         {% if use_orjson %}
-        content=orjson.dumps({{ body_param }})
+        content=orjson.dumps({{ body_param | safe }})
         {% else %}
-        json = {{ body_param }}
+        json = {{ body_param | safe }}
         {% endif %}
         {% endif %}
     )

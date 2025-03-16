@@ -88,14 +88,14 @@ def test_generate_body_param_pydanticv1(test_openapi_operation, expected_result,
                     }
                 )
             ),
-            "data.model_dump_json()",
+            "data.model_dump(mode=\"json\")",
         ),
         (
             Operation(
                 responses=default_responses,
                 requestBody=Reference(ref="#/components/schemas/TestModel")
             ),
-            "data.model_dump_json()",
+            "data.model_dump(mode=\"json\")",
         ),
         (
             Operation(
@@ -111,7 +111,7 @@ def test_generate_body_param_pydanticv1(test_openapi_operation, expected_result,
                     }
                 )
             ),
-            "[i.model_dump_json() for i in data]",
+            "[i.model_dump(mode=\"json\") for i in data]",
         ),
         (Operation(responses=default_responses, requestBody=None), None),
     ],

@@ -40,7 +40,7 @@ def _generate_body_dump_expression(data = "data") -> str:
         return f"{data}.model_dump()"
 
     # rely on pydantic v2 to serialise (slowest, but best compatibility)
-    return f"{data}.model_dump_json()"
+    return f"{data}.model_dump(mode=\"json\")"
 
 
 def generate_body_param(operation: Operation) -> Union[str, None]:
