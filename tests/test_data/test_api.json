@@ -578,6 +578,27 @@
           }
         }
       },
+      "Admin": {
+        "title": "Admin",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/User"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "role": {
+                "type": "string",
+                "description": "Role name for this admin user"
+              },
+              "group": {
+                "type": "integer",
+                "description": "Admin group ID"
+              }
+            }
+          }
+        ]
+      },
       "EnumComponent": {
         "title": "EnumComponent",
         "enum": [
