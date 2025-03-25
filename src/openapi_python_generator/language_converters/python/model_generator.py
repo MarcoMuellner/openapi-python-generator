@@ -20,6 +20,7 @@ from openapi_python_generator.language_converters.python.jinja_config import (
 from openapi_python_generator.models import Model
 from openapi_python_generator.models import Property
 from openapi_python_generator.models import TypeConversion
+from openapi_python_generator.models import ParentModel
 
 
 def type_converter(  # noqa: C901
@@ -281,6 +282,32 @@ def _generate_property_from_reference(
         import_type=[import_model],
     )
 
+def _generate_property(
+    model_name: str,
+    name: str,
+    schema_or_reference: Schema | Reference,
+    parent_schema: Optional[Schema] = None,
+) -> Property:
+    if isinstance(schema_or_reference, Reference):
+        return _generate_property_from_reference(
+            model_name, name, schema_or_reference, parent_schema
+        )
+
+    return _generate_property_from_schema(
+        model_name, name, schema_or_reference, parent_schema
+    )
+
+def _collect_properties_from_schema(model_name: str, parent_schema: Schema):
+    property_iterator = (
+        parent_schema.properties.items()
+        if parent_schema.properties is not None
+        else {}
+    )
+    for name, schema_or_reference in property_iterator:
+        conv_property = _generate_property(
+            model_name, name, schema_or_reference, parent_schema
+        )
+        yield conv_property
 
 def generate_models(components: Components, pydantic_version: PydanticVersion = PydanticVersion.V2) -> List[Model]:
     """
@@ -323,27 +350,39 @@ def generate_models(components: Components, pydantic_version: PydanticVersion = 
 
             continue  # pragma: no cover
 
+        # Enumerate properties for this model
         properties = []
-        property_iterator = (
-            schema_or_reference.properties.items()
-            if schema_or_reference.properties is not None
-            else {}
-        )
-        for prop_name, property in property_iterator:
-            if isinstance(property, Reference):
-                conv_property = _generate_property_from_reference(
-                    name, prop_name, property, schema_or_reference
-                )
-            else:
-                conv_property = _generate_property_from_schema(
-                    name, prop_name, property, schema_or_reference
-                )
+        for conv_property in _collect_properties_from_schema(name, schema_or_reference):
             properties.append(conv_property)
+
+        # Enumerate union types that compose this model (if any) from allOf, oneOf, anyOf
+        parent_components = []
+        components_iterator = (
+            (schema_or_reference.allOf or []) + (schema_or_reference.oneOf or []) + (schema_or_reference.anyOf or [])
+        )
+        for parent_component in components_iterator:
+            # For references, instead of importing properties, record inherited components
+            if isinstance(parent_component, Reference):
+                ref = parent_component.ref
+                parent_name = common.normalize_symbol(ref.split("/")[-1])
+                parent_components.append(ParentModel(
+                    ref = ref,
+                    name = parent_name,
+                    import_type = f"from .{parent_name} import {parent_name}"
+                ))
+
+            # Collect inline properties
+            if isinstance(parent_component, Schema):
+                for conv_property in _collect_properties_from_schema(name, parent_component):
+                    properties.append(conv_property)
 
         template_name = MODELS_TEMPLATE_PYDANTIC_V2 if pydantic_version == PydanticVersion.V2 else MODELS_TEMPLATE
 
         generated_content = jinja_env.get_template(template_name).render(
-            schema_name=name, schema=schema_or_reference, properties=properties
+            schema_name=name,
+            schema=schema_or_reference,
+            properties=properties,
+            parent_components=parent_components
         )
 
         try:
@@ -357,6 +396,7 @@ def generate_models(components: Components, pydantic_version: PydanticVersion = 
                 content=generated_content,
                 openapi_object=schema_or_reference,
                 properties=properties,
+                parent_components=parent_components
             )
         )
 

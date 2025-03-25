@@ -1,5 +1,5 @@
 from typing import *
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 {% for property in properties %}
 {% if property.type.import_types is not none %}
 {% for import_type in property.type.import_types %}
@@ -7,19 +7,24 @@ from pydantic import BaseModel, Field
 {% endfor %}
 {% endif %}
 {% endfor %}
+{% for parent_component in parent_components %}
+{% if parent_component.import_type is not none %}
+{{ parent_component.import_type }}
+{% endif %}
+{% endfor %}
 
-class {{ schema_name }}(BaseModel):
+class {{ schema_name }}({% for parent_component in parent_components %}{{ parent_component.name }},{% endfor %}BaseModel):
     """
     {{ schema.title }} model
     {% if schema.description != None %}
     {{ schema.description }}
     {% endif %}
-
     """
-    model_config = {
-        "populate_by_name": True,
-        "validate_assignment": True
-    }
+    model_config = ConfigDict(
+        populate_by_name= True,
+        validate_assignment=True,
+        from_attributes=True
+    )
     {% for property in properties %}
 
     {{ property.name | replace("@","") | replace("-","_") }} : {{ property.type.converted_type | safe }} = Field(validation_alias="{{ property.name }}" {% if not property.required %}, default = {{ property.default }} {% endif %})
