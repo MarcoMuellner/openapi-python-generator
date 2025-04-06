@@ -656,7 +656,9 @@ take a look at the `User.py` and the `Team.py` files:
     User model
 
     """
-
+    
+    model_config = {"populate_by_name": True, "validate_assignment": True}
+    
     id: int = Field(alias="id")
 
     username: str = Field(alias="username")
