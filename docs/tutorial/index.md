@@ -647,65 +647,65 @@ take a look at the `User.py` and the `Team.py` files:
 
     ``` py
     from typing import *
-
+    
     from pydantic import BaseModel, Field
-
-
+    
+    
     class User(BaseModel):
-    """
-    User model
-
-    """
+        """
+        User model
     
-    model_config = {"populate_by_name": True, "validate_assignment": True}
+        """
     
-    id: int = Field(alias="id")
-
-    username: str = Field(alias="username")
-
-    email: str = Field(alias="email")
-
-    password: str = Field(alias="password")
-
-    is_active: Optional[bool] = Field(alias="is_active", default=None)
-
-    created_at: Optional[str] = Field(alias="created_at", default=None)
+        model_config = {"populate_by_name": True, "validate_assignment": True}
+    
+        id: int = Field(validation_alias="id")
+    
+        username: str = Field(validation_alias="username")
+    
+        email: str = Field(validation_alias="email")
+    
+        password: str = Field(validation_alias="password")
+    
+        is_active: Optional[bool] = Field(validation_alias="is_active", default=None)
+    
+        created_at: Optional[str] = Field(validation_alias="created_at", default=None)
 
     ```
 
 === "Team.py"
 
-    ``` py
+        ``` py
     from typing import *
-
-    from pydantic import BaseModel, Field
-
-    from .User import User
-
-
-    class Team(BaseModel):
-    """
-    Team model
-
-    """
     
-    model_config = {"populate_by_name": True, "validate_assignment": True}
-
-    id: int = Field(alias="id")
-
-    name: str = Field(alias="name")
-
-    description: str = Field(alias="description")
-
-    is_active: Optional[bool] = Field(alias="is_active", default=None)
-
-    created_at: Optional[str] = Field(alias="created_at", default=None)
-
-    updated_at: Optional[str] = Field(alias="updated_at", default=None)
-
-    users: Optional[List[User]] = Field(alias="users", default=None)
-
-    captain: Optional[User] = Field(alias="captain", default=None)
+    from pydantic import BaseModel, Field
+    
+    from .User import User
+    
+    
+    class Team(BaseModel):
+        """
+        Team model
+    
+        """
+    
+        model_config = {"populate_by_name": True, "validate_assignment": True}
+    
+        id: int = Field(validation_alias="id")
+    
+        name: str = Field(validation_alias="name")
+    
+        description: str = Field(validation_alias="description")
+    
+        is_active: Optional[bool] = Field(validation_alias="is_active", default=None)
+    
+        created_at: Optional[str] = Field(validation_alias="created_at", default=None)
+    
+        updated_at: Optional[str] = Field(validation_alias="updated_at", default=None)
+    
+        users: Optional[List[Optional[User]]] = Field(validation_alias="users", default=None)
+    
+        captain: Optional[User] = Field(validation_alias="captain", default=None)
 
 
     ```
