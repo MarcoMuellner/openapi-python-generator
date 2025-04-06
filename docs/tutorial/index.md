@@ -688,6 +688,8 @@ take a look at the `User.py` and the `Team.py` files:
     Team model
 
     """
+    
+    model_config = {"populate_by_name": True, "validate_assignment": True}
 
     id: int = Field(alias="id")
 
