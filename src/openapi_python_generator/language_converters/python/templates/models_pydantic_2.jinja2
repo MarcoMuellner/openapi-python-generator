@@ -23,7 +23,10 @@ class {{ schema_name }}({% for parent_component in parent_components %}{{ parent
     model_config = ConfigDict(
         populate_by_name= True,
         validate_assignment=True,
-        from_attributes=True
+        from_attributes=True,
+        {% if schema.additionalProperties %}
+        extra="allow",
+        {% endif %}
     )
     {% for property in properties %}
 
