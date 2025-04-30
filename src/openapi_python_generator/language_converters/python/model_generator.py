@@ -141,8 +141,12 @@ def type_converter(  # noqa: C901
         # orjson and pydantic v2 both support datetime
         and (common.get_use_orjson() or common.get_pydantic_version() == PydanticVersion.V2)
     ):
-        converted_type = pre_type + "datetime" + post_type
-        import_types = ["from datetime import datetime"]
+        if common.get_pydantic_use_awaredatetime():
+            converted_type = pre_type + "AwareDatetime" + post_type
+            import_types = ["from pydantic import AwareDatetime"]
+        else:
+            converted_type = pre_type + "datetime" + post_type
+            import_types = ["from datetime import datetime"]
     elif (
         schema.type == "string"
         and schema.schema_format == "date"

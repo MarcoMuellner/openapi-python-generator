@@ -22,16 +22,20 @@ def generator(
     library_config: LibraryConfig,
     env_token_name: Optional[str] = None,
     use_orjson: bool = False,
+    use_awaredatetime: bool = False,
     custom_template_path: Optional[str] = None,
     pydantic_version: PydanticVersion = PydanticVersion.V2,
 ) -> ConversionResult:
     """
     Generate Python code from an OpenAPI 3.0 specification.
     """
+    if use_awaredatetime and pydantic_version != PydanticVersion.V2:
+        raise ValueError("Timezone-aware datetime is only supported with Pydantic v2. Please use --pydantic-version v2.")
 
     common.set_use_orjson(use_orjson)
     common.set_custom_template_path(custom_template_path)
     common.set_pydantic_version(pydantic_version)
+    common.set_pydantic_use_awaredatetime(use_awaredatetime)
 
     if data.components is not None:
         models = generate_models(data.components, pydantic_version)

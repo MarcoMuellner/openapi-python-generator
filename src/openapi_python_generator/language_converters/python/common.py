@@ -7,6 +7,7 @@ from openapi_python_generator.common import PydanticVersion
 _use_orjson: bool = False
 _pydantic_version: PydanticVersion = PydanticVersion.V2
 _custom_template_path: str = None
+_pydantic_use_awaredatetime: bool = False
 _symbol_ascii_strip_re = re.compile(r"[^A-Za-z0-9_]")
 
 
@@ -58,6 +59,23 @@ def get_custom_template_path() -> Optional[str]:
     """
     global _custom_template_path
     return _custom_template_path
+
+
+def set_pydantic_use_awaredatetime(value: bool) -> None:
+    """
+    Set whether to use AwareDateTime from pydantic instead of datetime.
+    :param value: value of the variable
+    """
+    global _pydantic_use_awaredatetime
+    _pydantic_use_awaredatetime = value
+
+def get_pydantic_use_awaredatetime() -> bool:
+    """
+    Get whether to use AwareDateTime from pydantic instead of datetime.
+    :return: value of the variable
+    """
+    global _pydantic_use_awaredatetime
+    return _pydantic_use_awaredatetime
 
 
 def normalize_symbol(symbol: str) -> str:
