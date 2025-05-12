@@ -7,14 +7,18 @@ from pydantic import BaseModel, Field
 {% endfor %}
 {% endif %}
 {% endfor %}
+{% for parent_component in parent_components %}
+{% if parent_component.import_type is not none %}
+{{ parent_component.import_type }}
+{% endif %}
+{% endfor %}
 
-class {{ schema_name }}(BaseModel):
+class {{ schema_name }}({% for parent_component in parent_components %}{{ parent_component.name }},{% endfor %}BaseModel):
     """
     {{ schema.title }} model
     {% if schema.description != None %}
     {{ schema.description }}
     {% endif %}
-
     """
     {% for property in properties %}
 

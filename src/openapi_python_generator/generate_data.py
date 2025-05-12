@@ -180,6 +180,7 @@ def generate_data(
     library: Optional[HTTPLibrary] = HTTPLibrary.httpx,
     env_token_name: Optional[str] = None,
     use_orjson: bool = False,
+    use_awaredatetime: bool = False,
     custom_template_path: Optional[str] = None,
     pydantic_version: PydanticVersion = PydanticVersion.V2,
     formatter: Formatter = Formatter.BLACK,
@@ -195,6 +196,7 @@ def generate_data(
         library_config_dict[library],
         env_token_name,
         use_orjson,
+        use_awaredatetime,
         custom_template_path,
         pydantic_version,
     )

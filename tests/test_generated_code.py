@@ -64,7 +64,7 @@ assert api_config.get_access_token() == 'foo_bar'
     ],
 )
 @respx.mock
-def test_generate_code(model_data_with_cleanup, library, use_orjson, custom_ip):
+def test_generate_code(model_data_with_cleanup, library, use_orjson, custom_ip, with_pydantic_v2):
     generate_data(test_data_path, test_result_path, library, use_orjson=use_orjson)
     result = generator(model_data_with_cleanup, library_config_dict[library])
 
@@ -356,8 +356,8 @@ def test_generate_code(model_data_with_cleanup, library, use_orjson, custom_ip):
         name="team1",
         description="team1",
         is_active=True,
-        created_at="",
-        updated_at="",
+        created_at=None,
+        updated_at=None,
     )
 
     exec_code_base = f"from .test_result.services.general_service import *\nfrom datetime import datetime\nresp_result = create_team_teams_post(Team(**{data}), passed_api_config)"

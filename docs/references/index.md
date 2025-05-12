@@ -28,6 +28,12 @@ Options:
                          faster processing and better type support.
                          Defaults to False.
 
+--use-awaredatetime      Use timezone-aware datetime objects instead of naive
+                         datetime objects. This ensures proper handling of
+                         timezone information in the generated models.
+                         Only supported with Pydantic v2.
+                         Defaults to False.
+
 --custom-template-path TEXT
                          Custom template path to use. Allows overriding of the
                          built in templates.

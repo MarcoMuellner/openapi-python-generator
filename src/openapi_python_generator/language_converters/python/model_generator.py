@@ -20,6 +20,7 @@ from openapi_python_generator.language_converters.python.jinja_config import (
 from openapi_python_generator.models import Model
 from openapi_python_generator.models import Property
 from openapi_python_generator.models import TypeConversion
+from openapi_python_generator.models import ParentModel
 
 
 def type_converter(  # noqa: C901
@@ -118,16 +119,14 @@ def type_converter(  # noqa: C901
                 *[i.import_types for i in conversions if i.import_types is not None]
             )
         )
-    # We only want to auto convert to datetime if orjson is used throghout the code, otherwise we can not
-    # serialize it to JSON.
-    elif schema.type == "string" and (
-            schema.schema_format is None or not common.get_use_orjson()
-    ):
-        converted_type = pre_type + "str" + post_type
+    # With custom string format fields, in order to cast these to strict types (e.g. date, datetime, UUID)
+    # orjson is required for JSON serialiation.
     elif (
-            schema.type == "string"
-            and schema.schema_format.startswith("uuid")
-            and common.get_use_orjson()
+        schema.type == "string"
+        and schema.schema_format is not None
+        and schema.schema_format.startswith("uuid")
+        # orjson and pydantic v2 both support UUID
+        and (common.get_use_orjson() or common.get_pydantic_version() == PydanticVersion.V2)
     ):
         if len(schema.schema_format) > 4 and schema.schema_format[4].isnumeric():
             uuid_type = schema.schema_format.upper()
@@ -136,9 +135,39 @@ def type_converter(  # noqa: C901
         else:
             converted_type = pre_type + "UUID" + post_type
             import_types = ["from uuid import UUID"]
-    elif schema.type == "string" and schema.schema_format == "date-time":
-        converted_type = pre_type + "datetime" + post_type
-        import_types = ["from datetime import datetime"]
+    elif (
+        schema.type == "string"
+        and schema.schema_format == "date-time"
+        # orjson and pydantic v2 both support datetime
+        and (common.get_use_orjson() or common.get_pydantic_version() == PydanticVersion.V2)
+    ):
+        if common.get_pydantic_use_awaredatetime():
+            converted_type = pre_type + "AwareDatetime" + post_type
+            import_types = ["from pydantic import AwareDatetime"]
+        else:
+            converted_type = pre_type + "datetime" + post_type
+            import_types = ["from datetime import datetime"]
+    elif (
+        schema.type == "string"
+        and schema.schema_format == "date"
+        # orjson and pydantic v2 both support date
+        and (common.get_use_orjson() or common.get_pydantic_version() == PydanticVersion.V2)
+    ):
+        converted_type = pre_type + "date" + post_type
+        import_types = ["from datetime import date"]
+    elif (
+        schema.type == "string"
+        and schema.schema_format == "decimal"
+        # orjson does not support Decimal
+        # See https://github.com/ijl/orjson/issues/444
+        and not common.get_use_orjson()
+        # pydantic v2 supports Decimal
+        and common.get_pydantic_version() == PydanticVersion.V2
+    ):
+        converted_type = pre_type + "Decimal" + post_type
+        import_types = ["from decimal import Decimal"]
+    elif schema.type == "string":
+        converted_type = pre_type + "str" + post_type
     elif schema.type == "integer":
         converted_type = pre_type + "int" + post_type
     elif schema.type == "number":
@@ -157,7 +186,9 @@ def type_converter(  # noqa: C901
         elif isinstance(schema.items, Schema):
             original_type = "array<" + (
                 str(schema.items.type.value) if schema.items.type is not None else "unknown") + ">"
-            retVal += type_converter(schema.items, True).converted_type
+            items_type = type_converter(schema.items, True)
+            import_types = items_type.import_types
+            retVal += items_type.converted_type
         else:
             original_type = "array<unknown>"
             retVal += "Any"
@@ -257,6 +288,32 @@ def _generate_property_from_reference(
         import_type=[import_model],
     )
 
+def _generate_property(
+    model_name: str,
+    name: str,
+    schema_or_reference: Schema | Reference,
+    parent_schema: Optional[Schema] = None,
+) -> Property:
+    if isinstance(schema_or_reference, Reference):
+        return _generate_property_from_reference(
+            model_name, name, schema_or_reference, parent_schema
+        )
+
+    return _generate_property_from_schema(
+        model_name, name, schema_or_reference, parent_schema
+    )
+
+def _collect_properties_from_schema(model_name: str, parent_schema: Schema):
+    property_iterator = (
+        parent_schema.properties.items()
+        if parent_schema.properties is not None
+        else {}
+    )
+    for name, schema_or_reference in property_iterator:
+        conv_property = _generate_property(
+            model_name, name, schema_or_reference, parent_schema
+        )
+        yield conv_property
 
 def generate_models(components: Components, pydantic_version: PydanticVersion = PydanticVersion.V2) -> List[Model]:
     """
@@ -299,27 +356,39 @@ def generate_models(components: Components, pydantic_version: PydanticVersion = 
 
             continue  # pragma: no cover
 
+        # Enumerate properties for this model
         properties = []
-        property_iterator = (
-            schema_or_reference.properties.items()
-            if schema_or_reference.properties is not None
-            else {}
-        )
-        for prop_name, property in property_iterator:
-            if isinstance(property, Reference):
-                conv_property = _generate_property_from_reference(
-                    name, prop_name, property, schema_or_reference
-                )
-            else:
-                conv_property = _generate_property_from_schema(
-                    name, prop_name, property, schema_or_reference
-                )
+        for conv_property in _collect_properties_from_schema(name, schema_or_reference):
             properties.append(conv_property)
+
+        # Enumerate union types that compose this model (if any) from allOf, oneOf, anyOf
+        parent_components = []
+        components_iterator = (
+            (schema_or_reference.allOf or []) + (schema_or_reference.oneOf or []) + (schema_or_reference.anyOf or [])
+        )
+        for parent_component in components_iterator:
+            # For references, instead of importing properties, record inherited components
+            if isinstance(parent_component, Reference):
+                ref = parent_component.ref
+                parent_name = common.normalize_symbol(ref.split("/")[-1])
+                parent_components.append(ParentModel(
+                    ref = ref,
+                    name = parent_name,
+                    import_type = f"from .{parent_name} import {parent_name}"
+                ))
+
+            # Collect inline properties
+            if isinstance(parent_component, Schema):
+                for conv_property in _collect_properties_from_schema(name, parent_component):
+                    properties.append(conv_property)
 
         template_name = MODELS_TEMPLATE_PYDANTIC_V2 if pydantic_version == PydanticVersion.V2 else MODELS_TEMPLATE
 
         generated_content = jinja_env.get_template(template_name).render(
-            schema_name=name, schema=schema_or_reference, properties=properties
+            schema_name=name,
+            schema=schema_or_reference,
+            properties=properties,
+            parent_components=parent_components
         )
 
         try:
@@ -333,6 +402,7 @@ def generate_models(components: Components, pydantic_version: PydanticVersion = 
                 content=generated_content,
                 openapi_object=schema_or_reference,
                 properties=properties,
+                parent_components=parent_components
             )
         )
 

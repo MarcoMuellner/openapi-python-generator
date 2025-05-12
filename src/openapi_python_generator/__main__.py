@@ -32,6 +32,14 @@ from openapi_python_generator.generate_data import generate_data
     "serialization of datetimes and other types that are not supported by the default json library.",
 )
 @click.option(
+    "--use-awaredatetime",
+    is_flag=True,
+    show_default=True,
+    default=False,
+    help="Use timezone-aware datetime objects instead of naive datetime objects. This ensures proper handling of "
+    "timezone information in the generated models.",
+)
+@click.option(
     "--custom-template-path",
     type=str,
     default=None,
@@ -58,6 +66,7 @@ def main(
     library: Optional[HTTPLibrary] = HTTPLibrary.httpx,
     env_token_name: Optional[str] = None,
     use_orjson: bool = False,
+    use_awaredatetime: bool = False,
     custom_template_path: Optional[str] = None,
     pydantic_version: PydanticVersion = PydanticVersion.V2,
     formatter: Formatter = Formatter.BLACK,
@@ -69,7 +78,7 @@ def main(
     an OUTPUT path, where the resulting client is created.
     """
     generate_data(
-        source, output, library, env_token_name, use_orjson, custom_template_path, pydantic_version, formatter
+        source, output, library, env_token_name, use_orjson, use_awaredatetime, custom_template_path, pydantic_version, formatter
     )
 
 

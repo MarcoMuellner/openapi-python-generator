@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, date
 from typing import List
 from typing import Optional
 
@@ -20,17 +20,19 @@ class User(BaseModel):
     username: str
     email: str
     password: str
-    is_active: Optional[bool]
+    is_active: Optional[bool] = None
+    created_at: Optional[datetime] = None
+    birthdate: Optional[date] = None
 
 
 class Team(BaseModel):
     id: int
     name: str
     description: str
-    is_active: Optional[bool]
-    created_at: Optional[datetime]
-    updated_at: Optional[datetime]
-    users: Optional[List[User]]
+    is_active: Optional[bool] = None
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+    users: Optional[List[User]] = None
 
 
 @app.get("/", response_model=RootResponse, tags=["general"])

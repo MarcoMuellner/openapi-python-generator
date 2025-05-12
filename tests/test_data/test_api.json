@@ -527,6 +527,11 @@
             "title": "Created At",
             "type": "string",
             "format": "date-time"
+          },
+          "birthdate": {
+            "title": "Birthdate",
+            "type": "string",
+            "format": "date"
           }
         }
       },
@@ -572,6 +577,27 @@
             "format": "uuid4"
           }
         }
+      },
+      "Admin": {
+        "title": "Admin",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/User"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "role": {
+                "type": "string",
+                "description": "Role name for this admin user"
+              },
+              "group": {
+                "type": "integer",
+                "description": "Admin group ID"
+              }
+            }
+          }
+        ]
       },
       "EnumComponent": {
         "title": "EnumComponent",

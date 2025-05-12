@@ -25,9 +25,9 @@ async def {{ operation_id }}({{ params }} api_config_override : Optional[APIConf
             params=query_params,
     {% if body_param %}
         {% if use_orjson %}
-            data=orjson.dumps({{ body_param }})
+            data=orjson.dumps({{ body_param | safe }})
         {% else %}
-            json = {{ body_param }}
+            json = {{ body_param | safe}}
         {% endif %}
     {% endif %}
         ) as inital_response:

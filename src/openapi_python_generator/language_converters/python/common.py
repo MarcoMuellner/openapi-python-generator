@@ -1,10 +1,13 @@
 import keyword
 import re
 from typing import Optional
+from openapi_python_generator.common import PydanticVersion
 
 
 _use_orjson: bool = False
+_pydantic_version: PydanticVersion = PydanticVersion.V2
 _custom_template_path: str = None
+_pydantic_use_awaredatetime: bool = False
 _symbol_ascii_strip_re = re.compile(r"[^A-Za-z0-9_]")
 
 
@@ -16,6 +19,13 @@ def set_use_orjson(value: bool) -> None:
     global _use_orjson
     _use_orjson = value
 
+def set_pydantic_version(value: PydanticVersion) -> None:
+    """
+    Set the value of the global variable
+    :param value: value of the variable
+    """
+    global _pydantic_version
+    _pydantic_version = value
 
 def get_use_orjson() -> bool:
     """
@@ -25,6 +35,13 @@ def get_use_orjson() -> bool:
     global _use_orjson
     return _use_orjson
 
+def get_pydantic_version() -> PydanticVersion:
+    """
+    Get the value of the global variable _pydantic_version.
+    :return: value of the variable
+    """
+    global _pydantic_version
+    return _pydantic_version
 
 def set_custom_template_path(value: Optional[str]) -> None:
     """
@@ -42,6 +59,23 @@ def get_custom_template_path() -> Optional[str]:
     """
     global _custom_template_path
     return _custom_template_path
+
+
+def set_pydantic_use_awaredatetime(value: bool) -> None:
+    """
+    Set whether to use AwareDateTime from pydantic instead of datetime.
+    :param value: value of the variable
+    """
+    global _pydantic_use_awaredatetime
+    _pydantic_use_awaredatetime = value
+
+def get_pydantic_use_awaredatetime() -> bool:
+    """
+    Get whether to use AwareDateTime from pydantic instead of datetime.
+    :return: value of the variable
+    """
+    global _pydantic_use_awaredatetime
+    return _pydantic_use_awaredatetime
 
 
 def normalize_symbol(symbol: str) -> str:

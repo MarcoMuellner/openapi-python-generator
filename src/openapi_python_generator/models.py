@@ -51,11 +51,18 @@ class Property(BaseModel):
     import_type: Optional[List[str]] = None
 
 
+class ParentModel(BaseModel):
+    ref: str
+    name: str
+    import_type: Optional[str] = None
+
+
 class Model(BaseModel):
     file_name: str
     content: str
     openapi_object: Schema
     properties: List[Property] = []
+    parent_components: List[ParentModel] = []
 
 
 class Service(BaseModel):

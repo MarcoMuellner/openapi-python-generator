@@ -25,9 +25,9 @@ def {{ operation_id }}({{ params }} api_config_override : Optional[APIConfig] = 
         verify=api_config.verify,
         {% if body_param %}
         {% if use_orjson %}
-        content=orjson.dumps({{ body_param }})
+        content=orjson.dumps({{ body_param | safe }})
         {% else %}
-        json = {{ body_param }}
+        json = {{ body_param | safe }}
         {% endif %}
         {% endif %}
     )
