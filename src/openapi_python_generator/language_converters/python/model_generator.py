@@ -186,7 +186,9 @@ def type_converter(  # noqa: C901
         elif isinstance(schema.items, Schema):
             original_type = "array<" + (
                 str(schema.items.type.value) if schema.items.type is not None else "unknown") + ">"
-            retVal += type_converter(schema.items, True).converted_type
+            items_type = type_converter(schema.items, True)
+            import_types = items_type.import_types
+            retVal += items_type.converted_type
         else:
             original_type = "array<unknown>"
             retVal += "Any"
