@@ -1,11 +1,11 @@
 from typing import *
-import {{ library_import }}
 import json
 {% if use_orjson %}
 import orjson
 {% endif %}
 
 from ..models import *
+from ..requests import request
 from ..api_config import APIConfig, HTTPException
 
 {{ content | safe}}
