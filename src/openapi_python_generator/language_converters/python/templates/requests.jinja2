@@ -17,7 +17,7 @@ def {{ operation_id }}({{ params }} api_config_override : Optional[APIConfig] = 
 
     query_params = {key:value for (key,value) in query_params.items() if value is not None}
 
-    response = requests.request(
+    response = request(
         '{{ method }}',
         f'{base_path}{path}',
         headers=headers,
