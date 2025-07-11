@@ -74,6 +74,9 @@ profile = "black"
 force_single_line = true
 lines_after_imports = 2
 
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "T"]
+
 [tool.mypy]
 strict = true
 warn_unreachable = true
