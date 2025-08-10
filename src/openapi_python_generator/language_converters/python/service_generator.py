@@ -1,4 +1,5 @@
 import re
+from typing import Any
 from typing import Dict
 from typing import List
 from typing import Literal
@@ -7,7 +8,29 @@ from typing import Tuple
 from typing import Union
 
 import click
-from openapi_pydantic.v3.v3_0 import Reference, Schema, Operation, Parameter, RequestBody, Response, MediaType, PathItem
+from openapi_pydantic.v3 import (
+    Reference,
+    Schema,
+    Operation,
+    Parameter,
+    RequestBody,
+    Response,
+    PathItem,
+)
+
+# Import version-specific types for isinstance checks
+from openapi_pydantic.v3.v3_0 import (
+    Reference as Reference30,
+    Schema as Schema30,
+    Response as Response30,
+    MediaType as MediaType30,
+)
+from openapi_pydantic.v3.v3_1 import (
+    Reference as Reference31,
+    Schema as Schema31,
+    Response as Response31,
+    MediaType as MediaType31,
+)
 
 from openapi_python_generator.language_converters.python import common
 from openapi_python_generator.language_converters.python.common import normalize_symbol
@@ -22,6 +45,44 @@ from openapi_python_generator.models import OpReturnType
 from openapi_python_generator.models import Service
 from openapi_python_generator.models import ServiceOperation
 from openapi_python_generator.models import TypeConversion
+
+
+# Helper functions for isinstance checks across OpenAPI versions
+def is_response_type(obj) -> bool:
+    """Check if object is a Response from any OpenAPI version"""
+    return isinstance(obj, (Response30, Response31))
+
+
+def create_media_type_for_reference(reference_obj):
+    """Create a MediaType wrapper for a reference object, using the correct version"""
+    # Check which version the reference object belongs to
+    if isinstance(reference_obj, Reference30):
+        return MediaType30(schema=reference_obj)
+    elif isinstance(reference_obj, Reference31):
+        return MediaType31(schema=reference_obj)
+    else:
+        # Fallback to v3.0 for generic Reference
+        return MediaType30(schema=reference_obj)
+
+
+def is_media_type(obj) -> bool:
+    """Check if object is a MediaType from any OpenAPI version"""
+    return isinstance(obj, (MediaType30, MediaType31))
+
+
+def is_reference_type(obj: Any) -> bool:
+    """Check if object is a Reference type across different versions."""
+    return isinstance(obj, (Reference, Reference30, Reference31))
+
+
+def is_schema_type(obj: Any) -> bool:
+    """Check if object is a Schema type across different versions."""
+    return isinstance(obj, (Schema, Schema30, Schema31))
+
+
+def is_schema_type(obj) -> bool:
+    """Check if object is a Schema from any OpenAPI version"""
+    return isinstance(obj, (Schema30, Schema31))
 
 
 HTTP_OPERATIONS = ["get", "post", "put", "delete", "options", "head", "patch", "trace"]
@@ -45,9 +106,14 @@ def generate_body_param(operation: Operation) -> Union[str, None]:
         if media_type is None:
             return None  # pragma: no cover
 
-        if isinstance(media_type.media_type_schema, Reference):
+        if isinstance(
+            media_type.media_type_schema, (Reference, Reference30, Reference31)
+        ):
             return "data.dict()"
-        elif isinstance(media_type.media_type_schema, Schema):
+        elif hasattr(media_type.media_type_schema, "ref"):
+            # Handle Reference objects from different OpenAPI versions
+            return "data.dict()"
+        elif isinstance(media_type.media_type_schema, (Schema, Schema30, Schema31)):
             schema = media_type.media_type_schema
             if schema.type == "array":
                 return "[i.dict() for i in data]"
@@ -109,11 +175,13 @@ def generate_params(operation: Operation) -> str:
         "application/json",
         "text/plain",
         "multipart/form-data",
+        "application/octet-stream",
     ]
 
     if operation.requestBody is not None:
+        # Check if this is a RequestBody (either v3.0 or v3.1) by checking for content attribute
         if (
-            isinstance(operation.requestBody, RequestBody)
+            hasattr(operation.requestBody, "content")
             and isinstance(operation.requestBody.content, dict)
             and any(
                 [
@@ -129,8 +197,11 @@ def generate_params(operation: Operation) -> str:
             ][0]
             content = operation.requestBody.content.get(get_keyword)
             if content is not None and (
-                isinstance(content.media_type_schema, Schema)
-                or isinstance(content.media_type_schema, Reference)
+                hasattr(content, "media_type_schema")
+                and (
+                    hasattr(content.media_type_schema, "type")
+                    or hasattr(content.media_type_schema, "ref")
+                )
             ):
                 params += (
                     f"{_generate_params_from_content(content.media_type_schema)}, "
@@ -199,20 +270,22 @@ def generate_return_type(operation: Operation) -> OpReturnType:
         return OpReturnType(type=None, status_code=200, complex_type=False)
 
     chosen_response = good_responses[0][1]
+    media_type_schema = None
 
-    if isinstance(chosen_response, Response) and chosen_response.content is not None:
-        media_type_schema = chosen_response.content.get("application/json")
-    elif isinstance(chosen_response, Reference):
-        media_type_schema = MediaType(
-            media_type_schema=chosen_response
-        )  # pragma: no cover
-    else:
+    if is_response_type(chosen_response):
+        # It's a Response type, access content safely
+        if hasattr(chosen_response, "content") and chosen_response.content is not None:
+            media_type_schema = chosen_response.content.get("application/json")
+    elif is_reference_type(chosen_response):
+        media_type_schema = create_media_type_for_reference(chosen_response)
+
+    if media_type_schema is None:
         return OpReturnType(
             type=None, status_code=good_responses[0][0], complex_type=False
         )
 
-    if isinstance(media_type_schema, MediaType):
-        if isinstance(media_type_schema.media_type_schema, Reference):
+    if is_media_type(media_type_schema):
+        if is_reference_type(media_type_schema.media_type_schema):
             type_conv = TypeConversion(
                 original_type=media_type_schema.media_type_schema.ref,
                 converted_type=media_type_schema.media_type_schema.ref.split("/")[-1],
@@ -223,7 +296,7 @@ def generate_return_type(operation: Operation) -> OpReturnType:
                 status_code=good_responses[0][0],
                 complex_type=True,
             )
-        elif isinstance(media_type_schema.media_type_schema, Schema):
+        elif is_schema_type(media_type_schema.media_type_schema):
             converted_result = type_converter(media_type_schema.media_type_schema, True)
             if "array" in converted_result.original_type and isinstance(
                 converted_result.import_types, list
@@ -293,7 +366,7 @@ def generate_services(
         )
 
         so.content = jinja_env.get_template(library_config.template_name).render(
-            **so.dict()
+            **so.model_dump()
         )
 
         if op.tags is not None and len(op.tags) > 0:
