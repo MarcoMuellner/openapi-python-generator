@@ -108,8 +108,9 @@ def test_type_converter_anyof_single():
 
 def test_type_converter_unknown_list_first_type_fallback():
     # Invalid enum value in list should raise ValidationError (spec invalid)
-    import pydantic
-    with pytest.raises(pydantic.ValidationError):  # type: ignore[attr-defined]
+    from pydantic import ValidationError
+    # Mixing unknown string with enum should raise ValidationError during model validation
+    with pytest.raises(ValidationError):
         Schema(type=["mystery", DataType.STRING])  # type: ignore[arg-type]
 
 
