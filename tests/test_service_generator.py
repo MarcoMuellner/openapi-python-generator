@@ -386,3 +386,54 @@ def test_generate_services(model_data):
     )
     for i in result:
         compile(i.content, "<string>", "exec")
+
+
+def test_default_tag_and_path_param_injection():
+    """Untagged operation should generate default_service and include path placeholder as param."""
+    from openapi_pydantic.v3 import PathItem
+
+    # Minimal GET with no tags and no explicit parameters but a placeholder in path
+    # Cast responses dict to expected mapping type (Response | Reference)
+    op = Operation(responses={k: v for k, v in default_responses.items()})
+    paths = {"/items/{itemId}": PathItem(get=op)}
+    services = generate_services(paths, library_config_dict[HTTPLibrary.httpx])
+    # Find generated sync default service
+    default_service = [s for s in services if s.file_name == "default_service"]
+    assert default_service, "default_service should be generated for untagged operation"
+    content = default_service[0].content
+    # Operation id will be derived; ensure parameter itemId injected
+    assert "itemId" in content or "item_id" in content
+
+
+def test_aiohttp_204_no_json_parsing():
+    """204 response should not attempt to parse JSON in aiohttp template."""
+    from openapi_pydantic.v3 import PathItem
+
+    op = Operation(responses={"204": Response(description="No Content")})
+    paths = {"/resources/{rid}": PathItem(delete=op)}
+    services = generate_services(paths, library_config_dict[HTTPLibrary.aiohttp])
+    aio_services = [s for s in services if s.async_client]
+    assert aio_services
+    content = aio_services[0].content
+    # We expect conditional assignment that avoids json parsing when 204
+    assert "== 204 else" in content
+    # Should still return None
+    assert "return None" in content
+
+
+@pytest.mark.parametrize("library", [HTTPLibrary.httpx, HTTPLibrary.requests, HTTPLibrary.aiohttp])
+def test_204_skip_parsing_all_libraries(library):
+    """All libraries should skip JSON parsing for a 204 response and just return None."""
+    from openapi_pydantic.v3 import PathItem
+
+    op = Operation(responses={"204": Response(description="No Content")})
+    paths = {"/things/{tid}": PathItem(delete=op)}
+    services = generate_services(paths, library_config_dict[library])
+    # Pick a service that actually has generated operation content
+    service = next((s for s in services if s.content.strip()), services[0])
+    content = service.content
+    # Ensure no .json() invocation occurs when status_code == 204 within this function body
+    # Simpler heuristic: our injected early return comment for sync libs or conditional assignment for aiohttp
+    assert "204 No Content" in content or "== 204 else" in content
+    # Should contain 'return None'
+    assert "return None" in content

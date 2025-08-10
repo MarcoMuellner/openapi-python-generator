@@ -32,7 +32,12 @@ def {{ operation_id }}(api_config_override : Optional[APIConfig] = None{% if par
         {% endif %}
     )
     if response.status_code != {{ return_type.status_code }}:
-        raise HTTPException(response.status_code, f'{{ operationId }} failed with status code: {response.status_code}')
+        raise HTTPException(response.status_code, f'{{ operation_id }} failed with status code: {response.status_code}')
+
+    {% if return_type.status_code == 204 %}
+    # 204 No Content: return early without attempting to parse body
+    return None
+    {% endif %}
 
 {% if return_type.type is none or return_type.type.converted_type is none %}
     return None
