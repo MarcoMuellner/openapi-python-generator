@@ -361,7 +361,10 @@ class TestOpenAPI31UnsupportedFeatures:
             },
         }
 
-        with pytest.raises(Exception):  # Should fail to parse
+        from pydantic import ValidationError
+
+        # Boolean schemas (True/False) should raise a pydantic ValidationError
+        with pytest.raises(ValidationError):  # Should fail to parse
             parse_openapi_31(spec_with_boolean_schemas)
 
     def test_boolean_items_not_supported(self):
@@ -381,7 +384,10 @@ class TestOpenAPI31UnsupportedFeatures:
             },
         }
 
-        with pytest.raises(Exception):  # Should fail to parse
+        from pydantic import ValidationError
+
+        # items: False should raise a pydantic ValidationError
+        with pytest.raises(ValidationError):  # Should fail to parse
             parse_openapi_31(spec_with_boolean_items)
 
 
