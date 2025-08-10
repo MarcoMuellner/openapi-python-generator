@@ -1,4 +1,5 @@
-"""Python client from an OPENAPI 3.0 specification in seconds."""
+"""Python client from an OPENAPI 3.0+ specification in seconds."""
+
 try:
     from importlib.metadata import PackageNotFoundError  # type: ignore
     from importlib.metadata import version

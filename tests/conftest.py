@@ -5,8 +5,9 @@ from typing import Dict
 from typing import Generator
 
 import pytest
-from openapi_pydantic.v3.v3_0 import OpenAPI
-from pydantic import ValidationError
+
+from openapi_python_generator.version_detector import detect_openapi_version
+from openapi_python_generator.parsers import parse_openapi_30, parse_openapi_31
 
 test_data_folder = Path(__file__).parent / "test_data"
 test_data_path = test_data_folder / "test_api.json"
@@ -20,12 +21,19 @@ def json_data_fixture() -> Generator[Dict, None, None]:
 
 
 @pytest.fixture(name="model_data")
-def model_data_fixture(json_data) -> OpenAPI:  # type: ignore
-    yield OpenAPI(**json_data)
+def model_data_fixture(json_data):
+    """Parse OpenAPI spec with version-aware parser."""
+    version = detect_openapi_version(json_data)
+    if version == "3.0":
+        yield parse_openapi_30(json_data)
+    elif version == "3.1":
+        yield parse_openapi_31(json_data)
+    else:
+        raise ValueError(f"Unsupported OpenAPI version: {version}")
 
 
 @pytest.fixture(name="model_data_with_cleanup")
-def model_data_with_cleanup_fixture(model_data) -> OpenAPI:  # type: ignore
+def model_data_with_cleanup_fixture(model_data):
     yield model_data
 
     # delete path test_result folder

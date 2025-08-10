@@ -107,11 +107,10 @@ def test_type_converter_anyof_single():
 
 
 def test_type_converter_unknown_list_first_type_fallback():
-    # Provide a list where first item is an unknown string to hit fallback branch
-    # (mypy: ignore type mismatch passed intentionally)
-    schema = Schema(type=["mystery", DataType.STRING])  # type: ignore[arg-type]
-    tc = type_converter(schema, False)
-    assert tc.converted_type == "Optional[str]"
+    # Invalid enum value in list should raise ValidationError (spec invalid)
+    import pydantic
+    with pytest.raises(pydantic.ValidationError):  # type: ignore[attr-defined]
+        Schema(type=["mystery", DataType.STRING])  # type: ignore[arg-type]
 
 
 def test_type_converter_allof_single_reference_self_optional():

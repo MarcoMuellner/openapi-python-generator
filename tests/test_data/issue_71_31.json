@@ -1,0 +1,42 @@
+{
+    "openapi": "3.1.0",
+    "info": {
+        "version": "1.0",
+        "title": "Title",
+        "license": {
+            "name": "MIT",
+            "identifier": "MIT"
+        }
+    },
+    "jsonSchemaDialect": "https://json-schema.org/draft/2020-12/schema",
+    "servers": [
+        {
+            "url": "https://api.example.com/v1"
+        }
+    ],
+    "paths": {
+        "/dummy": {
+            "get": {
+                "operationId": "getDummy",
+                "summary": "Dummy endpoint",
+                "responses": {
+                    "200": {
+                        "description": "Successful response"
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "Registry": {
+                "type": "string",
+                "enum": [
+                    "A",
+                    "B",
+                    ""
+                ]
+            }
+        }
+    }
+}

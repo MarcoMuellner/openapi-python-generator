@@ -342,17 +342,17 @@ def test_type_converter_of_type(test_openapi_types, expected_python_types):
             "SomeModel",
             Schema(allOf=[Reference(ref="#/components/schemas/SomeModel")]),
             Schema(type=DataType.OBJECT, required=["SomeModel"]),
-            Property(
-                name="SomeModel",
-                type=TypeConversion(
-                    original_type="tuple<#/components/schemas/SomeModel>",
-                    converted_type='"SomeModel"',
-                    import_types=[],
+                Property(
+                    name="SomeModel",
+                    type=TypeConversion(
+                        original_type="tuple<#/components/schemas/SomeModel>",
+                        converted_type='"SomeModel"',
+                        import_types=None,
+                    ),
+                    required=True,
+                    import_type=[],
+                    default=None,
                 ),
-                required=True,
-                import_type=[],
-                default=None,
-            ),
         ),
     ],
 )
