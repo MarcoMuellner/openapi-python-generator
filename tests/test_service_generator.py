@@ -358,7 +358,59 @@ def test_generate_services(model_data):
     result = generate_services(model_data.paths, library_config_dict[HTTPLibrary.httpx])
     for i in result:
         compile(i.content, "<string>", "exec")
-
-    result = generate_services(model_data.paths, library_config_dict[HTTPLibrary.requests])
-    for i in result:
+    result2 = generate_services(model_data.paths, library_config_dict[HTTPLibrary.requests])
+    for i in result2:
         compile(i.content, "<string>", "exec")
+
+
+def test_generate_body_param_missing_type_object_like():
+    """Schema with properties but no explicit type should not raise and returns 'data'."""
+    op = Operation(
+        responses=default_responses,  # type: ignore[arg-type]
+        requestBody=RequestBody(
+            content={
+                "application/json": MediaType(
+                    media_type_schema=Schema(properties={"a": Schema(type=DataType.STRING)})  # type: ignore[arg-type]
+                )
+            }
+        ),
+    )
+    assert generate_body_param(op) == "data"
+
+
+def test_generate_body_param_array_primitive():
+    op = Operation(
+        responses=default_responses,  # type: ignore[arg-type]
+        requestBody=RequestBody(
+            content={
+                "application/json": MediaType(
+                    media_type_schema=Schema(type=DataType.ARRAY, items=Schema(type=DataType.STRING))  # type: ignore[arg-type]
+                )
+            }
+        ),
+    )
+    assert generate_body_param(op) == "data"
+
+
+def test_generate_body_param_array_object_like():
+    op = Operation(
+        responses=default_responses,  # type: ignore[arg-type]
+        requestBody=RequestBody(
+            content={
+                "application/json": MediaType(
+                    media_type_schema=Schema(
+                        type=DataType.ARRAY,
+                        items=Schema(type=DataType.OBJECT, properties={"a": Schema(type=DataType.STRING)}),  # type: ignore[arg-type]
+                    )
+                )
+            }
+        ),
+    )
+    assert generate_body_param(op) == "[i.dict() for i in data]"
+
+
+def test_generate_operation_id_path_param_separator():
+    path_name = "/lists/{listId}"
+    op = Operation(responses=default_responses, operationId=None)  # type: ignore[arg-type]
+    op_id = generate_operation_id(op, "get", path_name)
+    assert op_id == "get_lists_listId"
