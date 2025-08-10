@@ -1,4 +1,4 @@
-from openapi_pydantic.v3.v3_0 import OpenAPI
+from openapi_pydantic.v3 import OpenAPI
 
 from openapi_python_generator.language_converters.python.api_config_generator import (
     generate_api_config,

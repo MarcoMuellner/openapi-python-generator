@@ -3,6 +3,7 @@ import {{ library_import }}
 import json
 {% if use_orjson %}
 import orjson
+from uuid import UUID
 {% endif %}
 
 from ..models import *
