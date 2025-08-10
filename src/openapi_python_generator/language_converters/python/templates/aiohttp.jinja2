@@ -34,16 +34,16 @@ async def {{ operation_id }}(api_config_override : Optional[APIConfig] = None{% 
             if initial_response.status != {{ return_type.status_code }}:
                 raise HTTPException(initial_response.status, f'{{ operation_id }} failed with status code: {initial_response.status}')
             # Only parse JSON when a body is expected (avoid errors on 204 No Content)
-            response = None if {{ return_type.status_code }} == 204 else await initial_response.json()
+            body = None if {{ return_type.status_code }} == 204 else await initial_response.json()
 
 {% if return_type.type is none or return_type.type.converted_type is none %}
-            return None
+        return None
 {% elif return_type.complex_type %}
     {%- if return_type.list_type is none %}
-            return {{ return_type.type.converted_type }}(**response) if response is not None else {{ return_type.type.converted_type }}()
+        return {{ return_type.type.converted_type }}(**body) if body is not None else {{ return_type.type.converted_type }}()
     {%- else %}
-            return [{{ return_type.list_type }}(**item) for item in response]
+        return [{{ return_type.list_type }}(**item) for item in body]
     {%- endif %}
 {% else %}
-            return response
+        return body
 {% endif %}
