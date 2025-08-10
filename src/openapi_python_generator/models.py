@@ -1,8 +1,22 @@
-from typing import List
+from typing import List, Union
 from typing import Optional
 
-from openapi_pydantic.v3.v3_0 import Operation, PathItem, Schema
+from openapi_pydantic.v3.v3_0 import (
+    Operation as Operation30,
+    PathItem as PathItem30,
+    Schema as Schema30,
+)
+from openapi_pydantic.v3.v3_1 import (
+    Operation as Operation31,
+    PathItem as PathItem31,
+    Schema as Schema31,
+)
 from pydantic import BaseModel
+
+# Type unions for compatibility with both OpenAPI 3.0 and 3.1
+Operation = Union[Operation30, Operation31]
+PathItem = Union[PathItem30, PathItem31]
+Schema = Union[Schema30, Schema31]
 
 
 class LibraryConfig(BaseModel):
