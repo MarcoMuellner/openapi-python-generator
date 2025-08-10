@@ -13,7 +13,6 @@ from openapi_pydantic.v3 import (
     Schema,
     Operation,
     Parameter,
-    RequestBody,
     Response,
     PathItem,
 )
@@ -76,11 +75,6 @@ def is_reference_type(obj: Any) -> bool:
 
 
 def is_schema_type(obj: Any) -> bool:
-    """Check if object is a Schema type across different versions."""
-    return isinstance(obj, (Schema, Schema30, Schema31))
-
-
-def is_schema_type(obj) -> bool:
     """Check if object is a Schema from any OpenAPI version"""
     return isinstance(obj, (Schema30, Schema31))
 
@@ -130,11 +124,14 @@ def generate_body_param(operation: Operation) -> Union[str, None]:
 
 
 def generate_params(operation: Operation) -> str:
-    def _generate_params_from_content(content: Union[Reference, Schema]):
-        if isinstance(content, Reference):
-            return f"data : {content.ref.split('/')[-1]}"
-        else:
-            return f"data : {type_converter(content, True).converted_type}"
+    def _generate_params_from_content(content: Any):
+        # Accept reference from either 3.0 or 3.1
+        if isinstance(content, (Reference, Reference30, Reference31)):
+            return f"data : {content.ref.split('/')[-1]}"  # type: ignore
+        elif isinstance(content, (Schema, Schema30, Schema31)):
+            return f"data : {type_converter(content, True).converted_type}"  # type: ignore
+        else:  # pragma: no cover
+            raise Exception(f"Unsupported request body schema type: {type(content)}")
 
     if operation.parameters is None and operation.requestBody is None:
         return ""
@@ -178,42 +175,27 @@ def generate_params(operation: Operation) -> str:
         "application/octet-stream",
     ]
 
-    if operation.requestBody is not None:
-        # Check if this is a RequestBody (either v3.0 or v3.1) by checking for content attribute
-        if (
-            hasattr(operation.requestBody, "content")
-            and isinstance(operation.requestBody.content, dict)
-            and any(
-                [
-                    operation.requestBody.content.get(i) is not None
-                    for i in operation_request_body_types
-                ]
-            )
+    if operation.requestBody is not None and not is_reference_type(
+        operation.requestBody
+    ):
+        # Safe access only if it's a concrete RequestBody object
+        rb_content = getattr(operation.requestBody, "content", None)
+        if isinstance(rb_content, dict) and any(
+            rb_content.get(i) is not None for i in operation_request_body_types
         ):
-            get_keyword = [
-                i
-                for i in operation_request_body_types
-                if operation.requestBody.content.get(i) is not None
-            ][0]
-            content = operation.requestBody.content.get(get_keyword)
-            if content is not None and (
-                hasattr(content, "media_type_schema")
-                and (
-                    hasattr(content.media_type_schema, "type")
-                    or hasattr(content.media_type_schema, "ref")
-                )
-            ):
-                params += (
-                    f"{_generate_params_from_content(content.media_type_schema)}, "
-                )
-            else:
-                raise Exception(
-                    f"Unsupported media type schema for {str(operation)}"
-                )  # pragma: no cover
-        else:
-            raise Exception(
-                f"Unsupported request body type: {type(operation.requestBody)}"
-            )
+            get_keyword = [i for i in operation_request_body_types if rb_content.get(i)][
+                0
+            ]
+            content = rb_content.get(get_keyword)
+            if content is not None and hasattr(content, "media_type_schema"):
+                mts = getattr(content, "media_type_schema", None)
+                if isinstance(mts, (Reference, Reference30, Reference31, Schema, Schema30, Schema31)):
+                    params += f"{_generate_params_from_content(mts)}, "
+                else:  # pragma: no cover
+                    raise Exception(
+                        f"Unsupported media type schema for {str(operation)}: {type(mts)}"
+                    )
+        # else: silently ignore unsupported body shapes (could extend later)
     # Replace - with _ in params
     params = params.replace("-", "_")
     default_params = default_params.replace("-", "_")
@@ -274,8 +256,8 @@ def generate_return_type(operation: Operation) -> OpReturnType:
 
     if is_response_type(chosen_response):
         # It's a Response type, access content safely
-        if hasattr(chosen_response, "content") and chosen_response.content is not None:
-            media_type_schema = chosen_response.content.get("application/json")
+        if hasattr(chosen_response, "content") and getattr(chosen_response, "content") is not None:  # type: ignore
+            media_type_schema = getattr(chosen_response, "content").get("application/json")  # type: ignore
     elif is_reference_type(chosen_response):
         media_type_schema = create_media_type_for_reference(chosen_response)
 
@@ -285,40 +267,44 @@ def generate_return_type(operation: Operation) -> OpReturnType:
         )
 
     if is_media_type(media_type_schema):
-        if is_reference_type(media_type_schema.media_type_schema):
+        inner_schema = getattr(media_type_schema, "media_type_schema", None)
+        if is_reference_type(inner_schema):
             type_conv = TypeConversion(
-                original_type=media_type_schema.media_type_schema.ref,
-                converted_type=media_type_schema.media_type_schema.ref.split("/")[-1],
-                import_types=[media_type_schema.media_type_schema.ref.split("/")[-1]],
+                original_type=inner_schema.ref,  # type: ignore
+                converted_type=inner_schema.ref.split("/")[-1],  # type: ignore
+                import_types=[inner_schema.ref.split("/")[-1]],  # type: ignore
             )
             return OpReturnType(
                 type=type_conv,
                 status_code=good_responses[0][0],
                 complex_type=True,
             )
-        elif is_schema_type(media_type_schema.media_type_schema):
-            converted_result = type_converter(media_type_schema.media_type_schema, True)
-            if "array" in converted_result.original_type and isinstance(
-                converted_result.import_types, list
+        elif is_schema_type(inner_schema):
+            converted_result = type_converter(inner_schema, True)  # type: ignore
+            if (
+                "array" in converted_result.original_type
+                and isinstance(converted_result.import_types, list)
             ):
                 matched = re.findall(r"List\[(.+)\]", converted_result.converted_type)
                 if len(matched) > 0:
                     list_type = matched[0]
-                else:
+                else:  # pragma: no cover
                     raise Exception(
                         f"Unable to parse list type from {converted_result.converted_type}"
-                    )  # pragma: no cover
+                    )
             else:
                 list_type = None
             return OpReturnType(
                 type=converted_result,
                 status_code=good_responses[0][0],
-                complex_type=converted_result.import_types is not None
-                and len(converted_result.import_types) > 0,
+                complex_type=bool(
+                    converted_result.import_types
+                    and len(converted_result.import_types) > 0
+                ),
                 list_type=list_type,
             )
-        else:
-            raise Exception("Unknown media type schema type")  # pragma: no cover
+        else:  # pragma: no cover
+            raise Exception("Unknown media type schema type")
     elif media_type_schema is None:
         return OpReturnType(
             type=None,
@@ -342,7 +328,40 @@ def generate_services(
     def generate_service_operation(
         op: Operation, path_name: str, async_type: bool
     ) -> ServiceOperation:
+        # Merge path-level parameters (always required by spec) into the
+        # operation-level parameters so they get turned into function args.
+        try:
+            path_level_params = []
+            if hasattr(path, "parameters") and getattr(path, "parameters") is not None:  # type: ignore
+                path_level_params = [p for p in getattr(path, "parameters") if p is not None]  # type: ignore
+            if path_level_params:
+                existing_names = set()
+                if op.parameters is not None:
+                    for p in op.parameters:  # type: ignore
+                        if isinstance(p, Parameter):
+                            existing_names.add(p.name)
+                for p in path_level_params:
+                    if isinstance(p, Parameter) and p.name not in existing_names:
+                        if op.parameters is None:
+                            op.parameters = []  # type: ignore
+                        op.parameters.append(p)  # type: ignore
+        except Exception:  # pragma: no cover
+            pass
+
         params = generate_params(op)
+        # Fallback: ensure all {placeholders} in path are present as function params
+        try:
+            placeholder_names = [m.group(1) for m in re.finditer(r"\{([^}/]+)\}", path_name)]
+            existing_param_names = {
+                p.split(":")[0].strip()
+                for p in params.split(",") if ":" in p
+            }
+            for ph in placeholder_names:
+                norm_ph = common.normalize_symbol(ph)
+                if norm_ph not in existing_param_names and norm_ph:
+                    params = f"{norm_ph}: Any, " + params
+        except Exception:  # pragma: no cover
+            pass
         operation_id = generate_operation_id(op, http_operation, path_name)
         query_params = generate_query_params(op)
         header_params = generate_header_params(op)
@@ -394,6 +413,11 @@ def generate_services(
             if library_config.include_async:
                 async_so = generate_service_operation(op, path_name, True)
                 service_ops.append(async_so)
+
+    # Ensure every operation has a tag; fallback to "default" for untagged operations
+    for so in service_ops:
+        if not so.tag:
+            so.tag = "default"
 
     tags = set([so.tag for so in service_ops])
 
