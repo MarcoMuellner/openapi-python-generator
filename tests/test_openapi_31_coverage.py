@@ -421,7 +421,7 @@ class TestOpenAPI31Coverage:
         )
 
         # Convert to 3.0 spec and test with 3.0 parser
-        spec_30_no_const = {
+    spec_30_no_const = {
             "openapi": "3.0.3",
             "info": {"title": "Test 3.0", "version": "1.0.0"},
             "paths": {},
@@ -435,11 +435,10 @@ class TestOpenAPI31Coverage:
             },
         }
 
-        from openapi_python_generator.parsers import parse_openapi_30
+    from openapi_python_generator.parsers import parse_openapi_30
 
-        parsed_30 = parse_openapi_30(spec_30_no_const)
+    parsed_30 = parse_openapi_30(spec_30_no_const)
 
-        # In 3.0, const should either not exist or be ignored
-        test_schema_30 = parsed_30.components.schemas["Test"]
-        # The 3.0 parser might ignore unknown fields or handle them differently
-        # This is expected behavior
+    # In 3.0, const should either not exist or be ignored; ensure schema parses
+    _ = parsed_30.components.schemas["Test"]  # noqa: F841
+    # 3.0 parser may ignore 3.1-only fields like const (expected)
