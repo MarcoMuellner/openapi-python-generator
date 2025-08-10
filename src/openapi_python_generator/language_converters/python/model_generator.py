@@ -1,15 +1,30 @@
 import itertools
 import re
-from typing import List
+from typing import List, Union
 from typing import Optional
 
 import click
-from openapi_pydantic.v3.v3_0 import Schema, Reference, Components
+from openapi_pydantic.v3.v3_0 import (
+    Schema as Schema30,
+    Reference as Reference30,
+    Components as Components30,
+)
+from openapi_pydantic.v3.v3_1 import (
+    Schema as Schema31,
+    Reference as Reference31,
+    Components as Components31,
+)
+
+# Type aliases for compatibility
+Schema = Union[Schema30, Schema31]
+Reference = Union[Reference30, Reference31]
+Components = Union[Components30, Components31]
 
 from openapi_python_generator.common import PydanticVersion
 from openapi_python_generator.language_converters.python import common
 from openapi_python_generator.language_converters.python.jinja_config import (
-    ENUM_TEMPLATE, MODELS_TEMPLATE_PYDANTIC_V2,
+    ENUM_TEMPLATE,
+    MODELS_TEMPLATE_PYDANTIC_V2,
 )
 from openapi_python_generator.language_converters.python.jinja_config import (
     MODELS_TEMPLATE,
@@ -23,17 +38,35 @@ from openapi_python_generator.models import TypeConversion
 
 
 def type_converter(  # noqa: C901
-        schema: Schema,
-        required: bool = False,
-        model_name: Optional[str] = None,
+    schema: Union[Schema, Reference],
+    required: bool = False,
+    model_name: Optional[str] = None,
 ) -> TypeConversion:
     """
     Converts an OpenAPI type to a Python type.
-    :param schema: Schema containing the type to be converted
+    :param schema: Schema or Reference containing the type to be converted
     :param model_name: Name of the original model on which the type is defined
     :param required: Flag indicating if the type is required by the class
     :return: The converted type
     """
+    # Handle Reference objects by converting them to type references
+    if isinstance(schema, Reference):
+        import_type = common.normalize_symbol(schema.ref.split("/")[-1])
+        if required:
+            converted_type = import_type
+        else:
+            converted_type = f"Optional[{import_type}]"
+
+        return TypeConversion(
+            original_type=schema.ref,
+            converted_type=converted_type,
+            import_types=(
+                [f"from .{import_type} import {import_type}"]
+                if import_type != model_name
+                else None
+            ),
+        )
+
     if required:
         pre_type = ""
         post_type = ""
@@ -41,7 +74,11 @@ def type_converter(  # noqa: C901
         pre_type = "Optional["
         post_type = "]"
 
-    original_type = schema.type.value if schema.type is not None else "object"
+    original_type = (
+        schema.type.value
+        if hasattr(schema.type, "value") and schema.type is not None
+        else str(schema.type) if schema.type is not None else "object"
+    )
     import_types: Optional[List[str]] = None
 
     if schema.allOf is not None:
@@ -70,19 +107,22 @@ def type_converter(  # noqa: C901
                     )
 
         original_type = (
-                "tuple<" + ",".join([i.original_type for i in conversions]) + ">"
+            "tuple<" + ",".join([i.original_type for i in conversions]) + ">"
         )
         if len(conversions) == 1:
             converted_type = conversions[0].converted_type
         else:
             converted_type = (
-                    "Tuple[" + ",".join([i.converted_type for i in conversions]) + "]"
+                "Tuple[" + ",".join([i.converted_type for i in conversions]) + "]"
             )
 
         converted_type = pre_type + converted_type + post_type
+        # Collect first import from referenced sub-schemas only (skip empty lists)
         import_types = [
-            i.import_types[0] for i in conversions if i.import_types is not None
-        ]
+            i.import_types[0]
+            for i in conversions
+            if i.import_types is not None and len(i.import_types) > 0
+        ] or None
 
     elif schema.oneOf is not None or schema.anyOf is not None:
         used = schema.oneOf if schema.oneOf is not None else schema.anyOf
@@ -102,14 +142,14 @@ def type_converter(  # noqa: C901
                     )
                 )
         original_type = (
-                "union<" + ",".join([i.original_type for i in conversions]) + ">"
+            "union<" + ",".join([i.original_type for i in conversions]) + ">"
         )
 
         if len(conversions) == 1:
             converted_type = conversions[0].converted_type
         else:
             converted_type = (
-                    "Union[" + ",".join([i.converted_type for i in conversions]) + "]"
+                "Union[" + ",".join([i.converted_type for i in conversions]) + "]"
             )
 
         converted_type = pre_type + converted_type + post_type
@@ -120,14 +160,15 @@ def type_converter(  # noqa: C901
         )
     # We only want to auto convert to datetime if orjson is used throghout the code, otherwise we can not
     # serialize it to JSON.
-    elif schema.type == "string" and (
-            schema.schema_format is None or not common.get_use_orjson()
+    elif (schema.type == "string" or str(schema.type) == "DataType.STRING") and (
+        schema.schema_format is None or not common.get_use_orjson()
     ):
         converted_type = pre_type + "str" + post_type
     elif (
-            schema.type == "string"
-            and schema.schema_format.startswith("uuid")
-            and common.get_use_orjson()
+        (schema.type == "string" or str(schema.type) == "DataType.STRING")
+        and schema.schema_format is not None
+        and schema.schema_format.startswith("uuid")
+        and common.get_use_orjson()
     ):
         if len(schema.schema_format) > 4 and schema.schema_format[4].isnumeric():
             uuid_type = schema.schema_format.upper()
@@ -136,41 +177,131 @@ def type_converter(  # noqa: C901
         else:
             converted_type = pre_type + "UUID" + post_type
             import_types = ["from uuid import UUID"]
-    elif schema.type == "string" and schema.schema_format == "date-time":
+    elif (
+        schema.type == "string" or str(schema.type) == "DataType.STRING"
+    ) and schema.schema_format == "date-time":
         converted_type = pre_type + "datetime" + post_type
         import_types = ["from datetime import datetime"]
-    elif schema.type == "integer":
+    elif schema.type == "integer" or str(schema.type) == "DataType.INTEGER":
         converted_type = pre_type + "int" + post_type
-    elif schema.type == "number":
+    elif schema.type == "number" or str(schema.type) == "DataType.NUMBER":
         converted_type = pre_type + "float" + post_type
-    elif schema.type == "boolean":
+    elif schema.type == "boolean" or str(schema.type) == "DataType.BOOLEAN":
         converted_type = pre_type + "bool" + post_type
-    elif schema.type == "array":
+    elif schema.type == "array" or str(schema.type) == "DataType.ARRAY":
         retVal = pre_type + "List["
         if isinstance(schema.items, Reference):
             converted_reference = _generate_property_from_reference(
-                model_name, "", schema.items, schema, required
+                model_name or "", "", schema.items, schema, required
             )
             import_types = converted_reference.type.import_types
             original_type = "array<" + converted_reference.type.original_type + ">"
             retVal += converted_reference.type.converted_type
         elif isinstance(schema.items, Schema):
-            original_type = "array<" + (
-                str(schema.items.type.value) if schema.items.type is not None else "unknown") + ">"
+            type_str = schema.items.type
+            if hasattr(type_str, "value"):
+                type_value = str(type_str.value) if type_str is not None else "unknown"
+            else:
+                type_value = str(type_str) if type_str is not None else "unknown"
+            original_type = "array<" + type_value + ">"
             retVal += type_converter(schema.items, True).converted_type
         else:
             original_type = "array<unknown>"
             retVal += "Any"
 
         converted_type = retVal + "]" + post_type
-    elif schema.type == "object":
+    elif schema.type == "object" or str(schema.type) == "DataType.OBJECT":
         converted_type = pre_type + "Dict[str, Any]" + post_type
-    elif schema.type == "null":
+    elif schema.type == "null" or str(schema.type) == "DataType.NULL":
         converted_type = pre_type + "None" + post_type
     elif schema.type is None:
         converted_type = pre_type + "Any" + post_type
     else:
-        raise TypeError(f"Unknown type: {schema.type}")
+        # Handle DataType enum types as strings
+        if hasattr(schema.type, "value"):
+            # Single DataType enum
+            if schema.type.value == "string":
+                # Check for UUID format first
+                if (
+                    schema.schema_format is not None
+                    and schema.schema_format.startswith("uuid")
+                    and common.get_use_orjson()
+                ):
+                    if (
+                        len(schema.schema_format) > 4
+                        and schema.schema_format[4].isnumeric()
+                    ):
+                        uuid_type = schema.schema_format.upper()
+                        converted_type = pre_type + uuid_type + post_type
+                        import_types = ["from pydantic import " + uuid_type]
+                    else:
+                        converted_type = pre_type + "UUID" + post_type
+                        import_types = ["from uuid import UUID"]
+                # Check for date-time format
+                elif schema.schema_format == "date-time":
+                    converted_type = pre_type + "datetime" + post_type
+                    import_types = ["from datetime import datetime"]
+                else:
+                    converted_type = pre_type + "str" + post_type
+            elif schema.type.value == "integer":
+                converted_type = pre_type + "int" + post_type
+            elif schema.type.value == "number":
+                converted_type = pre_type + "float" + post_type
+            elif schema.type.value == "boolean":
+                converted_type = pre_type + "bool" + post_type
+            elif schema.type.value == "array":
+                converted_type = pre_type + "List[Any]" + post_type
+            elif schema.type.value == "object":
+                converted_type = pre_type + "Dict[str, Any]" + post_type
+            elif schema.type.value == "null":
+                converted_type = pre_type + "None" + post_type
+            else:
+                converted_type = pre_type + "str" + post_type  # Default fallback
+        elif isinstance(schema.type, list) and len(schema.type) > 0:
+            # List of DataType enums - use first one
+            first_type = schema.type[0]
+            if hasattr(first_type, "value"):
+                if first_type.value == "string":
+                    # Check for UUID format first
+                    if (
+                        schema.schema_format is not None
+                        and schema.schema_format.startswith("uuid")
+                        and common.get_use_orjson()
+                    ):
+                        if (
+                            len(schema.schema_format) > 4
+                            and schema.schema_format[4].isnumeric()
+                        ):
+                            uuid_type = schema.schema_format.upper()
+                            converted_type = pre_type + uuid_type + post_type
+                            import_types = ["from pydantic import " + uuid_type]
+                        else:
+                            converted_type = pre_type + "UUID" + post_type
+                            import_types = ["from uuid import UUID"]
+                    # Check for date-time format
+                    elif schema.schema_format == "date-time":
+                        converted_type = pre_type + "datetime" + post_type
+                        import_types = ["from datetime import datetime"]
+                    else:
+                        converted_type = pre_type + "str" + post_type
+                elif first_type.value == "integer":
+                    converted_type = pre_type + "int" + post_type
+                elif first_type.value == "number":
+                    converted_type = pre_type + "float" + post_type
+                elif first_type.value == "boolean":
+                    converted_type = pre_type + "bool" + post_type
+                elif first_type.value == "array":
+                    converted_type = pre_type + "List[Any]" + post_type
+                elif first_type.value == "object":
+                    converted_type = pre_type + "Dict[str, Any]" + post_type
+                elif first_type.value == "null":
+                    converted_type = pre_type + "None" + post_type
+                else:
+                    converted_type = pre_type + "str" + post_type  # Default fallback
+            else:
+                converted_type = pre_type + "str" + post_type  # Default fallback
+        else:
+            converted_type = pre_type + "str" + post_type  # Default fallback
 
     return TypeConversion(
         original_type=original_type,
@@ -180,7 +311,7 @@ def type_converter(  # noqa: C901
 
 
 def _generate_property_from_schema(
-        model_name: str, name: str, schema: Schema, parent_schema: Optional[Schema] = None
+    model_name: str, name: str, schema: Schema, parent_schema: Optional[Schema] = None
 ) -> Property:
     """
     Generates a property from a schema. It takes the type of the schema and converts it to a python type, and then
@@ -192,9 +323,9 @@ def _generate_property_from_schema(
     :return: Property
     """
     required = (
-            parent_schema is not None
-            and parent_schema.required is not None
-            and name in parent_schema.required
+        parent_schema is not None
+        and parent_schema.required is not None
+        and name in parent_schema.required
     )
 
     import_type = None
@@ -211,11 +342,11 @@ def _generate_property_from_schema(
 
 
 def _generate_property_from_reference(
-        model_name: str,
-        name: str,
-        reference: Reference,
-        parent_schema: Optional[Schema] = None,
-        force_required: bool = False,
+    model_name: str,
+    name: str,
+    reference: Reference,
+    parent_schema: Optional[Schema] = None,
+    force_required: bool = False,
 ) -> Property:
     """
     Generates a property from a reference. It takes the name of the reference as the type, and then
@@ -227,26 +358,26 @@ def _generate_property_from_reference(
     :return: Property and model to be imported by the file
     """
     required = (
-                       parent_schema is not None
-                       and parent_schema.required is not None
-                       and name in parent_schema.required
-               ) or force_required
+        parent_schema is not None
+        and parent_schema.required is not None
+        and name in parent_schema.required
+    ) or force_required
     import_model = common.normalize_symbol(reference.ref.split("/")[-1])
 
     if import_model == model_name:
         type_conv = TypeConversion(
             original_type=reference.ref,
-            converted_type=import_model
-            if required
-            else 'Optional["' + import_model + '"]',
+            converted_type=(
+                import_model if required else 'Optional["' + import_model + '"]'
+            ),
             import_types=None,
         )
     else:
         type_conv = TypeConversion(
             original_type=reference.ref,
-            converted_type=import_model
-            if required
-            else "Optional[" + import_model + "]",
+            converted_type=(
+                import_model if required else "Optional[" + import_model + "]"
+            ),
             import_types=[f"from .{import_model} import {import_model}"],
         )
     return Property(
@@ -258,13 +389,15 @@ def _generate_property_from_reference(
     )
 
 
-def generate_models(components: Components, pydantic_version: PydanticVersion = PydanticVersion.V2) -> List[Model]:
+def generate_models(
+    components: Components, pydantic_version: PydanticVersion = PydanticVersion.V2
+) -> List[Model]:
     """
-    Receives components from an OpenAPI 3.0 specification and generates the models from it.
+    Receives components from an OpenAPI 3.0+ specification and generates the models from it.
     It does so, by iterating over the components.schemas dictionary. For each schema, it checks if
     it is a normal schema (i.e. simple type like string, integer, etc.), a reference to another schema, or
     an array of types/references. It then computes pydantic models from it using jinja2
-    :param components: The components from an OpenAPI 3.0 specification.
+    :param components: The components from an OpenAPI 3.0+ specification.
     :param pydantic_version: The version of pydantic to use.
     :return: A list of models.
     """
@@ -277,7 +410,7 @@ def generate_models(components: Components, pydantic_version: PydanticVersion = 
     for schema_name, schema_or_reference in components.schemas.items():
         name = common.normalize_symbol(schema_name)
         if schema_or_reference.enum is not None:
-            value_dict = schema_or_reference.dict()
+            value_dict = schema_or_reference.model_dump()
             regex = re.compile(r"[\s\/=\*\+]+")
             value_dict["enum"] = [
                 re.sub(regex, "_", i) if isinstance(i, str) else f"value_{i}"
@@ -316,7 +449,11 @@ def generate_models(components: Components, pydantic_version: PydanticVersion = 
                 )
             properties.append(conv_property)
 
-        template_name = MODELS_TEMPLATE_PYDANTIC_V2 if pydantic_version == PydanticVersion.V2 else MODELS_TEMPLATE
+        template_name = (
+            MODELS_TEMPLATE_PYDANTIC_V2
+            if pydantic_version == PydanticVersion.V2
+            else MODELS_TEMPLATE
+        )
 
         generated_content = jinja_env.get_template(template_name).render(
             schema_name=name, schema=schema_or_reference, properties=properties
