@@ -6,6 +6,7 @@ from jinja2 import FileSystemLoader
 
 ENUM_TEMPLATE = "enum.jinja2"
 MODELS_TEMPLATE = "models.jinja2"
+UNION_TEMPLATE = "union.jinja2"
 SERVICE_TEMPLATE = "service.jinja2"
 HTTPX_TEMPLATE = "httpx.jinja2"
 API_CONFIG_TEMPLATE = "apiconfig.jinja2"

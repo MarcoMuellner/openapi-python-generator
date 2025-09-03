@@ -14,7 +14,7 @@ from openapi_python_generator.language_converters.python.jinja_config import (
 )
 from openapi_python_generator.language_converters.python.jinja_config import JINJA_ENV
 from openapi_python_generator.language_converters.python.jinja_config import (
-    MODELS_TEMPLATE,
+    MODELS_TEMPLATE, UNION_TEMPLATE
 )
 from openapi_python_generator.models import Model
 from openapi_python_generator.models import Property
@@ -304,7 +304,12 @@ def generate_models(components: Components) -> List[Model]:
                 )
             properties.append(conv_property)
 
-        generated_content = JINJA_ENV.get_template(MODELS_TEMPLATE).render(
+        if not properties and schema_or_reference.oneOf and all(isinstance(item, Reference) for item in schema_or_reference.oneOf):
+            template = UNION_TEMPLATE
+        else:
+            template = MODELS_TEMPLATE
+
+        generated_content = JINJA_ENV.get_template(template).render(
             schema_name=name, schema=schema_or_reference, properties=properties
         )
 

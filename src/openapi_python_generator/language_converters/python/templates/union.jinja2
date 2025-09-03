@@ -1,0 +1,6 @@
+{% for item in schema.oneOf %}
+from ..models import {{ item.ref.rsplit("/", 1)[-1] }}
+{% endfor %}
+
+
+{{ schema_name }} = {% for item in schema.oneOf %}{% if loop.index0 %} | {% endif %}{{ item.ref.rsplit("/", 1)[-1] }}{% endfor %}
