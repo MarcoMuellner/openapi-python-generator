@@ -61,7 +61,7 @@ def is_response_type(obj) -> bool:
 
 
 def create_media_type_for_reference(
-    reference_obj: Response30 | Reference30 | Response31 | Reference31,
+    reference_obj: Union[Response30, Reference30 , Response31 , Reference31],
 ):
     """Create a MediaType wrapper for a reference object, using the correct version"""
     # Check which version the reference object belongs to
