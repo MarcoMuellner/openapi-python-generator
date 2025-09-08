@@ -1,5 +1,5 @@
 import asyncio
-from datetime import datetime, UTC
+from datetime import datetime, timezone
 
 import httpx
 import pytest
@@ -201,7 +201,7 @@ def _setup_httpx_mocks(respx_mock, base_url):
                     email="x@y.com",
                     password="123456",
                     is_active=True,
-                    created_at=datetime.now(UTC).isoformat(),
+                    created_at=datetime.now(timezone.utc).isoformat(),
                 ),
                 dict(
                     id=2,
@@ -209,7 +209,7 @@ def _setup_httpx_mocks(respx_mock, base_url):
                     email="x@y.com",
                     password="123456",
                     is_active=True,
-                    created_at=datetime.now(UTC).isoformat(),
+                    created_at=datetime.now(timezone.utc).isoformat(),
                 ),
             ],
         )
@@ -224,16 +224,16 @@ def _setup_httpx_mocks(respx_mock, base_url):
                     name="team1",
                     description="team1",
                     is_active=True,
-                    created_at=datetime.now(UTC).isoformat(),
-                    updated_at=datetime.now(UTC).isoformat(),
+                    created_at=datetime.now(timezone.utc).isoformat(),
+                    updated_at=datetime.now(timezone.utc).isoformat(),
                 ),
                 dict(
                     id=2,
                     name="team2",
                     description="team2",
                     is_active=True,
-                    created_at=datetime.now(UTC).isoformat(),
-                    updated_at=datetime.now(UTC).isoformat(),
+                    created_at=datetime.now(timezone.utc).isoformat(),
+                    updated_at=datetime.now(timezone.utc).isoformat(),
                 ),
             ],
         )
@@ -259,7 +259,7 @@ def _setup_requests_mocks(responses_mock, base_url):
                 email="x@y.com",
                 password="123456",
                 is_active=True,
-                created_at=datetime.now(UTC).isoformat(),
+                created_at=datetime.now(timezone.utc).isoformat(),
             ),
             dict(
                 id="2",  # String ID for compatibility
@@ -267,7 +267,7 @@ def _setup_requests_mocks(responses_mock, base_url):
                 email="x@y.com",
                 password="123456",
                 is_active=True,
-                created_at=datetime.now(UTC).isoformat(),
+                created_at=datetime.now(timezone.utc).isoformat(),
             ),
         ],
         status=200,
@@ -282,16 +282,16 @@ def _setup_requests_mocks(responses_mock, base_url):
                 name="team1",
                 description="team1",
                 is_active=True,
-                created_at=datetime.now(UTC).isoformat(),
-                updated_at=datetime.now(UTC).isoformat(),
+                created_at=datetime.now(timezone.utc).isoformat(),
+                updated_at=datetime.now(timezone.utc).isoformat(),
             ),
             dict(
                 id="2",  # String ID for compatibility
                 name="team2",
                 description="team2",
                 is_active=True,
-                created_at=datetime.now(UTC).isoformat(),
-                updated_at=datetime.now(UTC).isoformat(),
+                created_at=datetime.now(timezone.utc).isoformat(),
+                updated_at=datetime.now(timezone.utc).isoformat(),
             ),
         ],
         status=200,
@@ -366,7 +366,7 @@ async def _run_service_tests_aiohttp(
                     email="x@y.com",
                     password="123456",
                     is_active=True,
-                    created_at=datetime.now(UTC).isoformat(),
+                    created_at=datetime.now(timezone.utc).isoformat(),
                 ),
                 dict(
                     id=2,
@@ -374,7 +374,7 @@ async def _run_service_tests_aiohttp(
                     email="x@y.com",
                     password="123456",
                     is_active=True,
-                    created_at=datetime.now(UTC).isoformat(),
+                    created_at=datetime.now(timezone.utc).isoformat(),
                 ),
             ]
         )
@@ -387,16 +387,16 @@ async def _run_service_tests_aiohttp(
                     name="team1",
                     description="team1",
                     is_active=True,
-                    created_at=datetime.now(UTC).isoformat(),
-                    updated_at=datetime.now(UTC).isoformat(),
+                    created_at=datetime.now(timezone.utc).isoformat(),
+                    updated_at=datetime.now(timezone.utc).isoformat(),
                 ),
                 dict(
                     id=2,
                     name="team2",
                     description="team2",
                     is_active=True,
-                    created_at=datetime.now(UTC).isoformat(),
-                    updated_at=datetime.now(UTC).isoformat(),
+                    created_at=datetime.now(timezone.utc).isoformat(),
+                    updated_at=datetime.now(timezone.utc).isoformat(),
                 ),
             ]
         )
