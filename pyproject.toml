@@ -32,11 +32,7 @@ pyyaml = "^6.0.2"
 Pygments = ">=2.10.0"
 coverage = {extras = ["toml"], version = "^6.4.1"}
 darglint = ">=1.8.1"
-flake8 = ">=3.0.1"
-flake8-bandit = ">=2.1.2"
-flake8-bugbear = ">=21.9.2"
-flake8-docstrings = ">=1.6.0"
-flake8-rst-docstrings = ">=0.2.5"
+ruff = ">=0.12.12"
 furo = ">=2021.11.12"
 mypy = ">=0.930"
 pep8-naming = ">=0.10.1"
@@ -86,3 +82,23 @@ show_error_context = true
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.ruff]
+exclude = ["tests/*"]
+line-length = 120
+
+[tool.ruff.lint]
+ignore = ["E501"]
+select = [
+    "B",
+    "B9",
+    "C",
+    "E",
+    "F",
+    "I",
+    "S",
+    "W",
+]
+
+[tool.ruff.lint.mccabe]
+max-complexity = 25

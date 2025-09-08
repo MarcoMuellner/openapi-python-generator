@@ -6,8 +6,6 @@ from openapi_python_generator.common import PydanticVersion
 from openapi_python_generator.language_converters.python.jinja_config import (
     API_CONFIG_TEMPLATE,
     API_CONFIG_TEMPLATE_PYDANTIC_V2,
-)
-from openapi_python_generator.language_converters.python.jinja_config import (
     create_jinja_env,
 )
 from openapi_python_generator.models import APIConfig

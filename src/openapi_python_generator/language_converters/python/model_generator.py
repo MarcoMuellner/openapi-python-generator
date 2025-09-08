@@ -1,40 +1,41 @@
 import itertools
 import re
-from typing import List, Union
-from typing import Optional
+from typing import List, Optional, Union
 
 import click
 from openapi_pydantic.v3.v3_0 import (
-    Schema as Schema30,
-    Reference as Reference30,
     Components as Components30,
+)
+from openapi_pydantic.v3.v3_0 import (
+    Reference as Reference30,
+)
+from openapi_pydantic.v3.v3_0 import (
+    Schema as Schema30,
+)
+from openapi_pydantic.v3.v3_1 import (
+    Components as Components31,
+)
+from openapi_pydantic.v3.v3_1 import (
+    Reference as Reference31,
 )
 from openapi_pydantic.v3.v3_1 import (
     Schema as Schema31,
-    Reference as Reference31,
-    Components as Components31,
 )
-
-# Type aliases for compatibility
-Schema = Union[Schema30, Schema31]
-Reference = Union[Reference30, Reference31]
-Components = Union[Components30, Components31]
 
 from openapi_python_generator.common import PydanticVersion
 from openapi_python_generator.language_converters.python import common
 from openapi_python_generator.language_converters.python.jinja_config import (
     ENUM_TEMPLATE,
-    MODELS_TEMPLATE_PYDANTIC_V2,
-)
-from openapi_python_generator.language_converters.python.jinja_config import (
     MODELS_TEMPLATE,
-)
-from openapi_python_generator.language_converters.python.jinja_config import (
+    MODELS_TEMPLATE_PYDANTIC_V2,
     create_jinja_env,
 )
-from openapi_python_generator.models import Model
-from openapi_python_generator.models import Property
-from openapi_python_generator.models import TypeConversion
+from openapi_python_generator.models import Model, Property, TypeConversion
+
+# Type aliases for compatibility
+Schema = Union[Schema30, Schema31]
+Reference = Union[Reference30, Reference31]
+Components = Union[Components30, Components31]
 
 
 def type_converter(  # noqa: C901

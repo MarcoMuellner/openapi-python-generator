@@ -2,7 +2,7 @@
 OpenAPI version detection utilities.
 """
 
-from typing import Dict, Any, Literal
+from typing import Any, Dict, Literal
 
 OpenAPIVersion = Literal["3.0", "3.1"]
 

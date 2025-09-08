@@ -1,14 +1,21 @@
-from typing import List, Union
-from typing import Optional
+from typing import List, Optional, Union
 
 from openapi_pydantic.v3.v3_0 import (
     Operation as Operation30,
+)
+from openapi_pydantic.v3.v3_0 import (
     PathItem as PathItem30,
+)
+from openapi_pydantic.v3.v3_0 import (
     Schema as Schema30,
 )
 from openapi_pydantic.v3.v3_1 import (
     Operation as Operation31,
+)
+from openapi_pydantic.v3.v3_1 import (
     PathItem as PathItem31,
+)
+from openapi_pydantic.v3.v3_1 import (
     Schema as Schema31,
 )
 from pydantic import BaseModel

@@ -1,30 +1,26 @@
 from pathlib import Path
-from typing import List
-from typing import Optional
-from typing import Union
+from typing import List, Optional, Union
 
 import black
-from black.report import NothingChanged  # type: ignore
 import click
 import httpx
 import isort
 import orjson
 import yaml  # type: ignore
-from httpx import ConnectError
-from httpx import ConnectTimeout
+from black.report import NothingChanged  # type: ignore
+from httpx import ConnectError, ConnectTimeout
 from pydantic import ValidationError
 
 from .common import FormatOptions, Formatter, HTTPLibrary, PydanticVersion
-from .language_converters.python.jinja_config import SERVICE_TEMPLATE
-from .language_converters.python.jinja_config import create_jinja_env
+from .language_converters.python.jinja_config import SERVICE_TEMPLATE, create_jinja_env
 from .models import ConversionResult
-from .version_detector import detect_openapi_version
 from .parsers import (
-    parse_openapi_3_0,
-    parse_openapi_3_1,
     generate_code_3_0,
     generate_code_3_1,
+    parse_openapi_3_0,
+    parse_openapi_3_1,
 )
+from .version_detector import detect_openapi_version
 
 
 def write_code(path: Path, content: str, formatter: Formatter) -> None:

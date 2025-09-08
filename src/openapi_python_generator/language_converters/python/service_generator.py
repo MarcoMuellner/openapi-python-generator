@@ -1,34 +1,40 @@
 import re
-from typing import Any
-from typing import Dict
-from typing import List
-from typing import Literal
-from typing import Optional
-from typing import Tuple
-from typing import Union
+from typing import Any, Dict, List, Literal, Optional, Tuple, Union
 
 import click
 from openapi_pydantic.v3 import (
-    Reference,
-    Schema,
     Operation,
     Parameter,
-    Response,
     PathItem,
+    Reference,
+    Response,
+    Schema,
+)
+from openapi_pydantic.v3.v3_0 import (
+    MediaType as MediaType30,
 )
 
 # Import version-specific types for isinstance checks
 from openapi_pydantic.v3.v3_0 import (
     Reference as Reference30,
-    Schema as Schema30,
+)
+from openapi_pydantic.v3.v3_0 import (
     Response as Response30,
-    MediaType as MediaType30,
+)
+from openapi_pydantic.v3.v3_0 import (
+    Schema as Schema30,
+)
+from openapi_pydantic.v3.v3_1 import (
+    MediaType as MediaType31,
 )
 from openapi_pydantic.v3.v3_1 import (
     Reference as Reference31,
-    Schema as Schema31,
+)
+from openapi_pydantic.v3.v3_1 import (
     Response as Response31,
-    MediaType as MediaType31,
+)
+from openapi_pydantic.v3.v3_1 import (
+    Schema as Schema31,
 )
 
 from openapi_python_generator.language_converters.python import common
@@ -39,11 +45,7 @@ from openapi_python_generator.language_converters.python.jinja_config import (
 from openapi_python_generator.language_converters.python.model_generator import (
     type_converter,
 )
-from openapi_python_generator.models import LibraryConfig
-from openapi_python_generator.models import OpReturnType
-from openapi_python_generator.models import Service
-from openapi_python_generator.models import ServiceOperation
-from openapi_python_generator.models import TypeConversion
+from openapi_python_generator.models import LibraryConfig, OpReturnType, Service, ServiceOperation, TypeConversion
 
 
 # Helper functions for isinstance checks across OpenAPI versions
@@ -256,8 +258,8 @@ def generate_return_type(operation: Operation) -> OpReturnType:
 
     if is_response_type(chosen_response):
         # It's a Response type, access content safely
-        if hasattr(chosen_response, "content") and getattr(chosen_response, "content") is not None:  # type: ignore
-            media_type_schema = getattr(chosen_response, "content").get("application/json")  # type: ignore
+        if hasattr(chosen_response, "content") and chosen_response.content is not None:  # type: ignore
+            media_type_schema = chosen_response.content.get("application/json")  # type: ignore
     elif is_reference_type(chosen_response):
         media_type_schema = create_media_type_for_reference(chosen_response)
 
@@ -332,8 +334,8 @@ def generate_services(
         # operation-level parameters so they get turned into function args.
         try:
             path_level_params = []
-            if hasattr(path, "parameters") and getattr(path, "parameters") is not None:  # type: ignore
-                path_level_params = [p for p in getattr(path, "parameters") if p is not None]  # type: ignore
+            if hasattr(path, "parameters") and path.parameters is not None:  # type: ignore
+                path_level_params = [p for p in path.parameters if p is not None]  # type: ignore
             if path_level_params:
                 existing_names = set()
                 if op.parameters is not None:
@@ -346,6 +348,7 @@ def generate_services(
                             op.parameters = []  # type: ignore
                         op.parameters.append(p)  # type: ignore
         except Exception:  # pragma: no cover
+            print(f"Error merging path-level parameters for {path_name}")  # pragma: no cover
             pass
 
         params = generate_params(op)
@@ -361,6 +364,7 @@ def generate_services(
                 if norm_ph not in existing_param_names and norm_ph:
                     params = f"{norm_ph}: Any, " + params
         except Exception:  # pragma: no cover
+            print(f"Error ensuring path placeholders in params for {path_name}")  # pragma: no cover
             pass
         operation_id = generate_operation_id(op, http_operation, path_name)
         query_params = generate_query_params(op)
@@ -419,7 +423,7 @@ def generate_services(
         if not so.tag:
             so.tag = "default"
 
-    tags = set([so.tag for so in service_ops])
+    tags = list({so.tag for so in service_ops})
 
     for tag in tags:
         services.append(
