@@ -17,28 +17,25 @@ keywords = ["OpenAPI", "Generator", "Python", "async"]
 Changelog = "https://github.com/MarcoMuellner/openapi-python-generator/releases"
 
 [tool.poetry.dependencies]
-python = "^3.8"
-httpx = {extras = ["all"], version = "^0.23.0"}
+python = "^3.9"
+httpx = {extras = ["all"], version = "^0.28.0"}
 pydantic = "^2.10.2"
 orjson = "^3.9.15"
 Jinja2 = "^3.1.2"
 click = "^8.1.3"
 black = ">=21.10b0"
 isort = ">=5.10.1"
-openapi-pydantic = "^0.5.0"
+openapi-pydantic = "^0.5.1"
 pyyaml = "^6.0.2"
+importlib-metadata = "^8.7.0"
 
-[tool.poetry.dev-dependencies]
+[tool.poetry.group.dev.dependencies]
 Pygments = ">=2.10.0"
 coverage = {extras = ["toml"], version = "^6.4.1"}
 darglint = ">=1.8.1"
-flake8 = ">=3.0.1"
-flake8-bandit = ">=2.1.2"
-flake8-bugbear = ">=21.9.2"
-flake8-docstrings = ">=1.6.0"
-flake8-rst-docstrings = ">=0.2.5"
+ruff = ">=0.12.12"
 furo = ">=2021.11.12"
-mypy = ">=0.930"
+ty = "^0.0.1a20"
 pep8-naming = ">=0.10.1"
 pre-commit = ">=2.16.0"
 pre-commit-hooks = ">=4.1.0"
@@ -51,8 +48,9 @@ myst-parser = {version = ">=0.16.1"}
 pytest-cov = "^3.0.0"
 fastapi = "^0.115.5"
 uvicorn = "^0.18.1"
-respx = "^0.20.1"
+respx = "^0.22.0"
 aiohttp = "^3.8.3"
+responses = "^0.25.8"
 
 [tool.poetry.scripts]
 openapi-python-generator = "openapi_python_generator.__main__:main"
@@ -86,3 +84,23 @@ show_error_context = true
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.ruff]
+exclude = ["tests/*"]
+line-length = 120
+
+[tool.ruff.lint]
+ignore = ["E501"]
+select = [
+    "B",
+    "B9",
+    "C",
+    "E",
+    "F",
+    "I",
+    "S",
+    "W",
+]
+
+[tool.ruff.lint.mccabe]
+max-complexity = 25

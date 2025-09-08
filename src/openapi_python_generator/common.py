@@ -1,6 +1,5 @@
 from enum import Enum
-from typing import Dict
-from typing import Optional
+from typing import Dict, Optional
 
 from openapi_python_generator.models import LibraryConfig
 
@@ -27,6 +26,7 @@ class Formatter(str, Enum):
 
     BLACK = "black"
     NONE = "none"
+
 
 class FormatOptions:
     skip_validation: bool = False

@@ -1,2 +1,7 @@
 {
+  "openapi": "3.0.2",
+  "info": {
+    "title": "Invalid API"
+  },
+  "paths": "this should be an object not a string"
 }

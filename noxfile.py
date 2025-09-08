@@ -1,4 +1,5 @@
 """Nox sessions."""
+
 import os
 import shlex
 import shutil
@@ -8,10 +9,8 @@ from textwrap import dedent
 
 import nox
 
-
 try:
-    from nox_poetry import Session
-    from nox_poetry import session
+    from nox_poetry import Session, session
 except ImportError:
     message = f"""\
     Nox failed to import the 'nox-poetry' package.

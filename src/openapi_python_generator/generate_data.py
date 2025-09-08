@@ -1,26 +1,26 @@
 from pathlib import Path
-from typing import List
-from typing import Optional
-from typing import Union
+from typing import List, Optional, Union
 
 import black
 import click
 import httpx
 import isort
 import orjson
-import yaml
-from black import NothingChanged
-from httpx import ConnectError
-from httpx import ConnectTimeout
-from openapi_pydantic.v3.v3_0 import OpenAPI
+import yaml  # type: ignore
+from black.report import NothingChanged  # type: ignore
+from httpx import ConnectError, ConnectTimeout
 from pydantic import ValidationError
 
 from .common import FormatOptions, Formatter, HTTPLibrary, PydanticVersion
-from .common import library_config_dict
-from .language_converters.python.generator import generator
-from .language_converters.python.jinja_config import SERVICE_TEMPLATE
-from .language_converters.python.jinja_config import create_jinja_env
+from .language_converters.python.jinja_config import SERVICE_TEMPLATE, create_jinja_env
 from .models import ConversionResult
+from .parsers import (
+    generate_code_3_0,
+    generate_code_3_1,
+    parse_openapi_3_0,
+    parse_openapi_3_1,
+)
+from .version_detector import detect_openapi_version
 
 
 def write_code(path: Path, content: str, formatter: Formatter) -> None:
@@ -35,7 +35,9 @@ def write_code(path: Path, content: str, formatter: Formatter) -> None:
     elif formatter == Formatter.NONE:
         formatted_contend = content
     else:
-        raise NotImplementedError(f"Missing implementation for formatter {formatter!r}.")
+        raise NotImplementedError(
+            f"Missing implementation for formatter {formatter!r}."
+        )
     with open(path, "w") as f:
         f.write(formatted_contend)
 
@@ -43,23 +45,26 @@ def write_code(path: Path, content: str, formatter: Formatter) -> None:
 def format_using_black(content: str) -> str:
     try:
         formatted_contend = black.format_file_contents(
-            content, fast=FormatOptions.skip_validation, mode=black.FileMode(line_length=FormatOptions.line_length)
+            content,
+            fast=FormatOptions.skip_validation,
+            mode=black.FileMode(line_length=FormatOptions.line_length),
         )
     except NothingChanged:
         return content
     return isort.code(formatted_contend, line_length=FormatOptions.line_length)
 
 
-def get_open_api(source: Union[str, Path]) -> OpenAPI:
+def get_open_api(source: Union[str, Path]):
     """
     Tries to fetch the openapi specification file from the web or load from a local file.
     Supports both JSON and YAML formats. Returns the according OpenAPI object.
+    Automatically supports OpenAPI 3.0 and 3.1 specifications with intelligent version detection.
 
     Args:
         source: URL or file path to the OpenAPI specification
 
     Returns:
-        OpenAPI: Parsed OpenAPI specification object
+        tuple: (OpenAPI object, version) where version is "3.0" or "3.1"
 
     Raises:
         FileNotFoundError: If the specified file cannot be found
@@ -70,31 +75,46 @@ def get_open_api(source: Union[str, Path]) -> OpenAPI:
     try:
         # Handle remote files
         if not isinstance(source, Path) and (
-                source.startswith("http://") or source.startswith("https://")
+            source.startswith("http://") or source.startswith("https://")
         ):
             content = httpx.get(source).text
             # Try JSON first, then YAML for remote files
             try:
-                return OpenAPI(**orjson.loads(content))
+                data = orjson.loads(content)
             except orjson.JSONDecodeError:
-                return OpenAPI(**yaml.safe_load(content))
+                data = yaml.safe_load(content)
+        else:
+            # Handle local files
+            with open(source, "r") as f:
+                file_content = f.read()
 
-        # Handle local files
-        with open(source, "r") as f:
-            file_content = f.read()
-
-            # Try JSON first
-            try:
-                return OpenAPI(**orjson.loads(file_content))
-            except orjson.JSONDecodeError:
-                # If JSON fails, try YAML
+                # Try JSON first
                 try:
-                    return OpenAPI(**yaml.safe_load(file_content))
-                except yaml.YAMLError as e:
-                    click.echo(
-                        f"File {source} is neither a valid JSON nor YAML file: {str(e)}"
-                    )
-                    raise
+                    data = orjson.loads(file_content)
+                except orjson.JSONDecodeError:
+                    # If JSON fails, try YAML
+                    try:
+                        data = yaml.safe_load(file_content)
+                    except yaml.YAMLError as e:
+                        click.echo(
+                            f"File {source} is neither a valid JSON nor YAML file: {str(e)}"
+                        )
+                        raise
+
+        # Detect version and parse with appropriate parser
+        version = detect_openapi_version(data)
+
+        if version == "3.0":
+            openapi_obj = parse_openapi_3_0(data)  # type: ignore[assignment]
+        elif version == "3.1":
+            openapi_obj = parse_openapi_3_1(data)  # type: ignore[assignment]
+        else:
+            # Unsupported version detected (version detection already limited to 3.0 / 3.1)
+            raise ValueError(
+                f"Unsupported OpenAPI version: {version}. Only 3.0.x and 3.1.x are supported."
+            )
+
+        return openapi_obj, version
 
     except FileNotFoundError:
         click.echo(
@@ -105,13 +125,13 @@ def get_open_api(source: Union[str, Path]) -> OpenAPI:
         click.echo(f"Could not connect to {source}.")
         raise ConnectError(f"Could not connect to {source}.") from None
     except ValidationError:
-        click.echo(
-            f"File {source} is not a valid OpenAPI 3.0 specification."
-        )
+        click.echo(f"File {source} is not a valid OpenAPI 3.0+ specification.")
         raise
 
 
-def write_data(data: ConversionResult, output: Union[str, Path], formatter: Formatter) -> None:
+def write_data(
+    data: ConversionResult, output: Union[str, Path], formatter: Formatter
+) -> None:
     """
     This function will firstly create the folder structure of output, if it doesn't exist. Then it will create the
     models from data.models into the models sub module of the output folder. After this, the services will be created
@@ -156,7 +176,7 @@ def write_data(data: ConversionResult, output: Union[str, Path], formatter: Form
         files.append(service.file_name)
         write_code(
             services_path / f"{service.file_name}.py",
-            jinja_env.get_template(SERVICE_TEMPLATE).render(**service.dict()),
+            jinja_env.get_template(SERVICE_TEMPLATE).render(**service.model_dump()),
             formatter,
         )
 
@@ -177,7 +197,7 @@ def write_data(data: ConversionResult, output: Union[str, Path], formatter: Form
 def generate_data(
     source: Union[str, Path],
     output: Union[str, Path],
-    library: Optional[HTTPLibrary] = HTTPLibrary.httpx,
+    library: HTTPLibrary = HTTPLibrary.httpx,
     env_token_name: Optional[str] = None,
     use_orjson: bool = False,
     custom_template_path: Optional[str] = None,
@@ -185,18 +205,31 @@ def generate_data(
     formatter: Formatter = Formatter.BLACK,
 ) -> None:
     """
-    Generate Python code from an OpenAPI 3.0 specification.
+    Generate Python code from an OpenAPI 3.0+ specification.
     """
-    data = get_open_api(source)
-    click.echo(f"Generating data from {source}")
+    openapi_obj, version = get_open_api(source)
+    click.echo(f"Generating data from {source} (OpenAPI {version})")
 
-    result = generator(
-        data,
-        library_config_dict[library],
-        env_token_name,
-        use_orjson,
-        custom_template_path,
-        pydantic_version,
-    )
+    # Use version-specific generator
+    if version == "3.0":
+        result = generate_code_3_0(
+            openapi_obj,  # type: ignore
+            library,
+            env_token_name,
+            use_orjson,
+            custom_template_path,
+            pydantic_version,
+        )
+    elif version == "3.1":
+        result = generate_code_3_1(
+            openapi_obj,  # type: ignore
+            library,
+            env_token_name,
+            use_orjson,
+            custom_template_path,
+            pydantic_version,
+        )
+    else:
+        raise ValueError(f"Unsupported OpenAPI version: {version}")
 
     write_data(result, output, formatter)

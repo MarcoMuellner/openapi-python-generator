@@ -1,0 +1,388 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Test API v3.1", 
+    "version": "1.0.0",
+    "description": "OpenAPI 3.1 test specification for integration testing",
+    "license": {
+      "name": "MIT",
+      "identifier": "MIT"
+    }
+  },
+  "jsonSchemaDialect": "https://json-schema.org/draft/2020-12/schema",
+  "servers": [
+    {
+      "url": "http://localhost:8080",
+      "description": "Test server"
+    }
+  ],
+  "paths": {
+    "/": {
+      "get": {
+        "summary": "Root endpoint",
+        "operationId": "root__get",
+        "tags": ["general"],
+        "responses": {
+          "200": {
+            "description": "Root response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RootResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users": {
+      "get": {
+        "summary": "Get all users",
+        "operationId": "get_users_users_get",
+        "tags": ["general"],
+        "responses": {
+          "200": {
+            "description": "List of users",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/User"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Create a new user",
+        "operationId": "create_user_users_post",
+        "tags": ["general"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "User created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/{user_id}": {
+      "get": {
+        "summary": "Get a specific user",
+        "operationId": "get_user_users__user_id__get",
+        "tags": ["general"],
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "summary": "Update a user",
+        "operationId": "update_user_users__user_id__patch",
+        "tags": ["general"],
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "User updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete a user",
+        "operationId": "delete_user_users__user_id__delete",
+        "tags": ["general"],
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "User deleted"
+          }
+        }
+      }
+    },
+    "/teams": {
+      "get": {
+        "summary": "Get all teams",
+        "operationId": "get_teams_teams_get",
+        "tags": ["general"],
+        "parameters": [
+          {
+            "name": "category",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "enum": ["development", "marketing", "sales"]
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of teams",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Team"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "RootResponse": {
+        "type": "object",
+        "required": ["message"],
+        "properties": {
+          "message": {
+            "type": "string",
+            "default": "Hello World"
+          }
+        },
+        "additionalProperties": false
+      },
+      "User": {
+        "type": "object",
+        "required": ["id", "username", "email", "is_active", "created_at"],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Unique identifier for the user"
+          },
+          "username": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 50
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "password": {
+            "type": "string",
+            "writeOnly": true
+          },
+          "is_active": {
+            "type": "boolean",
+            "default": true
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "profile": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/UserProfile"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          }
+        },
+        "additionalProperties": true
+      },
+      "UserCreate": {
+        "type": "object",
+        "required": ["username", "email", "password"],
+        "properties": {
+          "username": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 50
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "password": {
+            "type": "string",
+            "minLength": 8
+          },
+          "is_active": {
+            "type": "boolean",
+            "default": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "UserUpdate": {
+        "type": "object",
+        "properties": {
+          "username": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 50
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "is_active": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "UserProfile": {
+        "type": "object",
+        "properties": {
+          "bio": {
+            "type": "string"
+          },
+          "avatar_url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "social_links": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string",
+              "format": "uri"
+            }
+          }
+        },
+        "additionalProperties": true
+      },
+      "Team": {
+        "type": "object",
+        "required": ["id", "name", "is_active", "created_at", "updated_at"],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Unique identifier for the team"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "category": {
+            "type": "string",
+            "enum": ["development", "marketing", "sales"],
+            "default": "development"
+          },
+          "is_active": {
+            "type": "boolean",
+            "default": true
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string", 
+            "format": "date-time"
+          },
+          "metadata": {
+            "type": "object",
+            "additionalProperties": true,
+            "default": {}
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  }
+}

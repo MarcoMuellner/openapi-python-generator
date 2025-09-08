@@ -2,9 +2,8 @@ import keyword
 import re
 from typing import Optional
 
-
 _use_orjson: bool = False
-_custom_template_path: str = None
+_custom_template_path: Optional[str] = None
 _symbol_ascii_strip_re = re.compile(r"[^A-Za-z0-9_]")
 
 

@@ -1,5 +1,5 @@
 import pytest
-from openapi_pydantic.v3.v3_0 import Schema, Reference, DataType, OpenAPI
+from openapi_pydantic.v3 import Schema, Reference, DataType, OpenAPI
 
 from openapi_python_generator.common import PydanticVersion
 from openapi_python_generator.language_converters.python import common
@@ -56,7 +56,10 @@ from openapi_python_generator.models import TypeConversion
             TypeConversion(original_type="array<string>", converted_type="List[str]"),
         ),
         (
-            Schema(type=DataType.ARRAY, items=Reference(ref="#/components/schemas/test_name")),
+            Schema(
+                type=DataType.ARRAY,
+                items=Reference(ref="#/components/schemas/test_name"),
+            ),
             TypeConversion(
                 original_type="array<#/components/schemas/test_name>",
                 converted_type="List[test_name]",
@@ -150,7 +153,10 @@ def test_type_converter_simple(test_openapi_types, expected_python_types):
             TypeConversion(original_type="array<string>", converted_type="List[str]"),
         ),
         (
-            Schema(type=DataType.ARRAY, items=Reference(ref="#/components/schemas/test_name")),
+            Schema(
+                type=DataType.ARRAY,
+                items=Reference(ref="#/components/schemas/test_name"),
+            ),
             TypeConversion(
                 original_type="array<#/components/schemas/test_name>",
                 converted_type="List[test_name]",
@@ -228,12 +234,18 @@ def test_type_converter_simple_orjson(test_openapi_types, expected_python_types)
 
 def test_type_converter_all_of_reference():
     schema = Schema(
-        allOf=[Reference(ref="#/components/schemas/test_name"), Schema(type=DataType.STRING)]
+        allOf=[
+            Reference(ref="#/components/schemas/test_name"),
+            Schema(type=DataType.STRING),
+        ]
     )
     assert type_converter(schema, True).converted_type == "Tuple[test_name,str]"
 
     schema = Schema(
-        oneOf=[Reference(ref="#/components/schemas/test_name"), Schema(type=DataType.STRING)]
+        oneOf=[
+            Reference(ref="#/components/schemas/test_name"),
+            Schema(type=DataType.STRING),
+        ]
     )
     assert type_converter(schema, True).converted_type == "Union[test_name,str]"
 
@@ -243,9 +255,18 @@ def test_type_converter_all_of_reference():
     [
         ([DataType.STRING, DataType.INTEGER], "str,int"),
         ([DataType.STRING, DataType.INTEGER, DataType.NUMBER], "str,int,float"),
-        ([DataType.STRING, DataType.INTEGER, DataType.NUMBER, DataType.BOOLEAN], "str,int,float,bool"),
         (
-            [DataType.STRING, DataType.INTEGER, DataType.NUMBER, DataType.BOOLEAN,DataType.ARRAY],
+            [DataType.STRING, DataType.INTEGER, DataType.NUMBER, DataType.BOOLEAN],
+            "str,int,float,bool",
+        ),
+        (
+            [
+                DataType.STRING,
+                DataType.INTEGER,
+                DataType.NUMBER,
+                DataType.BOOLEAN,
+                DataType.ARRAY,
+            ],
             "str,int,float,bool,List[Any]",
         ),
     ],
@@ -313,7 +334,7 @@ def test_type_converter_of_type(test_openapi_types, expected_python_types):
                 type=TypeConversion(original_type="string", converted_type="str"),
                 required=True,
                 import_type=["test_name"],
-                default=None
+                default=None,
             ),
         ),
         (
@@ -326,11 +347,11 @@ def test_type_converter_of_type(test_openapi_types, expected_python_types):
                 type=TypeConversion(
                     original_type="tuple<#/components/schemas/SomeModel>",
                     converted_type='"SomeModel"',
-                    import_types=[],
+                    import_types=None,
                 ),
                 required=True,
                 import_type=[],
-                default=None
+                default=None,
             ),
         ),
     ],
@@ -391,8 +412,9 @@ def test_type_converter_property_reference(
         == expected_property
     )
 
+
 @pytest.mark.parametrize("pydantic_version", [PydanticVersion.V1, PydanticVersion.V2])
-def test_model_generation(model_data: OpenAPI, pydantic_version : PydanticVersion):
+def test_model_generation(model_data: OpenAPI, pydantic_version: PydanticVersion):
     result = generate_models(model_data.components, pydantic_version)  # type: ignore
 
     assert len(result) == len(model_data.components.schemas.keys())  # type: ignore

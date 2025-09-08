@@ -1,4 +1,4 @@
-def {{ operation_id }}({{ params }} api_config_override : Optional[APIConfig] = None) -> {% if return_type.type is none or return_type.type.converted_type is none %}None{% else %}{{ return_type.type.converted_type}}{% endif %}:
+def {{ operation_id }}(api_config_override : Optional[APIConfig] = None{% if params.strip() %}, *, {{ params.rstrip(', ') }}{% endif %}) -> {% if return_type.type is none or return_type.type.converted_type is none %}None{% else %}{{ return_type.type.converted_type}}{% endif %}:
     api_config = api_config_override if api_config_override else APIConfig()
 
     base_path = api_config.base_path
@@ -32,16 +32,19 @@ def {{ operation_id }}({{ params }} api_config_override : Optional[APIConfig] = 
         {% endif %}
     )
     if response.status_code != {{ return_type.status_code }}:
-        raise HTTPException(response.status_code, f'{{ operationId }} failed with status code: {response.status_code}')
+        raise HTTPException(response.status_code, f'{{ operation_id }} failed with status code: {response.status_code}')
+    else:
+        {# Conditional body parsing: avoid calling .json() for 204 #}
+        body = None if {{ return_type.status_code }} == 204 else response.json()
 
 {% if return_type.type is none or return_type.type.converted_type is none %}
     return None
 {% elif return_type.complex_type %}
     {%- if return_type.list_type is none %}
-    return {{ return_type.type.converted_type }}(**response.json()) if response.json() is not None else {{ return_type.type.converted_type }}()
+    return {{ return_type.type.converted_type }}(**body) if body is not None else {{ return_type.type.converted_type }}()
     {%- else %}
-    return [{{ return_type.list_type }}(**item) for item in response.json()]
+    return [{{ return_type.list_type }}(**item) for item in body]
     {%- endif %}
 {% else %}
-    return response.json()
+    return body
 {% endif %}

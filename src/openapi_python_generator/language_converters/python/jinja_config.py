@@ -1,11 +1,8 @@
 from pathlib import Path
 
-from jinja2 import ChoiceLoader
-from jinja2 import Environment
-from jinja2 import FileSystemLoader
+from jinja2 import ChoiceLoader, Environment, FileSystemLoader
 
 from . import common
-
 
 ENUM_TEMPLATE = "enum.jinja2"
 MODELS_TEMPLATE = "models.jinja2"

@@ -6,6 +6,7 @@ from openapi_python_generator import __version__
 from openapi_python_generator.common import Formatter, HTTPLibrary, PydanticVersion
 from openapi_python_generator.generate_data import generate_data
 
+
 @click.command()
 @click.argument("source")
 @click.argument("output")
@@ -63,13 +64,20 @@ def main(
     formatter: Formatter = Formatter.BLACK,
 ) -> None:
     """
-    Generate Python code from an OpenAPI 3.0 specification.
+    Generate Python code from an OpenAPI 3.0+ specification.
 
-    Provide a SOURCE (file or URL) containing the OpenAPI 3 specification and
+    Provide a SOURCE (file or URL) containing the OpenAPI 3.0+ specification and
     an OUTPUT path, where the resulting client is created.
     """
     generate_data(
-        source, output, library, env_token_name, use_orjson, custom_template_path, pydantic_version, formatter
+        source,
+        output,
+        library if library is not None else HTTPLibrary.httpx,
+        env_token_name,
+        use_orjson,
+        custom_template_path,
+        pydantic_version,
+        formatter,
     )
 
 

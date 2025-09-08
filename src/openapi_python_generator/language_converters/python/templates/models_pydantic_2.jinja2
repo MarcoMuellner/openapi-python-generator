@@ -10,11 +10,13 @@ from pydantic import BaseModel, Field
 
 class {{ schema_name }}(BaseModel):
     """
-    {{ schema.title }} model
-    {% if schema.description != None %}
+    {% if schema.title %}{{ schema.title }}{% else %}{{ schema_name }}{% endif %} model
+    {% if schema.description %}
     {{ schema.description }}
     {% endif %}
-
+    {% if parent_comment %}
+    {{ parent_comment }}
+    {% endif %}
     """
     model_config = {
         "populate_by_name": True,
