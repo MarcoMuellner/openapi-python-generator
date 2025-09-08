@@ -51,7 +51,7 @@ def type_converter(  # noqa: C901
     :return: The converted type
     """
     # Handle Reference objects by converting them to type references
-    if isinstance(schema, Reference):
+    if isinstance(schema, Reference30) or isinstance(schema, Reference31):
         import_type = common.normalize_symbol(schema.ref.split("/")[-1])
         if required:
             converted_type = import_type
@@ -85,7 +85,7 @@ def type_converter(  # noqa: C901
     if schema.allOf is not None:
         conversions = []
         for sub_schema in schema.allOf:
-            if isinstance(sub_schema, Schema):
+            if isinstance(sub_schema, Schema30) or isinstance(sub_schema, Schema31):
                 conversions.append(type_converter(sub_schema, True))
             else:
                 import_type = common.normalize_symbol(sub_schema.ref.split("/")[-1])
@@ -130,7 +130,7 @@ def type_converter(  # noqa: C901
         used = used if used is not None else []
         conversions = []
         for sub_schema in used:
-            if isinstance(sub_schema, Schema):
+            if isinstance(sub_schema, Schema30) or isinstance(sub_schema, Schema31):
                 conversions.append(type_converter(sub_schema, True))
             else:
                 import_type = common.normalize_symbol(sub_schema.ref.split("/")[-1])
@@ -191,14 +191,14 @@ def type_converter(  # noqa: C901
         converted_type = pre_type + "bool" + post_type
     elif schema.type == "array" or str(schema.type) == "DataType.ARRAY":
         retVal = pre_type + "List["
-        if isinstance(schema.items, Reference):
+        if isinstance(schema.items, Reference30) or isinstance(schema.items, Reference31):
             converted_reference = _generate_property_from_reference(
                 model_name or "", "", schema.items, schema, required
             )
             import_types = converted_reference.type.import_types
             original_type = "array<" + converted_reference.type.original_type + ">"
             retVal += converted_reference.type.converted_type
-        elif isinstance(schema.items, Schema):
+        elif isinstance(schema.items, Schema30) or isinstance(schema.items, Schema31):
             type_str = schema.items.type
             if hasattr(type_str, "value"):
                 type_value = str(type_str.value) if type_str is not None else "unknown"
@@ -440,7 +440,7 @@ def generate_models(
             else {}
         )
         for prop_name, property in property_iterator:
-            if isinstance(property, Reference):
+            if isinstance(property, Reference30) or isinstance(property, Reference31):
                 conv_property = _generate_property_from_reference(
                     name, prop_name, property, schema_or_reference
                 )

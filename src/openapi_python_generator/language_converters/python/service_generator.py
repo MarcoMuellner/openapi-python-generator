@@ -96,7 +96,7 @@ def generate_body_param(operation: Operation) -> Union[str, None]:
     if operation.requestBody is None:
         return None
     else:
-        if isinstance(operation.requestBody, Reference):
+        if isinstance(operation.requestBody, Reference30) or isinstance(operation.requestBody, Reference31):
             return "data.dict()"
 
         if operation.requestBody.content is None:
@@ -156,18 +156,18 @@ def generate_params(operation: Operation) -> str:
             required = False
             param_name_cleaned = common.normalize_symbol(param.name)
 
-            if isinstance(param.param_schema, Schema):
+            if isinstance(param.param_schema, Schema30) or isinstance(param.param_schema, Schema31):
                 converted_result = (
                     f"{param_name_cleaned} : {type_converter(param.param_schema, param.required).converted_type}"
                     + ("" if param.required else " = None")
                 )
                 required = param.required
-            elif isinstance(param.param_schema, Reference):
+            elif isinstance(param.param_schema, Reference30) or isinstance(param.param_schema, Reference31):
                 converted_result = (
                     f"{param_name_cleaned} : {param.param_schema.ref.split('/')[-1] }"
                     + (
                         ""
-                        if isinstance(param, Reference) or param.required
+                        if isinstance(param, Reference30) or isinstance(param, Reference31) or param.required
                         else " = None"
                     )
                 )
