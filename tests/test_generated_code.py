@@ -96,8 +96,9 @@ def test_generate_code(
 
     # Create unique test directory based on parameters
     test_name = (
-        f"test_result_{library.value}_{use_orjson}_{custom_ip or 'none'}_{openapi_version}"
-        .replace(":", "_")
+        f"test_result_{library.value}_{use_orjson}_{custom_ip or 'none'}_{openapi_version}".replace(
+            ":", "_"
+        )
         .replace("/", "_")
         .replace(".", "_")
     )
@@ -352,6 +353,7 @@ async def _run_service_tests_aiohttp(
     general_service_module, models_module, api_config_instance, custom_ip
 ):
     """Run service tests against a live aiohttp test server."""
+
     async def handle_root(request):
         return web.json_response({"message": "Hello World"})
 

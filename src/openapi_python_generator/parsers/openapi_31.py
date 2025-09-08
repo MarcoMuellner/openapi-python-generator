@@ -26,7 +26,7 @@ def parse_openapi_3_1(spec_data: dict) -> OpenAPI:
     Raises:
         ValidationError: If the specification is invalid
     """
-    return OpenAPI(**spec_data)
+    return OpenAPI(**spec_data)  # type: ignore - pydantic issue with extra fields
 
 
 def generate_code_3_1(

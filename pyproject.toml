@@ -17,7 +17,7 @@ keywords = ["OpenAPI", "Generator", "Python", "async"]
 Changelog = "https://github.com/MarcoMuellner/openapi-python-generator/releases"
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = "^3.9"
 httpx = {extras = ["all"], version = "^0.28.0"}
 pydantic = "^2.10.2"
 orjson = "^3.9.15"
@@ -27,6 +27,7 @@ black = ">=21.10b0"
 isort = ">=5.10.1"
 openapi-pydantic = "^0.5.1"
 pyyaml = "^6.0.2"
+importlib-metadata = "^8.7.0"
 
 [tool.poetry.group.dev.dependencies]
 Pygments = ">=2.10.0"
@@ -34,7 +35,7 @@ coverage = {extras = ["toml"], version = "^6.4.1"}
 darglint = ">=1.8.1"
 ruff = ">=0.12.12"
 furo = ">=2021.11.12"
-mypy = ">=0.930"
+ty = "^0.0.1a20"
 pep8-naming = ">=0.10.1"
 pre-commit = ">=2.16.0"
 pre-commit-hooks = ">=4.1.0"

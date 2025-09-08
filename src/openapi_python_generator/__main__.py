@@ -72,7 +72,7 @@ def main(
     generate_data(
         source,
         output,
-        library,
+        library if library is not None else HTTPLibrary.httpx,
         env_token_name,
         use_orjson,
         custom_template_path,

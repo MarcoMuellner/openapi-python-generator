@@ -421,7 +421,9 @@ def test_aiohttp_204_no_json_parsing():
     assert "return None" in content
 
 
-@pytest.mark.parametrize("library", [HTTPLibrary.httpx, HTTPLibrary.requests, HTTPLibrary.aiohttp])
+@pytest.mark.parametrize(
+    "library", [HTTPLibrary.httpx, HTTPLibrary.requests, HTTPLibrary.aiohttp]
+)
 def test_204_skip_parsing_all_libraries(library):
     """All libraries should skip JSON parsing for a 204 response and just return None."""
     from openapi_pydantic.v3 import PathItem

@@ -26,7 +26,8 @@ def test_detect_openapi_version_errors(spec, error):
 
 
 @pytest.mark.parametrize(
-    "version", ["3.0.0", "3.0.1", "3.0.5", "3.0.10"],
+    "version",
+    ["3.0.0", "3.0.1", "3.0.5", "3.0.10"],
 )
 def test_detect_openapi_version_30(version):
     assert detect_openapi_version({"openapi": version}) == "3.0"
@@ -35,7 +36,8 @@ def test_detect_openapi_version_30(version):
 
 
 @pytest.mark.parametrize(
-    "version", ["3.1.0", "3.1.1", "3.1.5", "3.1.10"],
+    "version",
+    ["3.1.0", "3.1.1", "3.1.5", "3.1.10"],
 )
 def test_detect_openapi_version_31(version):
     assert detect_openapi_version({"openapi": version}) == "3.1"

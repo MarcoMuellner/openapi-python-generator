@@ -38,7 +38,7 @@ jobs:
         run: poetry run pytest --cov=src/ --cov-report=xml --cov-fail-under 90 --cov-config=.coveragerc
       
       - name: 🔍 Type checking with mypy
-        run: poetry run mypy src/
+        run: poetry run ty src/
       
       - name: 🎨 Code formatting with black
         run: poetry run black --check .

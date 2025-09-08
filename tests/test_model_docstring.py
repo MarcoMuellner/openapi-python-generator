@@ -1,6 +1,8 @@
 from openapi_pydantic.v3 import Schema, Components, DataType
 
-from openapi_python_generator.language_converters.python.model_generator import generate_models
+from openapi_python_generator.language_converters.python.model_generator import (
+    generate_models,
+)
 from openapi_python_generator.common import PydanticVersion
 
 

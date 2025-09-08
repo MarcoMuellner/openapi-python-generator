@@ -45,7 +45,13 @@ from openapi_python_generator.language_converters.python.jinja_config import (
 from openapi_python_generator.language_converters.python.model_generator import (
     type_converter,
 )
-from openapi_python_generator.models import LibraryConfig, OpReturnType, Service, ServiceOperation, TypeConversion
+from openapi_python_generator.models import (
+    LibraryConfig,
+    OpReturnType,
+    Service,
+    ServiceOperation,
+    TypeConversion,
+)
 
 
 # Helper functions for isinstance checks across OpenAPI versions
@@ -54,16 +60,18 @@ def is_response_type(obj) -> bool:
     return isinstance(obj, (Response30, Response31))
 
 
-def create_media_type_for_reference(reference_obj):
+def create_media_type_for_reference(
+    reference_obj: Response30 | Reference30 | Response31 | Reference31,
+):
     """Create a MediaType wrapper for a reference object, using the correct version"""
     # Check which version the reference object belongs to
     if isinstance(reference_obj, Reference30):
-        return MediaType30(schema=reference_obj)
+        return MediaType30(schema=reference_obj)  # type: ignore - pydantic issue with generics
     elif isinstance(reference_obj, Reference31):
-        return MediaType31(schema=reference_obj)
+        return MediaType31(schema=reference_obj)  # type: ignore - pydantic issue with generics
     else:
         # Fallback to v3.0 for generic Reference
-        return MediaType30(schema=reference_obj)
+        return MediaType30(schema=reference_obj)  # type: ignore - pydantic issue with generics
 
 
 def is_media_type(obj) -> bool:
@@ -185,13 +193,16 @@ def generate_params(operation: Operation) -> str:
         if isinstance(rb_content, dict) and any(
             rb_content.get(i) is not None for i in operation_request_body_types
         ):
-            get_keyword = [i for i in operation_request_body_types if rb_content.get(i)][
-                0
-            ]
+            get_keyword = [
+                i for i in operation_request_body_types if rb_content.get(i)
+            ][0]
             content = rb_content.get(get_keyword)
             if content is not None and hasattr(content, "media_type_schema"):
                 mts = getattr(content, "media_type_schema", None)
-                if isinstance(mts, (Reference, Reference30, Reference31, Schema, Schema30, Schema31)):
+                if isinstance(
+                    mts,
+                    (Reference, Reference30, Reference31, Schema, Schema30, Schema31),
+                ):
                     params += f"{_generate_params_from_content(mts)}, "
                 else:  # pragma: no cover
                     raise Exception(
@@ -283,9 +294,8 @@ def generate_return_type(operation: Operation) -> OpReturnType:
             )
         elif is_schema_type(inner_schema):
             converted_result = type_converter(inner_schema, True)  # type: ignore
-            if (
-                "array" in converted_result.original_type
-                and isinstance(converted_result.import_types, list)
+            if "array" in converted_result.original_type and isinstance(
+                converted_result.import_types, list
             ):
                 matched = re.findall(r"List\[(.+)\]", converted_result.converted_type)
                 if len(matched) > 0:
@@ -348,23 +358,28 @@ def generate_services(
                             op.parameters = []  # type: ignore
                         op.parameters.append(p)  # type: ignore
         except Exception:  # pragma: no cover
-            print(f"Error merging path-level parameters for {path_name}")  # pragma: no cover
+            print(
+                f"Error merging path-level parameters for {path_name}"
+            )  # pragma: no cover
             pass
 
         params = generate_params(op)
         # Fallback: ensure all {placeholders} in path are present as function params
         try:
-            placeholder_names = [m.group(1) for m in re.finditer(r"\{([^}/]+)\}", path_name)]
+            placeholder_names = [
+                m.group(1) for m in re.finditer(r"\{([^}/]+)\}", path_name)
+            ]
             existing_param_names = {
-                p.split(":")[0].strip()
-                for p in params.split(",") if ":" in p
+                p.split(":")[0].strip() for p in params.split(",") if ":" in p
             }
             for ph in placeholder_names:
                 norm_ph = common.normalize_symbol(ph)
                 if norm_ph not in existing_param_names and norm_ph:
                     params = f"{norm_ph}: Any, " + params
         except Exception:  # pragma: no cover
-            print(f"Error ensuring path placeholders in params for {path_name}")  # pragma: no cover
+            print(
+                f"Error ensuring path placeholders in params for {path_name}"
+            )  # pragma: no cover
             pass
         operation_id = generate_operation_id(op, http_operation, path_name)
         query_params = generate_query_params(op)

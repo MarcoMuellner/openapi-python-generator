@@ -411,6 +411,7 @@ class TestOpenAPI31SchemaFeatures:
                 "exec",
             )
 
+
 def test_31_feature_parsing_vs_30():
     """Test that 3.1-only keywords (e.g. const) are ignored or rejected by 3.0 parser.
 
@@ -431,7 +432,10 @@ def test_31_feature_parsing_vs_30():
         parsed = parse_openapi_3_0(openapi_30_spec)
         test_schema = parsed.components.schemas["TestSchema"]
         # Parser should either drop attribute or leave it None
-        assert not hasattr(test_schema, "const") or getattr(test_schema, "const", None) is None
+        assert (
+            not hasattr(test_schema, "const")
+            or getattr(test_schema, "const", None) is None
+        )
     except Exception:
         # Accept parse failure as also demonstrating unsupported keyword
         pass

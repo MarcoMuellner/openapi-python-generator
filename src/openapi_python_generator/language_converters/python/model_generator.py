@@ -89,7 +89,7 @@ def type_converter(  # noqa: C901
                 conversions.append(type_converter(sub_schema, True))
             else:
                 import_type = common.normalize_symbol(sub_schema.ref.split("/")[-1])
-                if import_type == model_name:
+                if import_type == model_name and model_name is not None:
                     conversions.append(
                         TypeConversion(
                             original_type=sub_schema.ref,

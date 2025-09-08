@@ -421,19 +421,20 @@ class TestOpenAPI31Coverage:
         )
 
         # Convert to 3.0 spec and test with 3.0 parser
+
     spec_30_no_const = {
-            "openapi": "3.0.3",
-            "info": {"title": "Test 3.0", "version": "1.0.0"},
-            "paths": {},
-            "components": {
-                "schemas": {
-                    "Test": {
-                        "type": "string",
-                        "const": "test_value",  # Should be ignored in 3.0
-                    }
+        "openapi": "3.0.3",
+        "info": {"title": "Test 3.0", "version": "1.0.0"},
+        "paths": {},
+        "components": {
+            "schemas": {
+                "Test": {
+                    "type": "string",
+                    "const": "test_value",  # Should be ignored in 3.0
                 }
-            },
-        }
+            }
+        },
+    }
 
     from openapi_python_generator.parsers import parse_openapi_3_0
 
