@@ -14,11 +14,11 @@ repos:
         types: [python]
     - id: flake8
       name: flake8
-      entry: poetry run flake8
+      entry: poetry run ruff check
       language: system
       types: [ python ]
--   repo: https://github.com/pycqa/isort
-    rev: 5.11.5
-    hooks:
-      - id: isort
-        name: isort (python)
+    - id: typecheck
+      name: typecheck
+      entry: poetry run ty check src/
+      language: system
+      types: [ python ]
