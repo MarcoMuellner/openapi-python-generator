@@ -191,7 +191,9 @@ def type_converter(  # noqa: C901
         converted_type = pre_type + "bool" + post_type
     elif schema.type == "array" or str(schema.type) == "DataType.ARRAY":
         retVal = pre_type + "List["
-        if isinstance(schema.items, Reference30) or isinstance(schema.items, Reference31):
+        if isinstance(schema.items, Reference30) or isinstance(
+            schema.items, Reference31
+        ):
             converted_reference = _generate_property_from_reference(
                 model_name or "", "", schema.items, schema, required
             )
