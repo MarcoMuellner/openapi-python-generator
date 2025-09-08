@@ -19,30 +19,30 @@ jobs:
     steps:
       - name: 📥 Checkout code
         uses: actions/checkout@v3
-      
+
       - name: 🐍 Setup Python ${{ matrix.python-version }}
         uses: actions/setup-python@v3
         with:
           python-version: ${{ matrix.python-version }}
           architecture: x64
-      
+
       - name: 📦 Install Poetry and dependencies
         run: |
           pip install poetry==1.3.1
           poetry install
-      
+
       - name: 📊 Run tests with coverage
         run: poetry run pytest --cov=src/ --cov-report=xml --cov-fail-under 90 --cov-config=.coveragerc
-      
-      - name: 🔍 Type checking with mypy
+
+      - name: 🔍 Type checking with ty
         run: poetry run ty check src/
-      
+
       - name: 🎨 Code formatting with black
         run: poetry run black --check .
-      
+
       - name: 🔧 Linting
         run: poetry run ruff check .
-      
+
       - name: 📈 Upload coverage to Codecov
         uses: codecov/codecov-action@v2
         if: always()
