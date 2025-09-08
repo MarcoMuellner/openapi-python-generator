@@ -10,7 +10,7 @@ import yaml
 
 from openapi_python_generator.generate_data import generate_data
 from openapi_python_generator.version_detector import detect_openapi_version
-from openapi_python_generator.parsers import parse_openapi_30
+from openapi_python_generator.parsers import parse_openapi_3_0
 from openapi_python_generator.common import HTTPLibrary
 
 
@@ -35,7 +35,7 @@ class TestSwaggerPetstore30:
 
     def test_parse_petstore_30(self, petstore_30_spec):
         """Test that the Petstore 3.0 spec can be parsed successfully."""
-        openapi_obj = parse_openapi_30(petstore_30_spec)
+        openapi_obj = parse_openapi_3_0(petstore_30_spec)
 
         # Basic structure validation
         assert openapi_obj.openapi == "3.0.4"
@@ -52,7 +52,7 @@ class TestSwaggerPetstore30:
 
     def test_petstore_30_schemas(self, petstore_30_spec):
         """Test that Petstore 3.0 schemas are parsed correctly."""
-        openapi_obj = parse_openapi_30(petstore_30_spec)
+        openapi_obj = parse_openapi_3_0(petstore_30_spec)
 
         assert openapi_obj.components is not None
         assert openapi_obj.components.schemas is not None
@@ -68,7 +68,7 @@ class TestSwaggerPetstore30:
 
     def test_petstore_30_operations(self, petstore_30_spec):
         """Test that Petstore 3.0 operations are parsed correctly."""
-        openapi_obj = parse_openapi_30(petstore_30_spec)
+        openapi_obj = parse_openapi_3_0(petstore_30_spec)
 
         assert openapi_obj.paths is not None
 
@@ -87,7 +87,7 @@ class TestSwaggerPetstore30:
 
     def test_petstore_30_parameters(self, petstore_30_spec):
         """Test that Petstore 3.0 parameters are handled correctly."""
-        openapi_obj = parse_openapi_30(petstore_30_spec)
+        openapi_obj = parse_openapi_3_0(petstore_30_spec)
 
         assert openapi_obj.paths is not None
 
@@ -105,7 +105,7 @@ class TestSwaggerPetstore30:
 
     def test_petstore_30_responses(self, petstore_30_spec):
         """Test that Petstore 3.0 responses are handled correctly."""
-        openapi_obj = parse_openapi_30(petstore_30_spec)
+        openapi_obj = parse_openapi_3_0(petstore_30_spec)
 
         assert openapi_obj.paths is not None
 
@@ -173,7 +173,7 @@ class TestSwaggerPetstore30:
 
     def test_petstore_30_model_generation(self, petstore_30_spec):
         """Test that model generation works correctly for Petstore 3.0."""
-        openapi_obj = parse_openapi_30(petstore_30_spec)
+        openapi_obj = parse_openapi_3_0(petstore_30_spec)
 
         # Basic validation that components exist
         assert openapi_obj.components is not None

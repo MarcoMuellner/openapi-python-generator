@@ -13,7 +13,7 @@ from openapi_python_generator.language_converters.python.generator import (
 from openapi_python_generator.models import ConversionResult
 
 
-def parse_openapi_30(spec_data: dict) -> OpenAPI:
+def parse_openapi_3_0(spec_data: dict) -> OpenAPI:
     """
     Parse OpenAPI 3.0 specification data.
 
@@ -29,7 +29,7 @@ def parse_openapi_30(spec_data: dict) -> OpenAPI:
     return OpenAPI(**spec_data)
 
 
-def generate_code_30(
+def generate_code_3_0(
     data: OpenAPI,
     library: HTTPLibrary = HTTPLibrary.httpx,
     env_token_name: Optional[str] = None,

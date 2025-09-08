@@ -12,7 +12,7 @@ import pytest
 
 from openapi_python_generator.generate_data import generate_data
 from openapi_python_generator.common import HTTPLibrary
-from openapi_python_generator.parsers import parse_openapi_31
+from openapi_python_generator.parsers import parse_openapi_3_1
 
 
 @pytest.mark.xfail(
@@ -239,7 +239,7 @@ class TestOpenAPI31SchemaFeatures:
 
     def test_const_schema_support(self, comprehensive_openapi_31_spec):
         """Test that const schemas are handled correctly."""
-        parsed = parse_openapi_31(comprehensive_openapi_31_spec)
+        parsed = parse_openapi_3_1(comprehensive_openapi_31_spec)
 
         # Check that ConstValue schema exists
         const_schema = parsed.components.schemas["ConstValue"]
@@ -259,7 +259,7 @@ class TestOpenAPI31SchemaFeatures:
 
     def test_boolean_schemas_support(self, comprehensive_openapi_31_spec):
         """Test that boolean schemas (True/False) are handled correctly."""
-        parsed = parse_openapi_31(comprehensive_openapi_31_spec)
+        parsed = parse_openapi_3_1(comprehensive_openapi_31_spec)
 
         # Check that boolean schemas exist
         always_valid = parsed.components.schemas["AlwaysValid"]
@@ -271,7 +271,7 @@ class TestOpenAPI31SchemaFeatures:
 
     def test_prefix_items_support(self, comprehensive_openapi_31_spec):
         """Test that prefixItems (tuple validation) is handled correctly."""
-        parsed = parse_openapi_31(comprehensive_openapi_31_spec)
+        parsed = parse_openapi_3_1(comprehensive_openapi_31_spec)
 
         tuple_schema = parsed.components.schemas["TupleArray"]
         assert tuple_schema.type == "array"
@@ -288,7 +288,7 @@ class TestOpenAPI31SchemaFeatures:
 
     def test_unevaluated_properties_support(self, comprehensive_openapi_31_spec):
         """Test that unevaluatedProperties is handled correctly."""
-        parsed = parse_openapi_31(comprehensive_openapi_31_spec)
+        parsed = parse_openapi_3_1(comprehensive_openapi_31_spec)
 
         extended_schema = parsed.components.schemas["ExtendedObject"]
         assert hasattr(extended_schema, "unevaluatedProperties")
@@ -296,7 +296,7 @@ class TestOpenAPI31SchemaFeatures:
 
     def test_conditional_schemas_support(self, comprehensive_openapi_31_spec):
         """Test that if/then/else conditional schemas are handled correctly."""
-        parsed = parse_openapi_31(comprehensive_openapi_31_spec)
+        parsed = parse_openapi_3_1(comprehensive_openapi_31_spec)
 
         conditional_schema = parsed.components.schemas["ConditionalSchema"]
         assert hasattr(conditional_schema, "if_")  # Pydantic uses if_ for 'if' keyword
@@ -310,7 +310,7 @@ class TestOpenAPI31SchemaFeatures:
 
     def test_contains_constraints_support(self, comprehensive_openapi_31_spec):
         """Test that contains/minContains/maxContains are handled correctly."""
-        parsed = parse_openapi_31(comprehensive_openapi_31_spec)
+        parsed = parse_openapi_3_1(comprehensive_openapi_31_spec)
 
         array_schema = parsed.components.schemas["ArrayWithContains"]
         assert hasattr(array_schema, "contains")
@@ -323,7 +323,7 @@ class TestOpenAPI31SchemaFeatures:
 
     def test_dependent_schemas_support(self, comprehensive_openapi_31_spec):
         """Test that dependentSchemas is handled correctly."""
-        parsed = parse_openapi_31(comprehensive_openapi_31_spec)
+        parsed = parse_openapi_3_1(comprehensive_openapi_31_spec)
 
         dependent_schema = parsed.components.schemas["DependentSchema"]
         assert hasattr(dependent_schema, "dependentSchemas")
@@ -334,7 +334,7 @@ class TestOpenAPI31SchemaFeatures:
 
     def test_exclusive_numeric_constraints_31(self, comprehensive_openapi_31_spec):
         """Test that exclusive numeric constraints work as numbers in 3.1."""
-        parsed = parse_openapi_31(comprehensive_openapi_31_spec)
+        parsed = parse_openapi_3_1(comprehensive_openapi_31_spec)
 
         numeric_schema = parsed.components.schemas["NumericConstraints31"]
         score_prop = numeric_schema.properties["score"]
@@ -347,7 +347,7 @@ class TestOpenAPI31SchemaFeatures:
 
     def test_complex_union_with_discriminator(self, comprehensive_openapi_31_spec):
         """Test complex anyOf/oneOf with discriminator in 3.1."""
-        parsed = parse_openapi_31(comprehensive_openapi_31_spec)
+        parsed = parse_openapi_3_1(comprehensive_openapi_31_spec)
 
         union_schema = parsed.components.schemas["ComplexUnion"]
         assert hasattr(union_schema, "anyOf")
@@ -364,7 +364,7 @@ class TestOpenAPI31SchemaFeatures:
 
     def test_pattern_properties_support(self, comprehensive_openapi_31_spec):
         """Test that patternProperties are handled correctly."""
-        parsed = parse_openapi_31(comprehensive_openapi_31_spec)
+        parsed = parse_openapi_3_1(comprehensive_openapi_31_spec)
 
         pattern_schema = parsed.components.schemas["DynamicProperties"]
         assert hasattr(pattern_schema, "patternProperties")
@@ -425,10 +425,10 @@ def test_31_feature_parsing_vs_30():
         },
     }
 
-    from openapi_python_generator.parsers import parse_openapi_30
+    from openapi_python_generator.parsers import parse_openapi_3_0
 
     try:
-        parsed = parse_openapi_30(openapi_30_spec)
+        parsed = parse_openapi_3_0(openapi_30_spec)
         test_schema = parsed.components.schemas["TestSchema"]
         # Parser should either drop attribute or leave it None
         assert not hasattr(test_schema, "const") or getattr(test_schema, "const", None) is None

@@ -20,10 +20,10 @@ from .language_converters.python.jinja_config import create_jinja_env
 from .models import ConversionResult
 from .version_detector import detect_openapi_version
 from .parsers import (
-    parse_openapi_30,
-    parse_openapi_31,
-    generate_code_30,
-    generate_code_31,
+    parse_openapi_3_0,
+    parse_openapi_3_1,
+    generate_code_3_0,
+    generate_code_3_1,
 )
 
 
@@ -109,9 +109,9 @@ def get_open_api(source: Union[str, Path]):
         version = detect_openapi_version(data)
 
         if version == "3.0":
-            openapi_obj = parse_openapi_30(data)  # type: ignore[assignment]
+            openapi_obj = parse_openapi_3_0(data)  # type: ignore[assignment]
         elif version == "3.1":
-            openapi_obj = parse_openapi_31(data)  # type: ignore[assignment]
+            openapi_obj = parse_openapi_3_1(data)  # type: ignore[assignment]
         else:
             # Unsupported version detected (version detection already limited to 3.0 / 3.1)
             raise ValueError(
@@ -216,7 +216,7 @@ def generate_data(
 
     # Use version-specific generator
     if version == "3.0":
-        result = generate_code_30(
+        result = generate_code_3_0(
             openapi_obj,  # type: ignore
             library,
             env_token_name,
@@ -225,7 +225,7 @@ def generate_data(
             pydantic_version,
         )
     elif version == "3.1":
-        result = generate_code_31(
+        result = generate_code_3_1(
             openapi_obj,  # type: ignore
             library,
             env_token_name,

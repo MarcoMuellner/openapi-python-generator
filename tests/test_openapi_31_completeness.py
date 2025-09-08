@@ -11,7 +11,7 @@ import pytest
 
 from openapi_python_generator.generate_data import generate_data
 from openapi_python_generator.common import HTTPLibrary
-from openapi_python_generator.parsers import parse_openapi_31
+from openapi_python_generator.parsers import parse_openapi_3_1
 
 
 class TestOpenAPI31Completeness:
@@ -446,7 +446,7 @@ class TestOpenAPI31Completeness:
 
     def test_complex_parameter_handling_31(self, comprehensive_31_spec):
         """Test complex parameter scenarios for OpenAPI 3.1 (matching 3.0 coverage)."""
-        parsed = parse_openapi_31(comprehensive_31_spec)
+        parsed = parse_openapi_3_1(comprehensive_31_spec)
 
         # Test path parameters
         get_user_op = parsed.paths["/users/{user_id}"].get
@@ -475,7 +475,7 @@ class TestOpenAPI31Completeness:
 
     def test_request_body_variations_31(self, comprehensive_31_spec):
         """Test various request body scenarios for OpenAPI 3.1 (matching 3.0 coverage)."""
-        parsed = parse_openapi_31(comprehensive_31_spec)
+        parsed = parse_openapi_3_1(comprehensive_31_spec)
 
         # Test JSON request body
         create_user_op = parsed.paths["/users"].post
@@ -491,7 +491,7 @@ class TestOpenAPI31Completeness:
 
     def test_response_variations_31(self, comprehensive_31_spec):
         """Test various response scenarios for OpenAPI 3.1 (matching 3.0 coverage)."""
-        parsed = parse_openapi_31(comprehensive_31_spec)
+        parsed = parse_openapi_3_1(comprehensive_31_spec)
 
         # Test multiple response codes
         list_users_op = parsed.paths["/users"].get
@@ -507,7 +507,7 @@ class TestOpenAPI31Completeness:
 
     def test_enum_handling_comprehensive_31(self, comprehensive_31_spec):
         """Test comprehensive enum handling for OpenAPI 3.1 (matching 3.0 coverage)."""
-        parsed = parse_openapi_31(comprehensive_31_spec)
+        parsed = parse_openapi_3_1(comprehensive_31_spec)
 
         assert parsed.components is not None
         assert parsed.components.schemas is not None
@@ -552,7 +552,7 @@ class TestOpenAPI31Completeness:
 
     def test_reference_resolution_comprehensive_31(self, comprehensive_31_spec):
         """Test comprehensive reference resolution for OpenAPI 3.1 (matching 3.0 coverage)."""
-        parsed = parse_openapi_31(comprehensive_31_spec)
+        parsed = parse_openapi_3_1(comprehensive_31_spec)
 
         # Test schema references
         assert parsed.components is not None

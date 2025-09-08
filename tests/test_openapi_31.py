@@ -10,7 +10,7 @@ import pytest
 
 from openapi_python_generator.generate_data import generate_data
 from openapi_python_generator.version_detector import detect_openapi_version
-from openapi_python_generator.parsers import parse_openapi_31
+from openapi_python_generator.parsers import parse_openapi_3_1
 
 
 class TestOpenAPI31:
@@ -185,7 +185,7 @@ class TestOpenAPI31:
 
     def test_parse_openapi_31(self, openapi_31_spec):
         """Test that OpenAPI 3.1 specs can be parsed correctly."""
-        openapi_obj = parse_openapi_31(openapi_31_spec)
+        openapi_obj = parse_openapi_3_1(openapi_31_spec)
 
         assert openapi_obj.openapi == "3.1.0"
         assert openapi_obj.info.title == "Test API v3.1"
@@ -197,7 +197,7 @@ class TestOpenAPI31:
 
     def test_json_schema_dialect_31(self, openapi_31_spec):
         """Test that OpenAPI 3.1 jsonSchemaDialect is handled correctly."""
-        openapi_obj = parse_openapi_31(openapi_31_spec)
+        openapi_obj = parse_openapi_3_1(openapi_31_spec)
 
         # This is a 3.1-specific feature
         assert (
@@ -207,7 +207,7 @@ class TestOpenAPI31:
 
     def test_license_identifier_31(self, openapi_31_spec):
         """Test that OpenAPI 3.1 license identifier is handled correctly."""
-        openapi_obj = parse_openapi_31(openapi_31_spec)
+        openapi_obj = parse_openapi_3_1(openapi_31_spec)
 
         # This is a 3.1-specific feature
         assert openapi_obj.info.license is not None
@@ -216,7 +216,7 @@ class TestOpenAPI31:
 
     def test_anyof_schemas_31(self, openapi_31_spec):
         """Test that OpenAPI 3.1 anyOf schemas are handled correctly."""
-        openapi_obj = parse_openapi_31(openapi_31_spec)
+        openapi_obj = parse_openapi_3_1(openapi_31_spec)
 
         assert openapi_obj.components is not None
         assert openapi_obj.components.schemas is not None
@@ -270,7 +270,7 @@ class TestOpenAPI31:
 
     def test_uuid_parameter_31(self, openapi_31_spec):
         """Test that UUID parameters in OpenAPI 3.1 are handled correctly."""
-        openapi_obj = parse_openapi_31(openapi_31_spec)
+        openapi_obj = parse_openapi_3_1(openapi_31_spec)
 
         assert openapi_obj.paths is not None
         get_product_op = openapi_obj.paths["/products/{product_id}"].get
@@ -285,7 +285,7 @@ class TestOpenAPI31:
 
     def test_query_parameters_31(self, openapi_31_spec):
         """Test that query parameters in OpenAPI 3.1 are handled correctly."""
-        openapi_obj = parse_openapi_31(openapi_31_spec)
+        openapi_obj = parse_openapi_3_1(openapi_31_spec)
 
         assert openapi_obj.paths is not None
         list_products_op = openapi_obj.paths["/products"].get
@@ -300,7 +300,7 @@ class TestOpenAPI31:
 
     def test_enum_handling_31(self, openapi_31_spec):
         """Test that enums in OpenAPI 3.1 are handled correctly."""
-        openapi_obj = parse_openapi_31(openapi_31_spec)
+        openapi_obj = parse_openapi_3_1(openapi_31_spec)
 
         assert openapi_obj.components is not None
         assert openapi_obj.components.schemas is not None
@@ -312,7 +312,7 @@ class TestOpenAPI31:
 
     def test_reference_resolution_31(self, openapi_31_spec):
         """Test that references in OpenAPI 3.1 specs are handled correctly."""
-        openapi_obj = parse_openapi_31(openapi_31_spec)
+        openapi_obj = parse_openapi_3_1(openapi_31_spec)
 
         # Check that references exist in the spec
         assert openapi_obj.components is not None
@@ -331,7 +331,7 @@ class TestOpenAPI31:
 
     def test_parameter_handling_31(self, openapi_31_spec):
         """Test that path and query parameters in OpenAPI 3.1 are handled correctly."""
-        openapi_obj = parse_openapi_31(openapi_31_spec)
+        openapi_obj = parse_openapi_3_1(openapi_31_spec)
 
         # Test path parameter
         assert openapi_obj.paths is not None
@@ -353,7 +353,7 @@ class TestOpenAPI31:
 
     def test_request_body_31(self, openapi_31_spec):
         """Test that request bodies in OpenAPI 3.1 are handled correctly."""
-        openapi_obj = parse_openapi_31(openapi_31_spec)
+        openapi_obj = parse_openapi_3_1(openapi_31_spec)
 
         assert openapi_obj.paths is not None
         create_product_op = openapi_obj.paths["/products"].post
@@ -368,7 +368,7 @@ class TestOpenAPI31:
 
     def test_response_handling_31(self, openapi_31_spec):
         """Test that responses in OpenAPI 3.1 are handled correctly."""
-        openapi_obj = parse_openapi_31(openapi_31_spec)
+        openapi_obj = parse_openapi_3_1(openapi_31_spec)
 
         assert openapi_obj.paths is not None
         list_products_op = openapi_obj.paths["/products"].get

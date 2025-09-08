@@ -9,7 +9,7 @@ import pytest
 
 from openapi_python_generator.generate_data import generate_data
 from openapi_python_generator.common import HTTPLibrary
-from openapi_python_generator.parsers import parse_openapi_31
+from openapi_python_generator.parsers import parse_openapi_3_1
 
 
 class TestOpenAPI31SupportedFeatures:
@@ -207,7 +207,7 @@ class TestOpenAPI31SupportedFeatures:
 
     def test_parsing_supported_features(self, supported_openapi_31_spec):
         """Test that all supported 3.1 features parse correctly."""
-        parsed = parse_openapi_31(supported_openapi_31_spec)
+        parsed = parse_openapi_3_1(supported_openapi_31_spec)
 
         # Verify basic parsing worked
         assert parsed.openapi == "3.1.0"
@@ -224,7 +224,7 @@ class TestOpenAPI31SupportedFeatures:
 
     def test_const_schema_parsing(self, supported_openapi_31_spec):
         """Test const schema parsing."""
-        parsed = parse_openapi_31(supported_openapi_31_spec)
+        parsed = parse_openapi_3_1(supported_openapi_31_spec)
         const_schema = parsed.components.schemas["ConstValue"]
 
         assert const_schema.type == "string"
@@ -232,7 +232,7 @@ class TestOpenAPI31SupportedFeatures:
 
     def test_prefix_items_parsing(self, supported_openapi_31_spec):
         """Test prefixItems parsing."""
-        parsed = parse_openapi_31(supported_openapi_31_spec)
+        parsed = parse_openapi_3_1(supported_openapi_31_spec)
         tuple_schema = parsed.components.schemas["TupleArray"]
 
         assert tuple_schema.type == "array"
@@ -246,7 +246,7 @@ class TestOpenAPI31SupportedFeatures:
 
     def test_contains_constraints_parsing(self, supported_openapi_31_spec):
         """Test contains/minContains/maxContains parsing."""
-        parsed = parse_openapi_31(supported_openapi_31_spec)
+        parsed = parse_openapi_3_1(supported_openapi_31_spec)
         array_schema = parsed.components.schemas["ArrayWithContains"]
 
         assert array_schema.contains is not None
@@ -256,7 +256,7 @@ class TestOpenAPI31SupportedFeatures:
 
     def test_dependent_schemas_parsing(self, supported_openapi_31_spec):
         """Test dependentSchemas parsing."""
-        parsed = parse_openapi_31(supported_openapi_31_spec)
+        parsed = parse_openapi_3_1(supported_openapi_31_spec)
         dependent_schema = parsed.components.schemas["DependentSchema"]
 
         assert dependent_schema.dependentSchemas is not None
@@ -267,7 +267,7 @@ class TestOpenAPI31SupportedFeatures:
 
     def test_exclusive_numeric_constraints(self, supported_openapi_31_spec):
         """Test exclusive numeric constraints as numbers (3.1 style)."""
-        parsed = parse_openapi_31(supported_openapi_31_spec)
+        parsed = parse_openapi_3_1(supported_openapi_31_spec)
         numeric_schema = parsed.components.schemas["NumericConstraints"]
         score_prop = numeric_schema.properties["score"]
 
@@ -277,7 +277,7 @@ class TestOpenAPI31SupportedFeatures:
 
     def test_conditional_schemas_parsing(self, supported_openapi_31_spec):
         """Test if/then/else parsing."""
-        parsed = parse_openapi_31(supported_openapi_31_spec)
+        parsed = parse_openapi_3_1(supported_openapi_31_spec)
         conditional_schema = parsed.components.schemas["ConditionalSchema"]
 
         # Check if/then/else exist (using openapi-pydantic field names)
@@ -291,7 +291,7 @@ class TestOpenAPI31SupportedFeatures:
 
     def test_discriminator_parsing(self, supported_openapi_31_spec):
         """Test discriminator parsing with anyOf."""
-        parsed = parse_openapi_31(supported_openapi_31_spec)
+        parsed = parse_openapi_3_1(supported_openapi_31_spec)
         union_schema = parsed.components.schemas["ComplexUnion"]
 
         assert union_schema.anyOf is not None
@@ -301,7 +301,7 @@ class TestOpenAPI31SupportedFeatures:
 
     def test_pattern_properties_parsing(self, supported_openapi_31_spec):
         """Test patternProperties parsing."""
-        parsed = parse_openapi_31(supported_openapi_31_spec)
+        parsed = parse_openapi_3_1(supported_openapi_31_spec)
         pattern_schema = parsed.components.schemas["DynamicProperties"]
 
         assert pattern_schema.patternProperties is not None
@@ -365,7 +365,7 @@ class TestOpenAPI31UnsupportedFeatures:
 
         # Boolean schemas (True/False) should raise a pydantic ValidationError
         with pytest.raises(ValidationError):  # Should fail to parse
-            parse_openapi_31(spec_with_boolean_schemas)
+            parse_openapi_3_1(spec_with_boolean_schemas)
 
     def test_boolean_items_not_supported(self):
         """Test that items: false is not supported yet."""
@@ -388,7 +388,7 @@ class TestOpenAPI31UnsupportedFeatures:
 
         # items: False should raise a pydantic ValidationError
         with pytest.raises(ValidationError):  # Should fail to parse
-            parse_openapi_31(spec_with_boolean_items)
+            parse_openapi_3_1(spec_with_boolean_items)
 
 
 class TestOpenAPI31Coverage:
@@ -411,7 +411,7 @@ class TestOpenAPI31Coverage:
         }
 
         # Should work in 3.1
-        parsed_31 = parse_openapi_31(spec_31_features)
+        parsed_31 = parse_openapi_3_1(spec_31_features)
         assert parsed_31.components.schemas["Test"].const == "test_value"
 
         # Test that jsonSchemaDialect is preserved
@@ -435,9 +435,9 @@ class TestOpenAPI31Coverage:
             },
         }
 
-    from openapi_python_generator.parsers import parse_openapi_30
+    from openapi_python_generator.parsers import parse_openapi_3_0
 
-    parsed_30 = parse_openapi_30(spec_30_no_const)
+    parsed_30 = parse_openapi_3_0(spec_30_no_const)
 
     # In 3.0, const should either not exist or be ignored; ensure schema parses
     _ = parsed_30.components.schemas["Test"]  # noqa: F841

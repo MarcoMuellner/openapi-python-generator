@@ -10,7 +10,7 @@ import pytest
 
 from openapi_python_generator.generate_data import generate_data
 from openapi_python_generator.version_detector import detect_openapi_version
-from openapi_python_generator.parsers import parse_openapi_30
+from openapi_python_generator.parsers import parse_openapi_3_0
 
 
 class TestOpenAPI30:
@@ -136,7 +136,7 @@ class TestOpenAPI30:
 
     def test_parse_openapi_30(self, openapi_30_spec):
         """Test that OpenAPI 3.0 specs can be parsed correctly."""
-        openapi_obj = parse_openapi_30(openapi_30_spec)
+        openapi_obj = parse_openapi_3_0(openapi_30_spec)
 
         assert openapi_obj.openapi == "3.0.2"
         assert openapi_obj.info.title == "Test API"
@@ -147,7 +147,7 @@ class TestOpenAPI30:
 
     def test_reference_resolution_30(self, openapi_30_spec):
         """Test that references in OpenAPI 3.0 specs are handled correctly."""
-        openapi_obj = parse_openapi_30(openapi_30_spec)
+        openapi_obj = parse_openapi_3_0(openapi_30_spec)
 
         # Check that references exist in the spec
         assert openapi_obj.components is not None
@@ -165,7 +165,7 @@ class TestOpenAPI30:
 
     def test_enum_handling_30(self, openapi_30_spec):
         """Test that enums in OpenAPI 3.0 are handled correctly."""
-        openapi_obj = parse_openapi_30(openapi_30_spec)
+        openapi_obj = parse_openapi_3_0(openapi_30_spec)
 
         assert openapi_obj.components is not None
         assert openapi_obj.components.schemas is not None
@@ -218,7 +218,7 @@ class TestOpenAPI30:
 
     def test_parameter_handling_30(self, openapi_30_spec):
         """Test that path parameters in OpenAPI 3.0 are handled correctly."""
-        openapi_obj = parse_openapi_30(openapi_30_spec)
+        openapi_obj = parse_openapi_3_0(openapi_30_spec)
 
         get_user_op = openapi_obj.paths["/users/{user_id}"].get
         assert get_user_op is not None
@@ -232,7 +232,7 @@ class TestOpenAPI30:
 
     def test_request_body_30(self, openapi_30_spec):
         """Test that request bodies in OpenAPI 3.0 are handled correctly."""
-        openapi_obj = parse_openapi_30(openapi_30_spec)
+        openapi_obj = parse_openapi_3_0(openapi_30_spec)
 
         create_user_op = openapi_obj.paths["/users"].post
         assert create_user_op is not None
@@ -246,7 +246,7 @@ class TestOpenAPI30:
 
     def test_response_handling_30(self, openapi_30_spec):
         """Test that responses in OpenAPI 3.0 are handled correctly."""
-        openapi_obj = parse_openapi_30(openapi_30_spec)
+        openapi_obj = parse_openapi_3_0(openapi_30_spec)
 
         list_users_op = openapi_obj.paths["/users"].get
         assert list_users_op is not None
