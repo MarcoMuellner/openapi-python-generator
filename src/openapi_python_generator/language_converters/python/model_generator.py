@@ -415,8 +415,7 @@ def generate_models(
         if schema_or_reference.enum is not None:
             value_dict = schema_or_reference.model_dump()
             value_dict["enum"] = [
-                (common.normalize_symbol(str(i)).upper(), i)
-                for i in value_dict["enum"]
+                (common.normalize_symbol(str(i)).upper(), i) for i in value_dict["enum"]
             ]
             m = Model(
                 file_name=name,

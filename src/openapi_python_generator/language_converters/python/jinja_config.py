@@ -16,7 +16,7 @@ TEMPLATE_PATH = Path(__file__).parent / "templates"
 
 def create_jinja_env():
     custom_template_path = common.get_custom_template_path()
-    environment =  Environment(
+    environment = Environment(
         loader=(
             ChoiceLoader(
                 [

@@ -16,10 +16,9 @@ def test_issue_30_87(library) -> None:
     https://github.com/MarcoMuellner/openapi-python-generator/issues/87
     """
     openapi_obj, version = get_open_api(str(test_data_folder / "issue_30_87.json"))
-    result = generate_code_3_1(
-        openapi_obj,  # type: ignore
-        library
-    )
+    result = generate_code_3_1(openapi_obj, library)  # type: ignore
 
-    expected_model = [m for m in result.models if m.openapi_object.title == "UserType"][0]
+    expected_model = [m for m in result.models if m.openapi_object.title == "UserType"][
+        0
+    ]
     assert "ADMIN_USER = 'admin-user'" in expected_model.content
