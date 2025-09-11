@@ -414,9 +414,8 @@ def generate_models(
         name = common.normalize_symbol(schema_name)
         if schema_or_reference.enum is not None:
             value_dict = schema_or_reference.model_dump()
-            regex = re.compile(r"[\s\/=\*\+]+")
             value_dict["enum"] = [
-                re.sub(regex, "_", i) if isinstance(i, str) else f"value_{i}"
+                (common.normalize_symbol(str(i)).upper(), i)
                 for i in value_dict["enum"]
             ]
             m = Model(
