@@ -1,0 +1,70 @@
+{
+  "openapi": "3.0.2",
+  "info": {
+    "title": "Title",
+    "version": "1.0"
+  },
+  "paths": {
+    "/users": {
+      "get": {
+        "summary": "Get users",
+        "description": "Returns a list of users.",
+        "operationId": "users_get",
+        "parameters": [
+          {
+            "name": "type",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/UserType"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/User"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "UserType": {
+        "title": "UserType",
+        "description": "An enumeration.",
+        "enum": ["admin user", "regular user"]
+      },
+      "User": {
+        "title": "User",
+        "description": "A user.",
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "type": {
+            "$ref": "#/components/schemas/UserType"
+          },
+          "30d_active": {
+            "type": "boolean"
+          }
+        }
+      }
+    }
+  }
+}

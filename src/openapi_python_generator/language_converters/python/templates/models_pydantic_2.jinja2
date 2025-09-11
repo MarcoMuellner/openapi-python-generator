@@ -24,5 +24,5 @@ class {{ schema_name }}(BaseModel):
     }
     {% for property in properties %}
 
-    {{ property.name | replace("@","") | replace("-","_") }} : {{ property.type.converted_type | safe }} = Field(validation_alias="{{ property.name }}" {% if not property.required %}, default = {{ property.default }} {% endif %})
+    {{ property.name | normalize_symbol }} : {{ property.type.converted_type | safe }} = Field(validation_alias="{{ property.name }}" {% if not property.required %}, default = {{ property.default }} {% endif %})
     {% endfor %}

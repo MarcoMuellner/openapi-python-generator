@@ -49,8 +49,10 @@ def normalize_symbol(symbol: str) -> str:
     :param symbol: name of the identifier
     :return: normalized identifier name
     """
-    symbol = symbol.replace("-", "_")
+    symbol = symbol.replace("-", "_").replace(" ", "_")
     normalized_symbol = _symbol_ascii_strip_re.sub("", symbol)
     if normalized_symbol in keyword.kwlist:
         normalized_symbol = normalized_symbol + "_"
+    if len(normalized_symbol) > 0 and normalized_symbol[0].isnumeric():
+        normalized_symbol = "_" + normalized_symbol
     return normalized_symbol
