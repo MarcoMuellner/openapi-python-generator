@@ -1,5 +1,4 @@
 import itertools
-import re
 from typing import List, Optional, Union
 
 import click
