@@ -45,7 +45,7 @@ jobs:
 
       - name: 📈 Upload coverage to Codecov
         uses: codecov/codecov-action@v2
-        if: always()
+        if: always() && github.event_name != 'pull_request'
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           directory: ./coverage/reports/

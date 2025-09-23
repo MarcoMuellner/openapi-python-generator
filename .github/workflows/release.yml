@@ -10,11 +10,38 @@ jobs:
   release:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
-    - uses: actions/setup-python@v3
+    - name: 📥 Checkout code
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+        ref: ${{ github.event.release.target_commitish }}
+        token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: 🐍 Setup Python
+      uses: actions/setup-python@v3
       with:
         python-version: '3.9'
         architecture: x64
-    - run: pip install poetry==1.3.1
-    - run: poetry build
-    - run: poetry publish --username=__token__ --password=${{ secrets.PYPI_TOKEN }}
+
+    - name: 📦 Install Poetry
+      run: pip install poetry==1.3.1
+
+    - name: 🔧 Configure git
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+
+    - name: 🚀 Bump version, commit, and push
+      run: |
+        poetry version ${{ github.ref_name }}
+        git add pyproject.toml
+        git commit -m "chore(release): version ${{ github.ref_name }}"
+        git tag -f ${{ github.ref_name }} HEAD
+        git push origin ${{ github.event.release.target_commitish }}
+        git push -f origin refs/tags/${{ github.ref_name }}
+
+    - name: 📦 Build package
+      run: poetry build
+
+    - name: 🚀 Publish to PyPI
+      run: poetry publish --username=__token__ --password=${{ secrets.PYPI_TOKEN }}
