@@ -380,6 +380,11 @@ def test_generate_services(model_data):
     result = generate_services(model_data.paths, library_config_dict[HTTPLibrary.httpx])
     for i in result:
         compile(i.content, "<string>", "exec")
+    result2 = generate_services(
+        model_data.paths, library_config_dict[HTTPLibrary.requests]
+    )
+    for i in result2:
+        compile(i.content, "<string>", "exec")
 
     result = generate_services(
         model_data.paths, library_config_dict[HTTPLibrary.requests]
@@ -439,3 +444,73 @@ def test_204_skip_parsing_all_libraries(library):
     assert "204 No Content" in content or "== 204 else" in content
     # Should contain 'return None'
     assert "return None" in content
+
+
+def test_generate_body_param_missing_type_object_like():
+    """Schema with properties but no explicit type should not raise and returns 'data'."""
+    op = Operation(
+        responses=default_responses,  # type: ignore[arg-type]
+        requestBody=RequestBody(
+            content={
+                "application/json": MediaType(
+                    media_type_schema=Schema(properties={"a": Schema(type=DataType.STRING)})  # type: ignore[arg-type]
+                )
+            }
+        ),
+    )
+    assert generate_body_param(op) == "data"
+
+
+def test_generate_body_param_array_primitive():
+    op = Operation(
+        responses=default_responses,  # type: ignore[arg-type]
+        requestBody=RequestBody(
+            content={
+                "application/json": MediaType(
+                    media_type_schema=Schema(type=DataType.ARRAY, items=Schema(type=DataType.STRING))  # type: ignore[arg-type]
+                )
+            }
+        ),
+    )
+    assert generate_body_param(op) == "data"
+
+
+def test_generate_body_param_array_object_like():
+    op = Operation(
+        responses=default_responses,  # type: ignore[arg-type]
+        requestBody=RequestBody(
+            content={
+                "application/json": MediaType(
+                    media_type_schema=Schema(
+                        type=DataType.ARRAY,
+                        items=Schema(type=DataType.OBJECT, properties={"a": Schema(type=DataType.STRING)}),  # type: ignore[arg-type]
+                    )
+                )
+            }
+        ),
+    )
+    assert generate_body_param(op) == "[i.dict() for i in data]"
+
+
+def test_generate_operation_id_path_param_separator():
+    path_name = "/lists/{listId}"
+    op = Operation(responses=default_responses, operationId=None)  # type: ignore[arg-type]
+    op_id = generate_operation_id(op, "get", path_name)
+    assert op_id == "get_lists_listId"
+
+
+def test_generate_operation_id_error_message_includes_details():
+    """Error message should include operation details to help identify problematic operations."""
+    op = Operation(
+        responses=default_responses, operationId=None, summary="Get user data"  # type: ignore[arg-type]
+    )
+    try:
+        generate_operation_id(op, "get", None)
+        assert False, "Expected RuntimeError to be raised"
+    except RuntimeError as e:
+        error_msg = str(e)
+        # Verify error message includes helpful details
+        assert "Missing operationId and path_name" in error_msg
+        assert "summary='Get user data'" in error_msg
+        assert "http_op='get'" in error_msg
+        assert "path_name=None" in error_msg

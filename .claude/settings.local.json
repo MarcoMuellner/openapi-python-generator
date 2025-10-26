@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(poetry run pytest:*)",
+      "Bash(gh pr checks:*)",
+      "Bash(poetry run ty:*)",
+      "Bash(gh run view:*)",
+      "Bash(poetry run black:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

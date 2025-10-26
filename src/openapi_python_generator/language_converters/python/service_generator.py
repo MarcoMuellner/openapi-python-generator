@@ -94,46 +94,60 @@ HTTP_OPERATIONS = ["get", "post", "put", "delete", "options", "head", "patch", "
 
 
 def generate_body_param(operation: Operation) -> Union[str, None]:
+    """Return JSON body expression; tolerant of missing or primitive schema types.
+
+    Behavior:
+    - Reference body -> data.dict()
+    - Array of model-like items -> [i.dict() for i in data]
+    - Array of primitives / unknown -> data
+    - Object / object-like (has properties/allOf/oneOf/anyOf/additionalProperties) -> data
+    - Primitive / missing type -> data
+    """
     if operation.requestBody is None:
         return None
-    else:
-        if isinstance(operation.requestBody, Reference30) or isinstance(
-            operation.requestBody, Reference31
-        ):
-            return "data.dict()"
-
-        if operation.requestBody.content is None:
-            return None  # pragma: no cover
-
-        if operation.requestBody.content.get("application/json") is None:
-            return None  # pragma: no cover
-
-        media_type = operation.requestBody.content.get("application/json")
-
-        if media_type is None:
-            return None  # pragma: no cover
-
-        if isinstance(
-            media_type.media_type_schema, (Reference, Reference30, Reference31)
-        ):
-            return "data.dict()"
-        elif hasattr(media_type.media_type_schema, "ref"):
-            # Handle Reference objects from different OpenAPI versions
-            return "data.dict()"
-        elif isinstance(media_type.media_type_schema, (Schema, Schema30, Schema31)):
-            schema = media_type.media_type_schema
-            if schema.type == "array":
+    # Check for Reference across all versions
+    if isinstance(operation.requestBody, (Reference, Reference30, Reference31)):
+        return "data.dict()"
+    # Defensive access to content attribute
+    content = getattr(operation.requestBody, "content", None)
+    if not isinstance(content, dict):
+        return None
+    mt = content.get("application/json")
+    if mt is None:
+        return None
+    schema = getattr(mt, "media_type_schema", None)
+    # Check for Reference across all versions
+    if isinstance(schema, (Reference, Reference30, Reference31)):
+        return "data.dict()"
+    # Check for Schema across all versions
+    if isinstance(schema, (Schema, Schema30, Schema31)):
+        # Array handling
+        if getattr(schema, "type", None) == "array":
+            items = getattr(schema, "items", None)
+            if isinstance(items, (Reference, Reference30, Reference31)):
                 return "[i.dict() for i in data]"
-            elif schema.type == "object":
-                return "data"
-            else:
-                raise Exception(
-                    f"Unsupported schema type for request body: {schema.type}"
-                )  # pragma: no cover
-        else:
-            raise Exception(
-                f"Unsupported schema type for request body: {type(media_type.media_type_schema)}"
-            )  # pragma: no cover
+            if isinstance(items, (Schema, Schema30, Schema31)):
+                if getattr(items, "type", None) == "object" or any(
+                    getattr(items, attr, None)
+                    for attr in ["properties", "allOf", "oneOf", "anyOf"]
+                ):
+                    return "[i.dict() for i in data]"
+            return "data"
+        # Object-like
+        if getattr(schema, "type", None) == "object" or any(
+            getattr(schema, attr, None)
+            for attr in [
+                "properties",
+                "allOf",
+                "oneOf",
+                "anyOf",
+                "additionalProperties",
+            ]
+        ):
+            return "data"
+        # Primitive / unspecified
+        return "data"
+    return None
 
 
 def generate_params(operation: Operation) -> str:
@@ -228,14 +242,17 @@ def generate_params(operation: Operation) -> str:
 def generate_operation_id(
     operation: Operation, http_op: str, path_name: Optional[str] = None
 ) -> str:
-    if operation.operationId is not None:
+    if operation.operationId:
         return common.normalize_symbol(operation.operationId)
-    elif path_name is not None:
-        return common.normalize_symbol(f"{http_op}_{path_name}")
-    else:
-        raise Exception(
-            f"OperationId is not defined for {http_op} of path_name {path_name} --> {operation.summary}"
-        )  # pragma: no cover
+    if path_name:
+        # Insert underscore before parameter placeholders so /lists/{listId} -> lists_{listId}
+        cleaned = re.sub(r"\{([^}]+)\}", r"_\1", path_name)
+        return common.normalize_symbol(f"{http_op}_{cleaned}")
+    raise RuntimeError(
+        f"Missing operationId and path_name for operation. "
+        f"Details: summary={getattr(operation, 'summary', None)!r}, "
+        f"http_op={http_op!r}, path_name={path_name!r}"
+    )
 
 
 def _generate_params(
