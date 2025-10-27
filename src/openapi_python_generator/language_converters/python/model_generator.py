@@ -1,4 +1,3 @@
-import itertools
 from typing import List, Optional, Union
 
 import click
@@ -37,13 +36,302 @@ Reference = Union[Reference30, Reference31]
 Components = Union[Components30, Components31]
 
 
-def type_converter(  # noqa: C901
+def _normalize_schema_type(schema: Schema) -> Optional[str]:
+    """
+    Normalize schema.type to a consistent string representation.
+
+    Handles:
+    - DataType enum (e.g., DataType.STRING)
+    - String values (e.g., "string")
+    - List of types (takes first element)
+    - None (returns None)
+
+    :param schema: Schema object
+    :return: Normalized type string or None
+    """
+    if schema.type is None:
+        return None
+
+    # Handle list of types (take first)
+    if isinstance(schema.type, list):
+        if len(schema.type) == 0:
+            return None
+        first_type = schema.type[0]
+        if hasattr(first_type, "value"):
+            return first_type.value
+        return str(first_type)
+
+    # Handle DataType enum
+    if hasattr(schema.type, "value"):
+        return schema.type.value
+
+    # Handle string
+    return str(schema.type)
+
+
+def _is_type(schema: Schema, type_name: str) -> bool:
+    """
+    Check if schema represents a specific type.
+
+    Handles all forms: DataType.STRING, "string", "DataType.STRING", ["string", ...]
+
+    :param schema: Schema object
+    :param type_name: Type name to check (e.g., "string", "integer")
+    :return: True if schema matches type_name
+    """
+    normalized = _normalize_schema_type(schema)
+    return normalized == type_name
+
+
+def _handle_format_conversions(
+    schema: Schema, base_type: str, required: bool
+) -> Optional[TypeConversion]:
+    """
+    Handle UUID, datetime, and date format conversions based on orjson usage.
+
+    Returns TypeConversion if special format handling is needed, None otherwise.
+
+    :param schema: Schema object
+    :param base_type: Base type string (e.g., "string")
+    :param required: Whether the field is required
+    :return: TypeConversion or None
+    """
+    if base_type != "string" or schema.schema_format is None:
+        return None
+
+    # Handle UUID formats
+    if schema.schema_format.startswith("uuid") and common.get_use_orjson():
+        if len(schema.schema_format) > 4 and schema.schema_format[4].isnumeric():
+            uuid_type = schema.schema_format.upper()
+            converted_type = uuid_type if required else f"Optional[{uuid_type}]"
+            return TypeConversion(
+                original_type=base_type,
+                converted_type=converted_type,
+                import_types=[f"from pydantic import {uuid_type}"],
+            )
+        else:
+            converted_type = "UUID" if required else "Optional[UUID]"
+            return TypeConversion(
+                original_type=base_type,
+                converted_type=converted_type,
+                import_types=["from uuid import UUID"],
+            )
+
+    # Handle datetime format
+    if schema.schema_format == "date-time" and common.get_use_orjson():
+        converted_type = "datetime" if required else "Optional[datetime]"
+        return TypeConversion(
+            original_type=base_type,
+            converted_type=converted_type,
+            import_types=["from datetime import datetime"],
+        )
+
+    # Handle date format
+    if schema.schema_format == "date" and common.get_use_orjson():
+        converted_type = "date" if required else "Optional[date]"
+        return TypeConversion(
+            original_type=base_type,
+            converted_type=converted_type,
+            import_types=["from datetime import date"],
+        )
+
+    return None
+
+
+def _wrap_optional(type_str: str, required: bool) -> str:
+    """
+    Add Optional[] wrapper if not required.
+
+    :param type_str: Type string to potentially wrap
+    :param required: Whether the field is required
+    :return: Wrapped or unwrapped type string
+    """
+    if required:
+        return type_str
+    return f"Optional[{type_str}]"
+
+
+def _collect_unique_imports(conversions: List[TypeConversion]) -> Optional[List[str]]:
+    """
+    Safely collect and deduplicate imports from conversions.
+
+    :param conversions: List of TypeConversion objects
+    :return: Ordered unique list of import statements, or None if empty
+    """
+    imports = []
+    seen = set()
+
+    for conversion in conversions:
+        if conversion.import_types is not None:
+            for import_stmt in conversion.import_types:
+                if import_stmt not in seen:
+                    imports.append(import_stmt)
+                    seen.add(import_stmt)
+
+    return imports if imports else None
+
+
+def _convert_primitive_type(type_str: Optional[str], required: bool) -> TypeConversion:
+    """
+    Handle simple primitive type conversion (string, int, float, bool, object, null, Any).
+
+    :param type_str: Normalized type string (can be None for schemas without a type)
+    :param required: Whether the field is required
+    :return: TypeConversion for the primitive type
+    """
+    type_map = {
+        "string": "str",
+        "integer": "int",
+        "number": "float",
+        "boolean": "bool",
+        "object": "Dict[str, Any]",
+        "null": "None",
+    }
+
+    python_type = type_map.get(type_str, "str")  # Default to str for unknown types
+    if type_str is None:
+        python_type = "Any"
+
+    converted_type = _wrap_optional(python_type, required)
+
+    return TypeConversion(
+        original_type=type_str if type_str else "object",
+        converted_type=converted_type,
+        import_types=None,
+    )
+
+
+def _convert_array_type(
+    schema: Schema, required: bool, model_name: Optional[str]
+) -> TypeConversion:
+    """
+    Handle array type conversion.
+
+    :param schema: Schema object with type="array"
+    :param required: Whether the field is required (for the array itself)
+    :param model_name: Name of the model being generated
+    :return: TypeConversion for the array type
+    """
+    import_types: Optional[List[str]] = None
+
+    # Build the List[...] wrapper
+    if required:
+        list_prefix = "List["
+        list_suffix = "]"
+    else:
+        list_prefix = "Optional[List["
+        list_suffix = "]]"
+
+    # Handle array items
+    if isinstance(schema.items, Reference30) or isinstance(schema.items, Reference31):
+        # For reference items, pass the array's required status to force_required
+        # This makes items Optional when array is optional: Optional[List[Optional[Type]]]
+        converted_reference = _generate_property_from_reference(
+            model_name or "", "", schema.items, schema, required
+        )
+        import_types = converted_reference.type.import_types
+        original_type = "array<" + converted_reference.type.original_type + ">"
+        converted_type = (
+            list_prefix + converted_reference.type.converted_type + list_suffix
+        )
+    elif isinstance(schema.items, Schema30) or isinstance(schema.items, Schema31):
+        # For schema items, always pass True (items are always required within the array)
+        item_type_str = _normalize_schema_type(schema.items)
+        original_type = "array<" + (item_type_str if item_type_str else "unknown") + ">"
+        item_conversion = type_converter(schema.items, True, model_name)
+        converted_type = list_prefix + item_conversion.converted_type + list_suffix
+        import_types = item_conversion.import_types
+    else:
+        original_type = "array<unknown>"
+        converted_type = list_prefix + "Any" + list_suffix
+
+    return TypeConversion(
+        original_type=original_type,
+        converted_type=converted_type,
+        import_types=import_types,
+    )
+
+
+def _convert_composite_schema(
+    kind: str,
+    sub_schemas: List[Union[Schema, Reference]],
+    required: bool,
+    model_name: Optional[str],
+) -> TypeConversion:
+    """
+    Handle allOf/oneOf/anyOf composition.
+
+    :param kind: "allOf", "oneOf", or "anyOf"
+    :param sub_schemas: List of schemas or references to compose
+    :param required: Whether the field is required
+    :param model_name: Name of the model being generated (for self-references)
+    :return: TypeConversion for the composite type
+    """
+    conversions = []
+
+    for sub_schema in sub_schemas:
+        if isinstance(sub_schema, Schema30) or isinstance(sub_schema, Schema31):
+            conversions.append(type_converter(sub_schema, True, model_name))
+        else:
+            # Reference
+            import_type = common.normalize_symbol(sub_schema.ref.split("/")[-1])
+
+            # Handle self-reference
+            if import_type == model_name and model_name is not None:
+                conversions.append(
+                    TypeConversion(
+                        original_type=sub_schema.ref,
+                        converted_type=f'"{model_name}"',
+                        import_types=None,
+                    )
+                )
+            else:
+                conversions.append(
+                    TypeConversion(
+                        original_type=sub_schema.ref,
+                        converted_type=import_type,
+                        import_types=[f"from .{import_type} import {import_type}"],
+                    )
+                )
+
+    # Build original type string
+    if kind == "allOf":
+        original_type = (
+            "tuple<" + ",".join([c.original_type for c in conversions]) + ">"
+        )
+        type_wrapper = "Tuple"
+    else:  # oneOf or anyOf
+        original_type = (
+            "union<" + ",".join([c.original_type for c in conversions]) + ">"
+        )
+        type_wrapper = "Union"
+
+    # Build converted type string
+    if len(conversions) == 1:
+        converted_type = conversions[0].converted_type
+    else:
+        converted_type = (
+            type_wrapper + "[" + ",".join([c.converted_type for c in conversions]) + "]"
+        )
+
+    converted_type = _wrap_optional(converted_type, required)
+    import_types = _collect_unique_imports(conversions)
+
+    return TypeConversion(
+        original_type=original_type,
+        converted_type=converted_type,
+        import_types=import_types,
+    )
+
+
+def type_converter(
     schema: Union[Schema, Reference],
     required: bool = False,
     model_name: Optional[str] = None,
 ) -> TypeConversion:
     """
     Converts an OpenAPI type to a Python type.
+
     :param schema: Schema or Reference containing the type to be converted
     :param model_name: Name of the original model on which the type is defined
     :param required: Flag indicating if the type is required by the class
@@ -52,10 +340,7 @@ def type_converter(  # noqa: C901
     # Handle Reference objects by converting them to type references
     if isinstance(schema, Reference30) or isinstance(schema, Reference31):
         import_type = common.normalize_symbol(schema.ref.split("/")[-1])
-        if required:
-            converted_type = import_type
-        else:
-            converted_type = f"Optional[{import_type}]"
+        converted_type = _wrap_optional(import_type, required)
 
         return TypeConversion(
             original_type=schema.ref,
@@ -67,249 +352,31 @@ def type_converter(  # noqa: C901
             ),
         )
 
-    if required:
-        pre_type = ""
-        post_type = ""
-    else:
-        pre_type = "Optional["
-        post_type = "]"
-
-    original_type = (
-        schema.type.value
-        if hasattr(schema.type, "value") and schema.type is not None
-        else str(schema.type) if schema.type is not None else "object"
-    )
-    import_types: Optional[List[str]] = None
-
+    # Handle composite schemas (allOf/oneOf/anyOf)
     if schema.allOf is not None:
-        conversions = []
-        for sub_schema in schema.allOf:
-            if isinstance(sub_schema, Schema30) or isinstance(sub_schema, Schema31):
-                conversions.append(type_converter(sub_schema, True))
-            else:
-                import_type = common.normalize_symbol(sub_schema.ref.split("/")[-1])
-                if import_type == model_name and model_name is not None:
-                    conversions.append(
-                        TypeConversion(
-                            original_type=sub_schema.ref,
-                            converted_type='"' + model_name + '"',
-                            import_types=None,
-                        )
-                    )
-                else:
-                    import_types = [f"from .{import_type} import {import_type}"]
-                    conversions.append(
-                        TypeConversion(
-                            original_type=sub_schema.ref,
-                            converted_type=import_type,
-                            import_types=import_types,
-                        )
-                    )
+        return _convert_composite_schema("allOf", schema.allOf, required, model_name)
 
-        original_type = (
-            "tuple<" + ",".join([i.original_type for i in conversions]) + ">"
-        )
-        if len(conversions) == 1:
-            converted_type = conversions[0].converted_type
-        else:
-            converted_type = (
-                "Tuple[" + ",".join([i.converted_type for i in conversions]) + "]"
-            )
+    if schema.oneOf is not None:
+        return _convert_composite_schema("oneOf", schema.oneOf, required, model_name)
 
-        converted_type = pre_type + converted_type + post_type
-        # Collect first import from referenced sub-schemas only (skip empty lists)
-        import_types = [
-            i.import_types[0]
-            for i in conversions
-            if i.import_types is not None and len(i.import_types) > 0
-        ] or None
+    if schema.anyOf is not None:
+        return _convert_composite_schema("anyOf", schema.anyOf, required, model_name)
 
-    elif schema.oneOf is not None or schema.anyOf is not None:
-        used = schema.oneOf if schema.oneOf is not None else schema.anyOf
-        used = used if used is not None else []
-        conversions = []
-        for sub_schema in used:
-            if isinstance(sub_schema, Schema30) or isinstance(sub_schema, Schema31):
-                conversions.append(type_converter(sub_schema, True))
-            else:
-                import_type = common.normalize_symbol(sub_schema.ref.split("/")[-1])
-                import_types = [f"from .{import_type} import {import_type}"]
-                conversions.append(
-                    TypeConversion(
-                        original_type=sub_schema.ref,
-                        converted_type=import_type,
-                        import_types=import_types,
-                    )
-                )
-        original_type = (
-            "union<" + ",".join([i.original_type for i in conversions]) + ">"
-        )
+    # Get normalized type string
+    type_str = _normalize_schema_type(schema)
+    original_type = type_str if type_str is not None else "object"
 
-        if len(conversions) == 1:
-            converted_type = conversions[0].converted_type
-        else:
-            converted_type = (
-                "Union[" + ",".join([i.converted_type for i in conversions]) + "]"
-            )
+    # Check for format conversions (UUID, datetime)
+    format_conversion = _handle_format_conversions(schema, original_type, required)
+    if format_conversion is not None:
+        return format_conversion
 
-        converted_type = pre_type + converted_type + post_type
-        import_types = list(
-            itertools.chain(
-                *[i.import_types for i in conversions if i.import_types is not None]
-            )
-        )
-    # We only want to auto convert to datetime if orjson is used throghout the code, otherwise we can not
-    # serialize it to JSON.
-    elif (schema.type == "string" or str(schema.type) == "DataType.STRING") and (
-        schema.schema_format is None or not common.get_use_orjson()
-    ):
-        converted_type = pre_type + "str" + post_type
-    elif (
-        (schema.type == "string" or str(schema.type) == "DataType.STRING")
-        and schema.schema_format is not None
-        and schema.schema_format.startswith("uuid")
-        and common.get_use_orjson()
-    ):
-        if len(schema.schema_format) > 4 and schema.schema_format[4].isnumeric():
-            uuid_type = schema.schema_format.upper()
-            converted_type = pre_type + uuid_type + post_type
-            import_types = ["from pydantic import " + uuid_type]
-        else:
-            converted_type = pre_type + "UUID" + post_type
-            import_types = ["from uuid import UUID"]
-    elif (
-        schema.type == "string" or str(schema.type) == "DataType.STRING"
-    ) and schema.schema_format == "date-time":
-        converted_type = pre_type + "datetime" + post_type
-        import_types = ["from datetime import datetime"]
-    elif schema.type == "integer" or str(schema.type) == "DataType.INTEGER":
-        converted_type = pre_type + "int" + post_type
-    elif schema.type == "number" or str(schema.type) == "DataType.NUMBER":
-        converted_type = pre_type + "float" + post_type
-    elif schema.type == "boolean" or str(schema.type) == "DataType.BOOLEAN":
-        converted_type = pre_type + "bool" + post_type
-    elif schema.type == "array" or str(schema.type) == "DataType.ARRAY":
-        retVal = pre_type + "List["
-        if isinstance(schema.items, Reference30) or isinstance(
-            schema.items, Reference31
-        ):
-            converted_reference = _generate_property_from_reference(
-                model_name or "", "", schema.items, schema, required
-            )
-            import_types = converted_reference.type.import_types
-            original_type = "array<" + converted_reference.type.original_type + ">"
-            retVal += converted_reference.type.converted_type
-        elif isinstance(schema.items, Schema30) or isinstance(schema.items, Schema31):
-            type_str = schema.items.type
-            if hasattr(type_str, "value"):
-                type_value = str(type_str.value) if type_str is not None else "unknown"
-            else:
-                type_value = str(type_str) if type_str is not None else "unknown"
-            original_type = "array<" + type_value + ">"
-            retVal += type_converter(schema.items, True).converted_type
-        else:
-            original_type = "array<unknown>"
-            retVal += "Any"
+    # Handle array type (special case with items)
+    if _is_type(schema, "array"):
+        return _convert_array_type(schema, required, model_name)
 
-        converted_type = retVal + "]" + post_type
-    elif schema.type == "object" or str(schema.type) == "DataType.OBJECT":
-        converted_type = pre_type + "Dict[str, Any]" + post_type
-    elif schema.type == "null" or str(schema.type) == "DataType.NULL":
-        converted_type = pre_type + "None" + post_type
-    elif schema.type is None:
-        converted_type = pre_type + "Any" + post_type
-    else:
-        # Handle DataType enum types as strings
-        if hasattr(schema.type, "value"):
-            # Single DataType enum
-            if schema.type.value == "string":
-                # Check for UUID format first
-                if (
-                    schema.schema_format is not None
-                    and schema.schema_format.startswith("uuid")
-                    and common.get_use_orjson()
-                ):
-                    if (
-                        len(schema.schema_format) > 4
-                        and schema.schema_format[4].isnumeric()
-                    ):
-                        uuid_type = schema.schema_format.upper()
-                        converted_type = pre_type + uuid_type + post_type
-                        import_types = ["from pydantic import " + uuid_type]
-                    else:
-                        converted_type = pre_type + "UUID" + post_type
-                        import_types = ["from uuid import UUID"]
-                # Check for date-time format
-                elif schema.schema_format == "date-time":
-                    converted_type = pre_type + "datetime" + post_type
-                    import_types = ["from datetime import datetime"]
-                else:
-                    converted_type = pre_type + "str" + post_type
-            elif schema.type.value == "integer":
-                converted_type = pre_type + "int" + post_type
-            elif schema.type.value == "number":
-                converted_type = pre_type + "float" + post_type
-            elif schema.type.value == "boolean":
-                converted_type = pre_type + "bool" + post_type
-            elif schema.type.value == "array":
-                converted_type = pre_type + "List[Any]" + post_type
-            elif schema.type.value == "object":
-                converted_type = pre_type + "Dict[str, Any]" + post_type
-            elif schema.type.value == "null":
-                converted_type = pre_type + "None" + post_type
-            else:
-                converted_type = pre_type + "str" + post_type  # Default fallback
-        elif isinstance(schema.type, list) and len(schema.type) > 0:
-            # List of DataType enums - use first one
-            first_type = schema.type[0]
-            if hasattr(first_type, "value"):
-                if first_type.value == "string":
-                    # Check for UUID format first
-                    if (
-                        schema.schema_format is not None
-                        and schema.schema_format.startswith("uuid")
-                        and common.get_use_orjson()
-                    ):
-                        if (
-                            len(schema.schema_format) > 4
-                            and schema.schema_format[4].isnumeric()
-                        ):
-                            uuid_type = schema.schema_format.upper()
-                            converted_type = pre_type + uuid_type + post_type
-                            import_types = ["from pydantic import " + uuid_type]
-                        else:
-                            converted_type = pre_type + "UUID" + post_type
-                            import_types = ["from uuid import UUID"]
-                    # Check for date-time format
-                    elif schema.schema_format == "date-time":
-                        converted_type = pre_type + "datetime" + post_type
-                        import_types = ["from datetime import datetime"]
-                    else:
-                        converted_type = pre_type + "str" + post_type
-                elif first_type.value == "integer":
-                    converted_type = pre_type + "int" + post_type
-                elif first_type.value == "number":
-                    converted_type = pre_type + "float" + post_type
-                elif first_type.value == "boolean":
-                    converted_type = pre_type + "bool" + post_type
-                elif first_type.value == "array":
-                    converted_type = pre_type + "List[Any]" + post_type
-                elif first_type.value == "object":
-                    converted_type = pre_type + "Dict[str, Any]" + post_type
-                elif first_type.value == "null":
-                    converted_type = pre_type + "None" + post_type
-                else:
-                    converted_type = pre_type + "str" + post_type  # Default fallback
-            else:
-                converted_type = pre_type + "str" + post_type  # Default fallback
-        else:
-            converted_type = pre_type + "str" + post_type  # Default fallback
-
-    return TypeConversion(
-        original_type=original_type,
-        converted_type=converted_type,
-        import_types=import_types,
-    )
+    # Handle all other primitive types
+    return _convert_primitive_type(type_str, required)
 
 
 def _generate_property_from_schema(
