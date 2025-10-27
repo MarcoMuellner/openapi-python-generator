@@ -94,7 +94,13 @@ class APIConfig(BaseModel):
     content: str
 
 
+class StaticFile(BaseModel):
+    file_name: str
+    content: str
+
+
 class ConversionResult(BaseModel):
     models: List[Model]
     services: List[Service]
     api_config: APIConfig
+    static_files: List[StaticFile] = []

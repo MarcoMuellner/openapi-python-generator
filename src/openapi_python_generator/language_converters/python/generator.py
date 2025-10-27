@@ -14,6 +14,9 @@ from openapi_python_generator.language_converters.python.model_generator import 
 from openapi_python_generator.language_converters.python.service_generator import (
     generate_services,
 )
+from openapi_python_generator.language_converters.python.static_file_generator import (
+    generate_static_files,
+)
 from openapi_python_generator.models import ConversionResult, LibraryConfig
 
 # Type alias for both OpenAPI versions
@@ -46,9 +49,11 @@ def generator(
         services = []
 
     api_config = generate_api_config(data, env_token_name, pydantic_version)
+    static_files = generate_static_files()
 
     return ConversionResult(
         models=models,
         services=services,
         api_config=api_config,
+        static_files=static_files,
     )

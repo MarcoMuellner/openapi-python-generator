@@ -186,6 +186,12 @@ def write_data(
     # Write the api_config.py file.
     write_code(Path(output) / "api_config.py", data.api_config.content, formatter)
 
+    # Write static files (if any).
+    for static_file in data.static_files:
+        write_code(
+            Path(output) / f"{static_file.file_name}.py", static_file.content, formatter
+        )
+
     # Write the __init__.py file.
     write_code(
         Path(output) / "__init__.py",
