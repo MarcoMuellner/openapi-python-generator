@@ -41,7 +41,7 @@ def generator(
         models = []
 
     if data.paths is not None:
-        services = generate_services(data.paths, library_config)
+        services = generate_services(data.paths, library_config, data.components)
     else:
         services = []
 
